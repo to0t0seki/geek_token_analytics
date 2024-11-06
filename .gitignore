@@ -1,2 +1,2 @@
 /scripts/
-.egg-info
+*.egg-info/
