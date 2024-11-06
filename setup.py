@@ -8,8 +8,6 @@ setup(
         "streamlit",
         "plotly",
         "pandas",
-        "web3",
-        "python-decouple",
         "streamlit-aggrid"
     ],
     python_requires=">=3.8",
