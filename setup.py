@@ -11,6 +11,7 @@ setup(
         "web3",
         "python-decouple",
         "streamlit-aggrid",
+        "st_aggrid",
     ],
     python_requires=">=3.8",
 )
