@@ -1,0 +1,6 @@
+streamlit
+plotly
+pandas
+web3
+python-decouple
+streamlit-aggrid
