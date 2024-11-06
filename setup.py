@@ -10,8 +10,7 @@ setup(
         "pandas",
         "web3",
         "python-decouple",
-        "streamlit-aggrid",
-        "st_aggrid",
+        "streamlit-aggrid"
     ],
     python_requires=">=3.8",
 )
