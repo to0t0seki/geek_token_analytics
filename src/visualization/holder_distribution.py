@@ -48,7 +48,9 @@ encrypted_key = st.query_params.get("X-Encrypted-Key", [""])[0]
 if encrypted_key:
     decrypted_key = decrypt_key(encrypted_key)
     if decrypted_key and verify_key(decrypted_key):
-        secure_function()
+        result = secure_function()
+        st.json(result)  # JSONとしてデータを返す
+        st.stop()  # これ以降のStreamlit要素の描画を停止
 
 
 
