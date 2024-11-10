@@ -4,6 +4,40 @@ import json
 from src.data_access.database import get_all_balances, db_file, get_total_airdrops, get_latest_timestamp
 from src.data_analysis.balance_calculations import get_latest_balances
 from datetime import datetime, timedelta
+import hashlib
+import base64
+from cryptography.fernet import Fernet
+import hmac
+import hashlib
+import os
+
+
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY").encode()
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+def decrypt_key(encrypted_key):
+    try:
+        f = Fernet(ENCRYPTION_KEY)
+        decrypted_key = f.decrypt(base64.urlsafe_b64decode(encrypted_key))
+        return decrypted_key.decode()
+    except Exception as e:
+        st.error(f"キーの復号化に失敗しました: {e}")
+        return None
+    
+def verify_key(provided_key):
+    expected_hash = hmac.new(SECRET_KEY.encode(), msg=provided_key.encode(), digestmod=hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected_hash, provided_key)
+
+def secure_function():
+    st.success("認証成功！セキュアな関数が実行されました。")    
+
+
+encrypted_key = st.experimental_get_query_params().get("X-Encrypted-Key", [""])[0]
+
+if encrypted_key:
+    decrypted_key = decrypt_key(encrypted_key)
+    if decrypted_key and verify_key(decrypted_key):
+        secure_function()
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
@@ -22,7 +56,15 @@ st.sidebar.markdown("""
 2024-10-01とカウント。
 """)
 
+def verify_api_key(provided_key):
+    return hashlib.sha256(provided_key.encode()).hexdigest() == hashlib.sha256(API_KEY.encode()).hexdigest()
 
+if st.query_params.get('api_key'):
+    st.write("APIキーがあります。")
+else:
+    st.write("APIキーがありません")
+
+    
 
 
 st.title(f"ホールド分布")

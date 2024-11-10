@@ -8,7 +8,8 @@ setup(
         "streamlit",
         "plotly",
         "pandas",
-        "streamlit-aggrid"
+        "streamlit-aggrid",
+        "cryptography"
     ],
     python_requires=">=3.8",
 )
