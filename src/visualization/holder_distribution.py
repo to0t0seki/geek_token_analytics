@@ -29,8 +29,16 @@ def verify_key(provided_key):
     return hmac.compare_digest(expected_hash, provided_key)
 
 def secure_function():
-    st.success("認証成功！セキュアな関数が実行されました。")    
+    return {
+        "message": "認証成功！セキュアな関数が実行されました。",
+        "data": "ここに秘密の情報や機能を表示できます。",
+        "status": "success"
+    }
 
+if st.query_params.get('api_key'):
+    st.write("APIキーがあります。")
+else:
+    st.write("APIキーがありません")
 
 encrypted_key = st.query_params.get("X-Encrypted-Key", [""])[0]
 
@@ -55,16 +63,7 @@ st.sidebar.markdown("""
 2024-10-02 04:00_JSTまでは\n
 2024-10-01とカウント。
 """)
-
-def verify_api_key(provided_key):
-    return hashlib.sha256(provided_key.encode()).hexdigest() == hashlib.sha256(API_KEY.encode()).hexdigest()
-
-if st.query_params.get('api_key'):
-    st.write("APIキーがあります。")
-else:
-    st.write("APIキーがありません")
-
-    
+   
 
 
 st.title(f"ホールド分布")
