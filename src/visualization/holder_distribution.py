@@ -32,7 +32,7 @@ def secure_function():
     st.success("認証成功！セキュアな関数が実行されました。")    
 
 
-encrypted_key = st.experimental_get_query_params().get("X-Encrypted-Key", [""])[0]
+encrypted_key = st.query_params.get("X-Encrypted-Key", [""])[0]
 
 if encrypted_key:
     decrypted_key = decrypt_key(encrypted_key)
