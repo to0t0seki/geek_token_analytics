@@ -34,23 +34,28 @@ def secure_function():
         "data": "ここに秘密の情報や機能を表示できます。",
         "status": "success"
     }
-st.set_page_config(page_title="GEEK Token アナリティクス",
-                    page_icon="📊",
-                    layout="wide")
 
-if st.query_params.get('api_key'):
-    st.write("APIキーがあります。")
-else:
-    st.write("APIキーがありません")
 
-encrypted_key = st.query_params.get("X-Encrypted-Key", [""])[0]
 
-if encrypted_key:
+def api_response(data):
+    st.set_page_config(page_title="API Response")
+    st.json(data)
+    st.stop()
+
+
+
+if "X-Encrypted-Key" in st.query_params:
+    encrypted_key = st.query_params["X-Encrypted-Key"][0]
     decrypted_key = decrypt_key(encrypted_key)
     if decrypted_key and verify_key(decrypted_key):
         result = secure_function()
-        st.json(result)  # JSONとしてデータを返す
-        st.stop()  # これ以降のStreamlit要素の描画を停止
+        api_response(result)
+    else:
+        api_response({"status": "error", "message": "認証失敗"})
+
+st.set_page_config(page_title="GEEK Token アナリティクス",
+                    page_icon="📊",
+                    layout="wide")
 
 
 
