@@ -10,6 +10,7 @@ from cryptography.fernet import Fernet
 import hmac
 import hashlib
 import os
+from src.data_collection.transfer_data_collector_db import get_transfer_data
 
 
 ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY").encode()
@@ -29,11 +30,9 @@ def verify_key(provided_key):
     return hmac.compare_digest(expected_hash, provided_key)
 
 def secure_function():
-    return {
-        "message": "認証成功！セキュアな関数が実行されました。",
-        "data": "ここに秘密の情報や機能を表示できます。",
-        "status": "success"
-    }
+    st.write("認証成功！セキュアな関数が実行されました。")
+    get_transfer_data()
+
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
