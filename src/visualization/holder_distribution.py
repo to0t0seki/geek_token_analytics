@@ -24,6 +24,7 @@ def decrypt_key(encrypted_key):
     except Exception as e:
         st.error(f"キーの復号化に失敗しました: {e}")
         return None
+    print("aaaa")
     
 def verify_key(provided_key):
     expected_hash = hmac.new(SECRET_KEY.encode(), msg=provided_key.encode(), digestmod=hashlib.sha256).hexdigest()
