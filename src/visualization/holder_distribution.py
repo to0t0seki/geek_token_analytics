@@ -4,55 +4,11 @@ import json
 from src.data_access.database import get_all_balances, db_file, get_total_airdrops, get_latest_timestamp
 from src.data_analysis.balance_calculations import get_latest_balances
 from datetime import datetime, timedelta
-import hashlib
-import base64
-from cryptography.fernet import Fernet
-import hmac
-import hashlib
-import os
-from src.data_collection.transfer_data_collector_db import run_update
 
-
-# ENCRYPTION_KEY = os.getenv("ENCY")
-# SECRET_KEY = os.getenv("SECRET")
-
-def decrypt_key(encrypted_key):
-    try:
-        f = Fernet(ENCRYPTION_KEY)
-        decrypted_key = f.decrypt(base64.urlsafe_b64decode(encrypted_key))
-        return decrypted_key.decode()
-    except Exception as e:
-        st.error(f"キーの復号化に失敗しました: {e}")
-        return None
-    print("aaaa")
-    
-def verify_key(provided_key):
-    expected_hash = hmac.new(SECRET_KEY.encode(), msg=provided_key.encode(), digestmod=hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected_hash, provided_key)
-
-def secure_function():
-    st.write("認証成功！セキュアな関数が実行されました。")
-    run_update()
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
-
-if st.query_params.get('api_key'):
-    st.write("APIキーがあります。")
-else:
-    st.write("APIキーがありません")
-
-encrypted_key = st.query_params.get("X-Encrypted-Key", [""])[0]
-
-if encrypted_key:
-    decrypted_key = decrypt_key(encrypted_key)
-    if decrypted_key and verify_key(decrypted_key):
-        secure_function()
-
-# secure_function()
-
-
 
 latest_timestamp = get_latest_timestamp(db_file)
 latest_timestamp = (datetime.fromisoformat(latest_timestamp.replace('Z', '+00:00')) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
