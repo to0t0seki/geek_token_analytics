@@ -13,7 +13,7 @@ import os
 from src.data_collection.transfer_data_collector_db import run_update
 
 
-# ENCRYPTION_KEY = os.getenv("ENCY")
+ENCRYPTION_KEY = os.getenv("ENCY")
 
 def decrypt_key(encrypted_key):
     try:
