@@ -13,8 +13,8 @@ import os
 from src.data_collection.transfer_data_collector_db import run_update
 
 
-ENCRYPTION_KEY = os.getenv("ENCY")
-SECRET_KEY = os.getenv("SECRET")
+# ENCRYPTION_KEY = os.getenv("ENCY")
+# SECRET_KEY = os.getenv("SECRET")
 
 def decrypt_key(encrypted_key):
     try:
@@ -49,7 +49,7 @@ if encrypted_key:
     if decrypted_key and verify_key(decrypted_key):
         secure_function()
 
-secure_function()
+# secure_function()
 
 
 
