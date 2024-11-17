@@ -49,6 +49,8 @@ if encrypted_key:
     if decrypted_key and verify_key(decrypted_key):
         secure_function()
 
+secure_function()
+
 
 
 latest_timestamp = get_latest_timestamp(db_file)
