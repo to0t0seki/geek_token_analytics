@@ -26,7 +26,7 @@ def get_all_balances(db_file: str) -> pd.DataFrame:
     """
     query = """
     SELECT address, date, CAST(balance AS INTEGER) as balance
-    FROM daily_balances
+    FROM adjusted_daily_balances
     WHERE address NOT LIKE '0x0000000000000000000000000000000000000000'
     ORDER BY date, balance DESC
     """
@@ -42,7 +42,7 @@ def get_airdrop_recipient_balances(db_file: str) -> pd.DataFrame:
         FROM airdrops
     )
     SELECT db.address, db.date, CAST(db.balance AS INTEGER) as balance
-    FROM daily_balances db
+    FROM adjusted_daily_balances db
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     ORDER BY db.address, db.date
     """
@@ -58,7 +58,7 @@ def get_exchange_balances(db_file: str) -> pd.DataFrame:
     ]
     query = """
     SELECT address, date, CAST(balance AS INTEGER) as balance
-    FROM daily_balances
+    FROM adjusted_daily_balances
     WHERE address IN ({})
     ORDER BY address, date
     """.format(','.join(['?']*len(addresses)))
