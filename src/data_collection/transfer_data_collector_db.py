@@ -82,7 +82,7 @@ def get_latest_transaction(conn: sqlite3.Connection) -> tuple:
     return result if result else (None, None)
 
 def update_db_from_api(db_file: str):
-    base_url = "https://explorer.geekout-pte.com:1443/api/v2/tokens/0x3741FcB5792673eF220cCc0b95B5B8C38c5f2723/transfers"
+    base_url = "https://explorer.geekout-pte.com/api/v2/tokens/0x3741FcB5792673eF220cCc0b95B5B8C38c5f2723/transfers"
     params = {}
     requests_count = 0
     new_records_count = 0
