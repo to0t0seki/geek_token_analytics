@@ -5,7 +5,7 @@ from plotly.subplots import make_subplots
 import streamlit as st
 from typing import Any
 
-def create_chart(df: pd.DataFrame, title: str, y_axis_titles: dict = None, **kwargs):
+def create_chart(df: pd.DataFrame, title: str = None, y_axis_titles: dict = None, **kwargs):
     """
     データフレームのカラム数に応じて動的にサブプロットを作成する
     
@@ -201,7 +201,7 @@ def create_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
 
     return fig
 
-def display_chart(df: pd.DataFrame, title: str, y_axis_titles: dict = None, **kwargs):
+def display_chart(df: pd.DataFrame, title: str = None, y_axis_titles: dict = None, **kwargs):
     """
     チャートを作成し、Streamlitで表示する関数
     
@@ -213,6 +213,6 @@ def display_chart(df: pd.DataFrame, title: str, y_axis_titles: dict = None, **kw
     chart = create_chart(df, title, y_axis_titles, **kwargs)
     st.plotly_chart(chart, use_container_width=True)
 
-def display_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
+def display_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str = None, **kwargs):
     chart = create_chart1(df, df2, title, **kwargs)
     st.plotly_chart(chart, use_container_width=True)
