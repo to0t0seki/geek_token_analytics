@@ -1,7 +1,7 @@
 import streamlit as st
 from src.visualization.components.charts.chart import display_chart
-from src.data_access.database import get_airdrop_recipient_daily_total_balances, get_latest_timestamp, db_file
-from datetime import datetime, timedelta
+from src.data_access.database import get_airdrop_recipient_daily_total_balances, db_file
+from src.visualization.components.layout.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 
@@ -9,20 +9,7 @@ st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
 
-latest_timestamp = get_latest_timestamp(db_file)
-latest_timestamp = (datetime.fromisoformat(latest_timestamp.replace('Z', '+00:00')) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
-
-
-st.sidebar.markdown(f"""
-### 説明
-最終更新：{latest_timestamp}JST\n
-日付の区切りは04:00JST\n
-一時間毎の更新
-""")
-st.sidebar.markdown("""
-### 注意事項
-当ウェブサイトで提供されるトークンのホルダー分布や使用状況に関する情報は、ブロックチェーンのトランザクションAPIから取得したデータに基づいています。しかし、技術的な制約やAPIの更新頻度などにより、表示される情報が常に正確であるとは限りません。
-""")
+show_sidebar()
 
 
 st.title("プレイヤー残高")
