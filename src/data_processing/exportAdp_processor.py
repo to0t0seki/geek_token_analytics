@@ -4,8 +4,7 @@ def create_airdrops_view(db_file: str) -> None:
     """airdropsビューを作成する"""
     conn = sqlite3.connect(db_file)
     try:
-        # 既存のテーブルまたはビューが存在する場合は削除
-        conn.execute("DROP TABLE IF EXISTS airdrops")
+        # 既存のビューが存在する場合は削除
         conn.execute("DROP VIEW IF EXISTS airdrops")
         
         # ビューの作成
@@ -20,7 +19,7 @@ def create_airdrops_view(db_file: str) -> None:
             t.timestamp
         FROM transfer_details td
         JOIN transactions t ON td.tx_hash = t.tx_hash
-        WHERE td.method = 'exportAdp'
+        WHERE td.method = 'exportAdp' or td.method = '0xf423abe6'
         """
         conn.execute(create_view)
         conn.commit()

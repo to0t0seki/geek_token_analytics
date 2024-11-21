@@ -19,7 +19,7 @@ st.sidebar.markdown("""
 
 
 st.title("入出金")
-st.write("入出金日次推移。")
+st.write("入出金の日次推移。")
 
 
 st.write("### 入金")
@@ -31,7 +31,7 @@ column_names = {
     'date': '日付',
     'value': '入金枚数',
     'address_count': 'アドレス数',
-    'per_address': '1アドレスあたり'
+    'per_address': '平均'
 }
 
 gb = GridOptionsBuilder.from_dataframe(xgeek_to_geek_df)
@@ -67,7 +67,7 @@ column_names = {
     'date': '日付',
     'value': '出金枚数',
     'address_count': 'アドレス数',
-    'per_address': '1アドレスあたり'
+    'per_address': '平均'
 }
 gb = GridOptionsBuilder.from_dataframe(export_token_df)
 

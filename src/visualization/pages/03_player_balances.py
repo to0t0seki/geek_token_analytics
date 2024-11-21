@@ -31,7 +31,7 @@ gb = GridOptionsBuilder.from_dataframe(daily_total_balances_df)
 
 column_names = {
     'date': '日付',
-    'total_balance': '残高'
+    'total_balance': '合計枚数'
 }
 
 

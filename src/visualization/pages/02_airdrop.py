@@ -18,7 +18,7 @@ st.sidebar.markdown("""
 """)
 
 st.title(f"エアドロップ")
-st.write("日次エアドロップ枚数の推移。")
+st.write("エアドロップの日次推移。")
 
 
 # xgeekToGeek の日次チャートを作成と表示
@@ -28,9 +28,9 @@ airdrops_df['per_address'] = airdrops_df['per_address'].round(0)
 
 column_names = {
     'date': '日付',
-    'value': 'エアドロップ枚数',
-    'to_address_count': 'アドレス数',
-    'per_address': '1アドレスあたり'
+    'value': '枚数',
+    'to_address_count': 'アドレス数（受け取った）',
+    'per_address': '平均'
 }
 
 gb = GridOptionsBuilder.from_dataframe(airdrops_df)

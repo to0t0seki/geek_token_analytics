@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-import streamlit as st
+
 
 db_file = "data/processed/geek_transfers.db"
 
@@ -20,7 +20,6 @@ def get_balances(db_file: str, query: str, params: tuple = ()) -> pd.DataFrame:
     df = df.set_index(['address', 'date'])
     return df
 
-@st.cache_data(ttl=3600)
 def get_all_balances(db_file: str) -> pd.DataFrame:
     """
     daily_balancesテーブルから全てのアドレスの最新の残高を取得
@@ -33,7 +32,7 @@ def get_all_balances(db_file: str) -> pd.DataFrame:
     """
     return get_balances(db_file, query)
 
-@st.cache_data(ttl=3600)
+
 def get_airdrop_recipient_balances(db_file: str) -> pd.DataFrame:
     """
     airdropテーブルにあるアドレスの全ての日付の残高を取得
@@ -87,7 +86,7 @@ def get_total_airdrops(db_file: str) -> dict:
     
     return {address: total for address, total in results}
 
-@st.cache_data(ttl=3600)
+
 def get_daily_airdrops(db_file: str) -> pd.DataFrame:
     """
     指定されたアドレスの日次エアドロップ量を取得する
@@ -122,7 +121,7 @@ def get_daily_airdrops(db_file: str) -> pd.DataFrame:
     
     return df
 
-@st.cache_data(ttl=3600)
+
 def get_daily_xgeek_to_geek(db_file: str) -> pd.DataFrame:
     """
     xgeek_to_geekビューから日次の合計値を計算する
@@ -155,7 +154,7 @@ def get_daily_xgeek_to_geek(db_file: str) -> pd.DataFrame:
     
     return df
 
-@st.cache_data(ttl=3600)
+
 def get_daily_export_token(db_file: str) -> pd.DataFrame:
     """
     export_tokenビューから日次の合計値を計算する
@@ -210,7 +209,7 @@ def get_airdrop_recipient_latest_balances(db_file: str) -> pd.DataFrame:
 
     return df
 
-@st.cache_data(ttl=3600)
+
 def get_airdrop_recipient_daily_total_balances(db_file: str) -> pd.DataFrame:
     """
     エアドロップを一度でも受け取ったことがあるアドレスの

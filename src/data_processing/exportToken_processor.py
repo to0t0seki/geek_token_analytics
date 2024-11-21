@@ -5,7 +5,6 @@ def create_export_token_view(db_file: str) -> None:
     conn = sqlite3.connect(db_file)
     try:
         # 既存のテーブルまたはビューが存在する場合は削除
-        conn.execute("DROP TABLE IF EXISTS export_token")
         conn.execute("DROP VIEW IF EXISTS export_token")
         
         # ビューの作成
@@ -20,7 +19,7 @@ def create_export_token_view(db_file: str) -> None:
             t.timestamp
         FROM transfer_details td
         JOIN transactions t ON td.tx_hash = t.tx_hash
-        WHERE td.method = 'exportToken'
+        WHERE td.method = 'exportToken' or td.method = '0x23f60921'
         """
         conn.execute(create_view)
         conn.commit()

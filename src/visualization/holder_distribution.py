@@ -74,7 +74,7 @@ st.markdown("""
 - Game_Ops:ゲーム運営(把握している分)
     - 0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7(airdrop用)
     - 0x687F3413C7f0e089786546BedF809b8F8885B051(出金用)
-    - 0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62(?)
+    - 0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62(運営ウォレット)
 - Airdrop Recipient:エアドロップを一度でも受け取った事のあるアドレス
 - Exchange: Bitget,Gate.io
     - 0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23(Bitget)

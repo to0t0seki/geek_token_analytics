@@ -1,9 +1,8 @@
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.express as px
 from plotly.subplots import make_subplots
 import streamlit as st
-from typing import Any
+
 
 def create_chart(df: pd.DataFrame, title: str = None, y_axis_titles: dict = None, **kwargs):
     """
@@ -27,7 +26,7 @@ def create_chart(df: pd.DataFrame, title: str = None, y_axis_titles: dict = None
                 name='エアドロップ',
                 x=df[df.columns[0]],
                 y=df[df.columns[1]],
-                mode='lines',
+                mode='lines+markers',
                 line=dict(color='blue')
             )
         )
