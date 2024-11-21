@@ -1,16 +1,37 @@
 import streamlit as st
 import plotly.express as px
 import json
-from src.data_access.database import get_all_balances, db_file, get_total_airdrops, get_latest_timestamp
+from src.data_access.database import get_all_balances, db_file, get_total_airdrops
 from src.data_analysis.balance_calculations import get_latest_balances
 from src.visualization.components.layout.sidebar import show_sidebar
+import streamlit.components.v1 as components
 
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
+rum_script = """
+<script>
+  (function(n,i,v,r,s,c,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.head.getElementsByTagName('script')[0]);})(
+    'cwr',
+    '3863a4ec-23f3-4a82-9e6d-9e950576a441',
+    '1.0.0',
+    'ap-northeast-1',
+    'https://client.rum.us-east-1.amazonaws.com/1.19.0/cwr.js',
+    {
+      sessionSampleRate: 1,
+      identityPoolId: "ap-northeast-1:d787bb61-c44f-4784-a78e-7fd6374048a3",
+      endpoint: "https://dataplane.rum.ap-northeast-1.amazonaws.com",
+      telemetries: ["performance","errors","http"],
+      allowCookies: true,
+      enableXRay: false
+    }
+  );
+</script>
+"""
 
+components.html(rum_script, height=0)
 show_sidebar()
 
 
