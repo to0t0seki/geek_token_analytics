@@ -18,7 +18,12 @@ def create_chart(df: pd.DataFrame, title: str = None, y_axis_titles: dict = None
                 x=df[df.columns[0]],
                 y=df[df.columns[1]],
                 mode='lines+markers',
-                line=dict(color='blue')
+                line=dict(color='blue'),
+                hovertemplate=(
+                "日時: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
+                "枚数: %{y:,.0f}<br>" +
+                "<extra></extra>"
+                )
             )
         )
     fig.update_layout(
@@ -61,7 +66,13 @@ def create_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
                 x=df[df.columns[0]],
                 y=df[df.columns[1]],
                 mode='lines+markers',
-                line=dict(color='blue')
+                line=dict(color='blue'),
+                hovertemplate=(
+                "<b>入金情報</b><br>" +
+                "日時: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
+                "枚数: %{y:,.0f}<br>" +
+                "<extra></extra>"
+                )
             )
         )
     fig.add_trace(
@@ -70,7 +81,13 @@ def create_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
                 x=df2[df2.columns[0]],
                 y=df2[df2.columns[1]],
                 mode='lines+markers',
-                line=dict(color='red')
+                line=dict(color='red'),
+                hovertemplate=(
+                "<b>出金情報</b><br>" +
+                "日時: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
+                "枚数: %{y:,.0f}<br>" +
+                "<extra></extra>"
+                )
             )
         )
     
