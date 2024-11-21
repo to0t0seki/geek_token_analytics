@@ -2,8 +2,8 @@ import streamlit as st
 from src.visualization.components.charts.chart import display_chart1
 from src.data_access.database import get_daily_xgeek_to_geek, get_daily_export_token, get_latest_timestamp, db_file
 from datetime import datetime, timedelta
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-from src.visualization.components.layout.google_analytics import add_google_analytics
+from st_aggrid import AgGrid, GridOptionsBuilder
+
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",

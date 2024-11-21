@@ -4,7 +4,6 @@ import json
 from src.data_access.database import get_all_balances, db_file, get_total_airdrops, get_latest_timestamp
 from src.data_analysis.balance_calculations import get_latest_balances
 from datetime import datetime, timedelta
-from src.visualization.components.layout.google_analytics import add_google_analytics
 
 
 

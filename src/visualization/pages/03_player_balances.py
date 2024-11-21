@@ -3,7 +3,7 @@ from src.visualization.components.charts.chart import display_chart
 from src.data_access.database import get_airdrop_recipient_daily_total_balances, get_latest_timestamp, db_file
 from datetime import datetime, timedelta
 from st_aggrid import AgGrid, GridOptionsBuilder
-from src.visualization.components.layout.google_analytics import add_google_analytics
+
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
