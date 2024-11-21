@@ -19,5 +19,5 @@ def show_sidebar():
     """)
 
     st.sidebar.markdown(f"""
-    何か要望があればDiscordもしくは[X](https://twitter.com/tseki_is)で言ってください。
+    何かご意見・ご要望があればDiscordもしくは[X](https://twitter.com/tseki_is)で言ってください。
     """)
