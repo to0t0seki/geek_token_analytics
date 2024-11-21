@@ -16,6 +16,10 @@ st.write(f"最終更新：{latest_timestamp}JST(1時間毎更新)")
 st.sidebar.markdown("""
 日付の区切りは04:00JSTです。\n
 """)
+st.sidebar.markdown("""
+### 注意事項
+当ウェブサイトで提供されるトークンのホルダー分布や使用状況に関する情報は、ブロックチェーンのトランザクションAPIから取得したデータに基づいています。しかし、技術的な制約やAPIの更新頻度などにより、表示される情報が常に正確であるとは限りません。
+""")
 
 st.title(f"エアドロップ")
 st.write("エアドロップの日次推移。")
@@ -33,6 +37,7 @@ column_names = {
     'per_address': '平均'
 }
 
+
 gb = GridOptionsBuilder.from_dataframe(airdrops_df)
 
 for col_name, jp_name in column_names.items():
@@ -44,10 +49,10 @@ for col_name, jp_name in column_names.items():
     )
 
 
+
 grid_response = AgGrid(
     airdrops_df,
     gridOptions=gb.build(),
-    update_mode=GridUpdateMode.SELECTION_CHANGED,
     height=300,
     width='100%',
     theme='streamlit' ,

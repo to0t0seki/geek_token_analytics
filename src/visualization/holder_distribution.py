@@ -13,6 +13,8 @@ st.set_page_config(page_title="GEEK Token アナリティクス",
                     layout="wide")
 
 add_google_analytics()
+# カテゴリ名の日本語マッピングを定義
+
 
 latest_timestamp = get_latest_timestamp(db_file)
 latest_timestamp = (datetime.fromisoformat(latest_timestamp.replace('Z', '+00:00')) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
@@ -22,7 +24,12 @@ st.write(f"最終更新：{latest_timestamp} JST(1時間毎更新)")
 st.sidebar.markdown("""
 日付の区切りは04:00JSTです。\n
 """)
-   
+
+st.sidebar.markdown("""
+### 注意事項
+当ウェブサイトで提供されるトークンのホルダー分布や使用状況に関する情報は、ブロックチェーンのトランザクションAPIから取得したデータに基づいています。しかし、技術的な制約やAPIの更新頻度などにより、表示される情報が常に正確であるとは限りません。
+""")
+
 
 
 st.title(f"ホルダー分布")
