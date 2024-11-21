@@ -7,7 +7,6 @@ from src.visualization.components.layout.google_analytics import add_google_anal
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
-add_google_analytics()
 
 latest_timestamp = get_latest_timestamp(db_file)
 latest_timestamp = (datetime.fromisoformat(latest_timestamp.replace('Z', '+00:00')) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
