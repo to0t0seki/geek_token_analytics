@@ -4,25 +4,11 @@ import pandas as pd
 
 db_file = "data/processed/geek_transfers.db"
 
-def get_balances(db_file: str, query: str, params: tuple = ()) -> pd.DataFrame:
-    """
-    指定されたクエリを使用してデータベースから残高を取得し、
-    データフレームに格納して返す汎用関数
-    """
-    conn = sqlite3.connect(db_file)
-    df = pd.read_sql_query(query, conn, params=params)
-    conn.close()
-    
-    # 日付列をdatetime型に変換
-    df['date'] = pd.to_datetime(df['date'])
-    
-    # アドレスと日付でインデックスを設定
-    df = df.set_index(['address', 'date'])
-    return df
+
 
 def get_all_balances(db_file: str) -> pd.DataFrame:
     """
-    daily_balancesテーブルから全てのアドレスの最新の残高を取得
+    daily_balancesテーブルから全てのアドレスの全ての日付の残高を取得
     """
     query = """
     SELECT address, date, CAST(balance AS INTEGER) as balance
@@ -30,7 +16,15 @@ def get_all_balances(db_file: str) -> pd.DataFrame:
     WHERE address NOT LIKE '0x0000000000000000000000000000000000000000'
     ORDER BY date, balance DESC
     """
-    return get_balances(db_file, query)
+    conn = sqlite3.connect(db_file)
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+
+    df['date'] = pd.to_datetime(df['date'])
+    
+    df = df.set_index(['address', 'date'])
+
+    return df
 
 
 def get_airdrop_recipient_balances(db_file: str) -> pd.DataFrame:
@@ -47,7 +41,14 @@ def get_airdrop_recipient_balances(db_file: str) -> pd.DataFrame:
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     ORDER BY db.address, db.date
     """
-    return get_balances(db_file, query)
+    conn = sqlite3.connect(db_file)
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+   
+    df['date'] = pd.to_datetime(df['date'])
+    
+    df = df.set_index(['address', 'date'])
+    return df
 
 def get_exchange_balances(db_file: str) -> pd.DataFrame:
     """
@@ -63,22 +64,33 @@ def get_exchange_balances(db_file: str) -> pd.DataFrame:
     WHERE address IN ({})
     ORDER BY address, date
     """.format(','.join(['?']*len(addresses)))
-    return get_balances(db_file, query, tuple(addresses))
+
+    conn = sqlite3.connect(db_file)
+    df = pd.read_sql_query(query, conn, params=tuple(addresses))
+    conn.close()
+
+    df['date'] = pd.to_datetime(df['date'])
+    
+    df = df.set_index(['address', 'date'])
+
+    return df
 
 def get_total_airdrops(db_file: str) -> dict:
     """
     各アドレスのtotal airdropを計算する
     """
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
+    
     
     query = """
-    SELECT td.to_address, CAST(SUM(td.value) AS INTEGER) as total_airdrop
-    FROM airdrops a
-    JOIN transfer_details td ON a.transfer_detail_id = td.id
-    GROUP BY td.to_address
+    SELECT to_address, CAST(SUM(value) AS INTEGER) as total_airdrop
+    FROM airdrops
+    GROUP BY to_address
     """
+
     
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+
     cursor.execute(query)
     results = cursor.fetchall()
     
@@ -96,7 +108,7 @@ def get_daily_airdrops(db_file: str) -> pd.DataFrame:
     :param address: 取得対象のアドレス
     :return: 日付とエアドロップ量のDataFrame
     """
-    conn = sqlite3.connect(db_file)
+    
     query = """
     SELECT 
         DATE(DATETIME(timestamp, '+5 hours')) as date,
@@ -112,7 +124,7 @@ def get_daily_airdrops(db_file: str) -> pd.DataFrame:
     ORDER BY 
         date desc
     """
-    
+    conn = sqlite3.connect(db_file)
     df = pd.read_sql_query(query, conn)
     conn.close()
 
@@ -257,6 +269,33 @@ def get_latest_timestamp(db_file: str) -> str:
     
     return result[0] if result else None
 
+def get_least_balances_from_adjusted_daily_balances(db_file: str) -> pd.DataFrame:
+    """
+    adjusted_daily_balancesテーブルから全てのアドレスの全ての日付の残高を取得
+    """
+    conn = sqlite3.connect(db_file)
 
+    query = """
+    SELECT
+    t1.date 
+        t1.address,
+        t1.balance,
+        
+    FROM adjusted_daily_balances t1
+    INNER JOIN (
+        SELECT address, MAX(date) as max_date
+        FROM adjusted_daily_balances
+        GROUP BY address
+        ) t2 ON t1.address = t2.address 
+        AND t1.date = t2.max_date
+    ORDER BY t1.balance DESC
+    """
+    
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df
+
+# df = get_least_balances_from_adjusted_daily_balances(db_file)
+# print(df)
 
 

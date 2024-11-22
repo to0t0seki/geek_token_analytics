@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Dict, Tuple, List
+from typing import Dict
 
 def create_daily_balances_table(conn: sqlite3.Connection) -> None:
     """日次残高テーブルを作成する"""
@@ -78,30 +78,6 @@ def calculate_daily_balances(db_file: str) -> None:
     conn.close()
     print("日次残高の計算が完了しました。")
 
-def get_daily_balances_for_address(db_file: str, address: str) -> List[Tuple[str, float]]:
-    """指定されたアドレスの日次残高を取得する"""
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    
-    query = """
-    SELECT date, balance
-    FROM adjusted_daily_balances
-    WHERE address = ?
-    ORDER BY date
-    """
-    
-    cursor.execute(query, (address,))
-    results = cursor.fetchall()
-    
-    conn.close()
-    return results
-
-def print_daily_balances(balances: List[Tuple[str, float]]):
-    """日次残高を表示する"""
-    print("日付\t\t残高")
-    print("-" * 30)
-    for date, balance in balances:
-        print(f"{date}\t{balance:.6f}")
 
 def run_update():
     db_file = "data/processed/geek_transfers.db"

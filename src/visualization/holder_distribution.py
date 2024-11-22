@@ -1,7 +1,7 @@
 import streamlit as st
 import plotly.express as px
 import json
-from src.data_access.database import get_all_balances, db_file, get_total_airdrops, get_latest_timestamp
+from src.data_access.database import get_all_balances, db_file, get_total_airdrops
 from src.data_analysis.balance_calculations import get_latest_balances
 from src.visualization.components.layout.sidebar import show_sidebar
 
@@ -17,9 +17,6 @@ show_sidebar()
 st.title(f"ホルダー分布")
 
 
-# st.write(f"現在のホルダー分布。")
-
-# address.json を読み込む
 with open("config/address.json", 'r') as f:
     address_data = json.load(f)
 

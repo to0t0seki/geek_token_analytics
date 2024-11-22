@@ -25,8 +25,6 @@ def get_latest_balances(df: pd.DataFrame) -> pd.DataFrame:
     latest_balances['Note'] = latest_balances['address'].map(lambda x: address_data.get(x, {}).get('name', ''))
 
     
-    
-    
     # 残高でソート
     latest_balances = latest_balances.sort_values('balance', ascending=False)
     
