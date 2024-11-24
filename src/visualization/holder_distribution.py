@@ -1,8 +1,7 @@
 import streamlit as st
 import plotly.express as px
-import json
-from src.data_access.database import get_all_balances, db_file, get_total_airdrops
-from src.data_analysis.balance_calculations import get_latest_balances
+import pandas as pd
+from src.data_access.database import get_latest_balances_from_operator, get_latest_balances_from_airdrop_recipient, get_latest_balances_from_exchange, get_latest_balances_from_others
 from src.visualization.components.layout.sidebar import show_sidebar
 
 
@@ -17,42 +16,31 @@ show_sidebar()
 st.title(f"ホルダー分布")
 
 
-with open("config/address.json", 'r') as f:
-    address_data = json.load(f)
-
-# カテゴリ名の日本語マッピングを定義
-category_mapping = {
-    'Game_Ops': 'ゲーム運営',
-    'Airdrop Recipient': 'プレイヤー',
-    'Exchange': '取引所',
-    'Other': 'その他'
-}
-
-# アドレスの属性を定義する関数を修正
-def categorize_address(address):
-    if address in address_data:
-        return category_mapping.get(address_data[address]['category'], address_data[address]['category'])
-    elif total_airdrops.get(address, 0) > 0:
-        return category_mapping['Airdrop Recipient']
-    else:
-        return category_mapping['Other']
-
-# データの取得と処理
-df = get_all_balances(db_file)
-latest_balances = get_latest_balances(df)
-total_airdrops = get_total_airdrops(db_file)
+operators_balances = get_latest_balances_from_operator()
+airdrop_recipients_balances = get_latest_balances_from_airdrop_recipient()
+exchanges_balances = get_latest_balances_from_exchange()
+other_holders_balances = get_latest_balances_from_others()
 
 
-    
 
-
-# アドレスを分類
-latest_balances['カテゴリー'] = latest_balances['address'].apply(categorize_address)
-
-# カテゴリごとの合計残高を計算
-category_totals = latest_balances.groupby('カテゴリー')['balance'].sum().reset_index()
-category_totals = category_totals.rename(columns={'balance': '枚数'})
-
+category_totals = pd.DataFrame([
+    {
+        'カテゴリー': 'ゲーム運営',
+        '枚数': operators_balances['balance'].sum()
+    },
+    {
+        'カテゴリー': 'プレイヤー',
+        '枚数': airdrop_recipients_balances['balance'].sum()
+    },
+    {
+        'カテゴリー': '取引所',
+        '枚数': exchanges_balances['balance'].sum()
+    },
+    {
+        'カテゴリー': 'その他',
+        '枚数': other_holders_balances['balance'].sum()
+    }
+])
 # 円グラフの作成
 fig = px.pie(
     category_totals,
@@ -67,7 +55,7 @@ fig.update_traces(textposition='inside', textinfo='percent+label')
 st.plotly_chart(fig, use_container_width=True)
 
 # 総供給量の計算と表示
-total_supply = latest_balances['balance'].sum()
+total_supply = category_totals['枚数'].sum()
 st.write(f"現在の総供給量: {total_supply:,.0f}")
 
 

@@ -1,5 +1,5 @@
 import pandas as pd
-from src.data_access.database import db_file, get_total_airdrops
+from src.data_access.database import get_total_airdrops
 import json
 # address.json を読み込む
 with open('config/address.json', 'r') as f:
@@ -18,8 +18,9 @@ def get_latest_balances(df: pd.DataFrame) -> pd.DataFrame:
     latest_balances = df.groupby(level='address')['balance'].last().reset_index()
 
     # total_airdrop を計算して追加
-    total_airdrops = get_total_airdrops(db_file)
+    total_airdrops = get_total_airdrops()
     latest_balances['total_airdrop'] = latest_balances['address'].map(total_airdrops).fillna(0)
+    # print(latest_balances['total_airdrop'].sum())
 
     # Note 列を追加
     latest_balances['Note'] = latest_balances['address'].map(lambda x: address_data.get(x, {}).get('name', ''))

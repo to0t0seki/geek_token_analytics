@@ -1,12 +1,11 @@
 import sqlite3
 import pandas as pd
+from src.data_access.client import DatabaseClient
 
 
-db_file = "data/processed/geek_transfers.db"
 
 
-
-def get_all_balances(db_file: str) -> pd.DataFrame:
+def get_all_balances() -> pd.DataFrame:
     """
     daily_balancesテーブルから全てのアドレスの全ての日付の残高を取得
     """
@@ -16,18 +15,13 @@ def get_all_balances(db_file: str) -> pd.DataFrame:
     WHERE address NOT LIKE '0x0000000000000000000000000000000000000000'
     ORDER BY date, balance DESC
     """
-    conn = sqlite3.connect(db_file)
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-
-    df['date'] = pd.to_datetime(df['date'])
-    
-    df = df.set_index(['address', 'date'])
+    client = DatabaseClient()
+    df = client.query_to_df_with_address_date_index(query)
 
     return df
 
 
-def get_airdrop_recipient_balances(db_file: str) -> pd.DataFrame:
+def get_airdrop_recipient_balances() -> pd.DataFrame:
     """
     airdropテーブルにあるアドレスの全ての日付の残高を取得
     """
@@ -41,16 +35,12 @@ def get_airdrop_recipient_balances(db_file: str) -> pd.DataFrame:
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     ORDER BY db.address, db.date
     """
-    conn = sqlite3.connect(db_file)
-    df = pd.read_sql_query(query, conn)
-    conn.close()
+    client = DatabaseClient()
+    df = client.query_to_df_with_address_date_index(query)
    
-    df['date'] = pd.to_datetime(df['date'])
-    
-    df = df.set_index(['address', 'date'])
     return df
 
-def get_exchange_balances(db_file: str) -> pd.DataFrame:
+def get_exchange_balances() -> pd.DataFrame:
     """
     指定されたアドレスの全ての日付の残高を取得
     """
@@ -65,20 +55,16 @@ def get_exchange_balances(db_file: str) -> pd.DataFrame:
     ORDER BY address, date
     """.format(','.join(['?']*len(addresses)))
 
-    conn = sqlite3.connect(db_file)
-    df = pd.read_sql_query(query, conn, params=tuple(addresses))
-    conn.close()
-
-    df['date'] = pd.to_datetime(df['date'])
-    
-    df = df.set_index(['address', 'date'])
+    client = DatabaseClient()
+    df = client.query_to_df_with_address_date_index(query, params=tuple(addresses))
 
     return df
 
-def get_total_airdrops(db_file: str) -> dict:
+def get_total_airdrops() -> dict:
     """
     各アドレスのtotal airdropを計算する
     """
+    db_file = 'data/processed/geek_transfers.db'
     
     
     query = """
@@ -245,21 +231,20 @@ def get_airdrop_recipient_daily_total_balances(db_file: str) -> pd.DataFrame:
 
     return df
 
-def get_latest_timestamp(db_file: str) -> str:
+def get_latest_timestamp() -> str:
     """
     transactionsテーブルから最新のタイムスタンプを取得する
     
     :param db_file: データベースファイルのパス
     :return: 最新のタイムスタンプ（文字列形式）
     """
+    db_file = 'data/processed/geek_transfers.db'
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
     
     query = """
-    SELECT timestamp
+    SELECT max(timestamp)
     FROM transactions
-    ORDER BY timestamp DESC
-    LIMIT 1
     """
     
     cursor.execute(query)
@@ -269,18 +254,15 @@ def get_latest_timestamp(db_file: str) -> str:
     
     return result[0] if result else None
 
-def get_least_balances_from_adjusted_daily_balances(db_file: str) -> pd.DataFrame:
+def get_least_balances_from_all_addresses() -> pd.DataFrame:
     """
-    adjusted_daily_balancesテーブルから全てのアドレスの全ての日付の残高を取得
+    全てのアドレスの最新の残高を取得
     """
-    conn = sqlite3.connect(db_file)
-
     query = """
     SELECT
-    t1.date 
+        t1.date,
         t1.address,
-        t1.balance,
-        
+        t1.balance
     FROM adjusted_daily_balances t1
     INNER JOIN (
         SELECT address, MAX(date) as max_date
@@ -290,12 +272,171 @@ def get_least_balances_from_adjusted_daily_balances(db_file: str) -> pd.DataFram
         AND t1.date = t2.max_date
     ORDER BY t1.balance DESC
     """
+    client = DatabaseClient()
+    df = client.query_to_df(query)
+    return df
+
+def get_latest_balances_from_airdrop_recipient() -> pd.DataFrame:
+    """
+    エアドロップを一度でも受け取ったことがあるアドレスの最新の残高を取得
+    """
+    query = """
+    WITH latest_balances AS (
+        SELECT
+            t1.date,
+        t1.address,
+        t1.balance
+    FROM adjusted_daily_balances t1
+    INNER JOIN (
+        SELECT address, MAX(date) as max_date
+        FROM adjusted_daily_balances
+        GROUP BY address
+        ) t2 ON t1.address = t2.address 
+        AND t1.date = t2.max_date
+    )
+    SELECT lb.address, lb.date, lb.balance
+    FROM latest_balances as lb
+    INNER JOIN (
+        SELECT DISTINCT to_address as address
+        FROM airdrops
+    ) as apd ON lb.address = apd.address
+    """
+    client = DatabaseClient()
+    df = client.query_to_df(query)
+    return df
+
+
+def get_latest_balances_from_exchange() -> pd.DataFrame:
+    """
+    エクスチェンジアドレスの最新の残高を取得
+    """
+    addresses = [
+        '0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23',
+        '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'
+    ]
+    query = """
+    WITH latest_balances AS (
+        SELECT
+            t1.date,
+        t1.address,
+        t1.balance
+    FROM adjusted_daily_balances t1
+    INNER JOIN (
+        SELECT address, MAX(date) as max_date
+        FROM adjusted_daily_balances
+        GROUP BY address
+        ) t2 ON t1.address = t2.address 
+        AND t1.date = t2.max_date
+    )
+    SELECT lb.address, lb.date, lb.balance
+    FROM latest_balances as lb
+    INNER JOIN (
+        SELECT ? as address
+        UNION ALL
+        SELECT ?
+    ) as exd ON lb.address = exd.address
+    """
+    client = DatabaseClient()
+    df = client.query_to_df(query, params=tuple(addresses))
+    return df
+def get_latest_balances_from_operator() -> pd.DataFrame:
+    """
+    運営アドレスの最新の残高を取得
+    """
+    addresses = [
+        '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
+        '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
+        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'   # Game_Ops_Wallet
+    ]
+    query = """
+    WITH latest_balances AS (
+        SELECT
+            t1.date,
+            t1.address,
+            t1.balance
+        FROM adjusted_daily_balances t1
+        INNER JOIN (
+            SELECT address, MAX(date) as max_date
+            FROM adjusted_daily_balances
+            GROUP BY address
+        ) t2 ON t1.address = t2.address 
+            AND t1.date = t2.max_date
+    )
+    SELECT lb.address, lb.date, lb.balance
+    FROM latest_balances as lb
+    INNER JOIN (
+        SELECT ? as address
+        UNION ALL
+        SELECT ?
+        UNION ALL
+        SELECT ?
+    ) as op ON lb.address = op.address
+    """
+    client = DatabaseClient()
+    df = client.query_to_df(query, params=tuple(addresses))
+    return df
+
+def get_latest_balances_from_others() -> pd.DataFrame:
+    """
+    運営、取引所、エアドロップ受領者以外のアドレスの最新残高を取得
     
-    df = pd.read_sql_query(query, conn)
-    conn.close()
+    除外アドレス：
+    - 運営アドレス (Game_Ops_Wallet, Airdrop_Wallet, Xgeek_Withdrawal_Wallet)
+    - 取引所アドレス (0x1AB4973a..., 0x0D070796...)
+    - エアドロップ受領者
+    """
+    operator_addresses = [
+        '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
+        '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
+        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'   # Game_Ops_Wallet
+    ]
+    
+    exchange_addresses = [
+        '0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23',
+        '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'
+    ]
+    
+    query = """
+    WITH latest_balances AS (
+        SELECT
+            t1.date,
+            t1.address,
+            t1.balance
+        FROM adjusted_daily_balances t1
+        INNER JOIN (
+            SELECT address, MAX(date) as max_date
+            FROM adjusted_daily_balances
+            GROUP BY address
+        ) t2 ON t1.address = t2.address 
+            AND t1.date = t2.max_date
+    ),
+    excluded_addresses AS (
+        SELECT ? as address
+        UNION ALL SELECT ?
+        UNION ALL SELECT ?
+        UNION ALL SELECT ?
+        UNION ALL SELECT ?
+        UNION ALL SELECT "0x0000000000000000000000000000000000000000"
+        UNION ALL
+        SELECT DISTINCT to_address as address
+        FROM airdrops
+    )
+    SELECT lb.address, lb.date, lb.balance
+    FROM latest_balances lb
+    LEFT JOIN excluded_addresses ea ON lb.address = ea.address
+    WHERE ea.address IS NULL
+    """
+    
+    client = DatabaseClient()
+    df = client.query_to_df(query, params=tuple(operator_addresses + exchange_addresses))
     return df
 
 # df = get_least_balances_from_adjusted_daily_balances(db_file)
 # print(df)
-
+# df = get_latest_balances_from_airdrop_recipient()
+# print(df['balance'].sum())
+# df = get_latest_balances_from_exchange()
+# print(df)
+# df = get_latest_balances_from_others()
+# print(df['balance'].sum())
 

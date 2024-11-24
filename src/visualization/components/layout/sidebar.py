@@ -1,9 +1,9 @@
 import streamlit as st
 from datetime import datetime, timedelta
-from src.data_access.database import get_latest_timestamp, db_file
+from src.data_access.database import get_latest_timestamp
 
 def show_sidebar():
-    latest_timestamp = get_latest_timestamp(db_file)
+    latest_timestamp = get_latest_timestamp()
     latest_timestamp = (datetime.fromisoformat(latest_timestamp.replace('Z', '+00:00')) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
 
     st.sidebar.markdown(f"""
