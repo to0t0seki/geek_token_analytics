@@ -1,4 +1,5 @@
 import streamlit as st
+import json
 import pandas as pd
 from src.visualization.components.layout.sidebar import show_sidebar
 # from src.data_access.database import get_all_balances, get_airdrop_recipient_balances, get_exchange_balances
@@ -30,6 +31,11 @@ df = data_sources[selected_source]()
 
 df = df[['address', 'balance']]
 df['balance'] = df['balance'].round(0)
+df['Note'] = None
+
+with open("config/address_notes.json", 'r',encoding='utf-8') as f:
+       address_notes = json.load(f)
+df['Note'] = df['address'].map(address_notes)
 
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_selection('single')
