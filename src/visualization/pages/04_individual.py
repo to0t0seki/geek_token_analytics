@@ -14,7 +14,7 @@ st.set_page_config(page_title="GEEK Token アナリティクス",
 show_sidebar()
 
 
-st.title("個別アドレスの残高")
+st.title("個別アドレス情報")
 
 # データソースの選択
 data_sources = {
@@ -105,9 +105,32 @@ if isinstance(selected_row, pd.DataFrame):
         theme='streamlit' ,
         update_mode=GridUpdateMode.NO_UPDATE
     )
-    address_info_df = address_info_df[['date', 'balance']]
+    address_info_df_tmp = address_info_df[['date', 'balance']]
 
     display_chart(
-        address_info_df,
-        title="推移",
+        address_info_df_tmp,
+        title="残高推移",
     )
+
+    address_info_df_tmp = address_info_df[['date', 'airdrop']]
+
+    display_chart(
+        address_info_df_tmp,
+        title="エアドロップ推移",
+    )
+
+    address_info_df_tmp = address_info_df[['date', 'withdraw']]
+
+    display_chart(
+        address_info_df_tmp,
+        title="出金推移",
+    )
+
+    address_info_df_tmp = address_info_df[['date', 'deposit']]
+
+    display_chart(
+        address_info_df_tmp,
+        title="入金推移",
+    )
+
+
