@@ -70,17 +70,24 @@ st.write("")
 
 selected_row = grid_response['selected_rows']
 if isinstance(selected_row, pd.DataFrame):
-    st.write(f"選択されたアドレス: {selected_row.iloc[0]['address']}")
+    st.write(f"選択されたアドレス: {selected_row.iloc[0]['address']}, 備考: {selected_row.iloc[0]['Note']}")
     address_info_df = get_address_info(selected_row.iloc[0]['address'])
-    address_info_df = address_info_df[['date', 'balance']]
+    
     address_info_df['balance'] = address_info_df['balance'].round(0)
+    address_info_df['airdrop'] = address_info_df['airdrop'].round(0)
+    address_info_df['withdraw'] = address_info_df['withdraw'].round(0)
+    address_info_df['deposit'] = address_info_df['deposit'].round(0)
+
     gb = GridOptionsBuilder.from_dataframe(address_info_df)
     
   
 
     column_names = {
-    'date': '日付',
-    'balance': '残高',
+        'date': '日付',
+        'balance': '残高',
+        'airdrop': 'エアドロ',
+        'withdraw': '出金',
+        'deposit': '入金',
     }
 
 
@@ -98,6 +105,7 @@ if isinstance(selected_row, pd.DataFrame):
         theme='streamlit' ,
         update_mode=GridUpdateMode.NO_UPDATE
     )
+    address_info_df = address_info_df[['date', 'balance']]
 
     display_chart(
         address_info_df,

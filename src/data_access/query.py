@@ -228,15 +228,15 @@ def get_latest_balances_from_airdrop_recipient() -> pd.DataFrame:
     WITH latest_balances AS (
         SELECT
             t1.date,
-        t1.address,
-        t1.balance
-    FROM adjusted_daily_balances t1
-    INNER JOIN (
-        SELECT address, MAX(date) as max_date
-        FROM adjusted_daily_balances
-        GROUP BY address
+            t1.address,
+            t1.balance
+        FROM adjusted_daily_balances t1
+        INNER JOIN (
+            SELECT address, MAX(date) as max_date
+            FROM adjusted_daily_balances
+            GROUP BY address
         ) t2 ON t1.address = t2.address 
-        AND t1.date = t2.max_date
+            AND t1.date = t2.max_date
     )
     SELECT lb.address, lb.date, lb.balance
     FROM latest_balances as lb
@@ -382,14 +382,59 @@ def get_address_info(address: str) -> pd.DataFrame:
     指定されたアドレスの情報を取得
     """
     query = """
-    SELECT *
-    FROM adjusted_daily_balances
-    WHERE address = ? and date >= '2024-09-26'
-    ORDER BY date DESC
+    WITH balances AS (
+        SELECT date, balance as balance
+        FROM adjusted_daily_balances
+        WHERE address = ? and date >= '2024-09-26'
+    ),
+    airdrop as (
+        SELECT 
+            DATE(DATETIME(timestamp, '+5 hours')) as date,
+            SUM(value) as airdrop
+        FROM airdrops
+        WHERE 
+            to_address = ? and 
+            DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
+        GROUP BY DATE(DATETIME(timestamp, '+5 hours'))
+    ),
+    withdraw as (   
+        SELECT 
+            DATE(DATETIME(timestamp, '+5 hours')) as date,
+            SUM(value) as withdraw
+        FROM export_token
+        WHERE 
+            to_address = ? and
+            DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
+        GROUP BY DATE(DATETIME(timestamp, '+5 hours'))
+    ),
+    deposit as (
+        SELECT 
+            DATE(DATETIME(timestamp, '+5 hours')) as date,
+            SUM(value) as deposit
+        FROM xgeek_to_geek
+        WHERE 
+            from_address = ? and 
+            DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
+        GROUP BY DATE(DATETIME(timestamp, '+5 hours'))
+    )
+    SELECT 
+        b.date,
+        b.balance,
+        COALESCE(a.airdrop, 0) as airdrop,
+        COALESCE(w.withdraw, 0) as withdraw,
+        COALESCE(d.deposit, 0) as deposit
+    FROM balances b
+    LEFT JOIN airdrop a ON b.date = a.date
+    LEFT JOIN withdraw w ON b.date = w.date
+    LEFT JOIN deposit d ON b.date = d.date
+    ORDER BY b.date DESC    
     """
     client = DatabaseClient()
-    df = client.query_to_df(query, params=(address,))
+    df = client.query_to_df(query, params=(address, address, address, address))
     return df
+df = get_address_info('0xD56a823971228F7a066dE58263f345C090597CD9')
+print(df)
+
 
 
 # df = get_least_balances_from_all_addresses()
