@@ -1,4 +1,5 @@
 /scripts/
+/scripts/setup_config.py 
 *.egg-info/
 /tests/
 /venv/
@@ -8,3 +9,4 @@ cron.log
 *.db
 /.devcontainer/
 /.vscode/
+.streamlit/config.toml

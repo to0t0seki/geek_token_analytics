@@ -5,6 +5,7 @@ from decimal import Decimal
 from src.utils.db_utils import get_db_connection, execute_query
 from typing import Dict, Any
 from src.data_processing import adjusted_daily_balances_calculator
+
 def create_normalized_tables(conn: sqlite3.Connection) -> None:
     """正規化されたテーブルを作成する"""
     create_transactions_table = """
@@ -14,6 +15,11 @@ def create_normalized_tables(conn: sqlite3.Connection) -> None:
     )
     """
     execute_query(conn, create_transactions_table)
+
+    create_index_query = """
+    CREATE INDEX IF NOT EXISTS idx_transactions_timestamp ON transactions(timestamp);
+    """
+    execute_query(conn, create_index_query) 
 
     create_transfer_details_table = """
     CREATE TABLE IF NOT EXISTS transfer_details (
@@ -313,3 +319,6 @@ def run_update():
 if __name__ == "__main__":
     run_update()
     check_database_integrity("data/processed/geek_transfers.db")
+    # conn = get_db_connection("data/processed/geek_transfers.db")    
+    # create_normalized_tables(conn)
+    # conn.close()

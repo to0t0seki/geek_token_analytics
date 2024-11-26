@@ -1,7 +1,7 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from src.data_access.database import get_latest_balances_from_operator, get_latest_balances_from_airdrop_recipient, get_latest_balances_from_exchange, get_latest_balances_from_others
+from src.data_access.query import get_latest_balances_from_operator, get_latest_balances_from_airdrop_recipient, get_latest_balances_from_exchange, get_latest_balances_from_others
 from src.visualization.components.layout.sidebar import show_sidebar
 
 

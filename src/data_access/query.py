@@ -1,4 +1,3 @@
-import sqlite3
 import pandas as pd
 from src.data_access.client import DatabaseClient
 
@@ -33,12 +32,12 @@ def get_airdrop_recipient_balances() -> pd.DataFrame:
     SELECT db.address, db.date, CAST(db.balance AS INTEGER) as balance
     FROM adjusted_daily_balances db
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
-    ORDER BY db.address, db.date
     """
     client = DatabaseClient()
     df = client.query_to_df_with_address_date_index(query)
    
     return df
+
 
 def get_exchange_balances() -> pd.DataFrame:
     """
@@ -60,32 +59,32 @@ def get_exchange_balances() -> pd.DataFrame:
 
     return df
 
-def get_total_airdrops() -> dict:
-    """
-    各アドレスのtotal airdropを計算する
-    """
-    db_file = 'data/processed/geek_transfers.db'
+# def get_total_airdrops() -> dict:
+#     """
+#     各アドレスのtotal airdropを計算する
+#     """
+#     db_file = 'data/processed/geek_transfers.db'
     
     
-    query = """
-    SELECT to_address, CAST(SUM(value) AS INTEGER) as total_airdrop
-    FROM airdrops
-    GROUP BY to_address
-    """
+#     query = """
+#     SELECT to_address, CAST(SUM(value) AS INTEGER) as total_airdrop
+#     FROM airdrops
+#     GROUP BY to_address
+#     """
 
     
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
+#     conn = sqlite3.connect(db_file)
+#     cursor = conn.cursor()
 
-    cursor.execute(query)
-    results = cursor.fetchall()
+#     cursor.execute(query)
+#     results = cursor.fetchall()
     
-    conn.close()
+#     conn.close()
     
-    return {address: total for address, total in results}
+#     return {address: total for address, total in results}
 
 
-def get_daily_airdrops(db_file: str) -> pd.DataFrame:
+def get_daily_airdrops() -> pd.DataFrame:
     """
     指定されたアドレスの日次エアドロップ量を取得する
     日付の区切りは5時間後ろにずらす（例:2023-05-01 05:00:00 までは前日の2023-04-30としてカウント）
@@ -110,25 +109,19 @@ def get_daily_airdrops(db_file: str) -> pd.DataFrame:
     ORDER BY 
         date desc
     """
-    conn = sqlite3.connect(db_file)
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-
-    df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
+    client = DatabaseClient()
+    df = client.query_to_df(query)
     
     
     return df
 
 
-def get_daily_xgeek_to_geek(db_file: str) -> pd.DataFrame:
+def get_daily_xgeek_to_geek() -> pd.DataFrame:
     """
-    xgeek_to_geekビューから日次の合計値を計算する
+    日付毎の出金枚数を取得
     日付の区切りは5時間後ろにずらす（例:2023-05-01 05:00:00 までは前日の2023-04-30としてカウント）
-    
-    :param db_file: データベースファイルのパス
-    :return: 日付とxgeekToGeek量の合計値のDataFrame
     """
-    conn = sqlite3.connect(db_file)
+    
     query = """
     SELECT 
         DATE(DATETIME(timestamp, '+5 hours')) as date,
@@ -144,16 +137,15 @@ def get_daily_xgeek_to_geek(db_file: str) -> pd.DataFrame:
     ORDER BY 
         date desc
     """
-    
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-    
-    df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
+    client = DatabaseClient()
+    df = client.query_to_df(query)
+
     
     return df
 
 
-def get_daily_export_token(db_file: str) -> pd.DataFrame:
+
+def get_daily_export_token() -> pd.DataFrame:
     """
     export_tokenビューから日次の合計値を計算する
     日付の区切りは5時間後ろにずらす（例:2023-05-01 05:00:00 までは前日の2023-04-30としてカウント）
@@ -161,7 +153,6 @@ def get_daily_export_token(db_file: str) -> pd.DataFrame:
     :param db_file: データベースファイルのパス
     :return: 日付とexportToken量の合計値のDataFrame
     """
-    conn = sqlite3.connect(db_file)
     query = """
     SELECT 
         DATE(DATETIME(timestamp, '+5 hours')) as date,
@@ -179,57 +170,11 @@ def get_daily_export_token(db_file: str) -> pd.DataFrame:
         date desc
     """
     
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-    
-
-    df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
+    client = DatabaseClient()
+    df = client.query_to_df(query)
     
     return df
 
-def get_airdrop_recipient_latest_balances(db_file: str) -> pd.DataFrame:
-    """
-    エアドロップを一度でも受け取ったことがあるアドレスの最新残高を取得
-    """
-    conn = sqlite3.connect(db_file)
-    query = """
-    SELECT db.address, db.date, CAST(db.balance AS INTEGER) AS balance
-    FROM daily_balances db
-    INNER JOIN (
-        SELECT DISTINCT to_address AS address
-        FROM airdrops
-    ) airdrop ON db.address = airdrop.address
-    WHERE db.address NOT LIKE '0x0000000000000000000000000000000000000000'
-    ORDER BY db.date DESC, db.balance DESC
-    """
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-
-    return df
-
-
-def get_airdrop_recipient_daily_total_balances(db_file: str) -> pd.DataFrame:
-    """
-    エアドロップを一度でも受け取ったことがあるアドレスの
-    日次合計残高を取得
-    """
-    conn = sqlite3.connect(db_file)
-    query = """
-    SELECT db.date, SUM(CAST(db.balance AS INTEGER)) AS total_balance
-    FROM adjusted_daily_balances db
-    INNER JOIN (
-        SELECT DISTINCT to_address AS address
-        FROM airdrops
-    ) airdrop ON db.address = airdrop.address
-    WHERE db.address NOT LIKE '0x0000000000000000000000000000000000000000' and
-        db.date >= '2024-09-26'
-    GROUP BY db.date
-    ORDER BY db.date desc
-    """
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-
-    return df
 
 def get_latest_timestamp() -> str:
     """
@@ -238,23 +183,21 @@ def get_latest_timestamp() -> str:
     :param db_file: データベースファイルのパス
     :return: 最新のタイムスタンプ（文字列形式）
     """
-    db_file = 'data/processed/geek_transfers.db'
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
+
     
     query = """
     SELECT max(timestamp)
     FROM transactions
     """
     
-    cursor.execute(query)
-    result = cursor.fetchone()
+    client = DatabaseClient()
+    result = client.fetch_one(query)
     
-    conn.close()
-    
-    return result[0] if result else None
+    return result[0]
 
-def get_least_balances_from_all_addresses() -> pd.DataFrame:
+
+
+def get_latest_balances_from_all_addresses() -> pd.DataFrame:
     """
     全てのアドレスの最新の残高を取得
     """
@@ -270,6 +213,7 @@ def get_least_balances_from_all_addresses() -> pd.DataFrame:
         GROUP BY address
         ) t2 ON t1.address = t2.address 
         AND t1.date = t2.max_date
+    WHERE t1.address != '0x0000000000000000000000000000000000000000'
     ORDER BY t1.balance DESC
     """
     client = DatabaseClient()
@@ -306,6 +250,7 @@ def get_latest_balances_from_airdrop_recipient() -> pd.DataFrame:
     return df
 
 
+
 def get_latest_balances_from_exchange() -> pd.DataFrame:
     """
     エクスチェンジアドレスの最新の残高を取得
@@ -339,6 +284,7 @@ def get_latest_balances_from_exchange() -> pd.DataFrame:
     client = DatabaseClient()
     df = client.query_to_df(query, params=tuple(addresses))
     return df
+
 def get_latest_balances_from_operator() -> pd.DataFrame:
     """
     運営アドレスの最新の残高を取得
@@ -431,12 +377,27 @@ def get_latest_balances_from_others() -> pd.DataFrame:
     df = client.query_to_df(query, params=tuple(operator_addresses + exchange_addresses))
     return df
 
-# df = get_least_balances_from_adjusted_daily_balances(db_file)
-# print(df)
+def get_address_info(address: str) -> pd.DataFrame:
+    """
+    指定されたアドレスの情報を取得
+    """
+    query = """
+    SELECT *
+    FROM adjusted_daily_balances
+    WHERE address = ? and date >= '2024-09-26'
+    ORDER BY date DESC
+    """
+    client = DatabaseClient()
+    df = client.query_to_df(query, params=(address,))
+    return df
+
+
+# df = get_least_balances_from_all_addresses()
+# print(df['balance'].sum())
 # df = get_latest_balances_from_airdrop_recipient()
 # print(df['balance'].sum())
 # df = get_latest_balances_from_exchange()
-# print(df)
+# print(df['balance'].sum())
 # df = get_latest_balances_from_others()
 # print(df['balance'].sum())
 

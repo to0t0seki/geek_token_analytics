@@ -13,6 +13,19 @@ def create_daily_balances_table(conn: sqlite3.Connection) -> None:
     )
     """
     conn.execute(create_table_query)
+
+    create_index_query = """
+    CREATE INDEX IF NOT EXISTS idx_daily_balances_address 
+    ON adjusted_daily_balances(address);
+    """
+    conn.execute(create_index_query)
+
+    create_index_query = """
+    CREATE INDEX IF NOT EXISTS idx_daily_balances_date 
+    ON adjusted_daily_balances(date);
+    """
+    conn.execute(create_index_query)
+
     conn.commit()
 
 def get_all_transactions(conn: sqlite3.Connection) -> list:

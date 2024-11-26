@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime, timedelta
-from src.data_access.database import get_latest_timestamp
+from src.data_access.query import get_latest_timestamp
 
 def show_sidebar():
     latest_timestamp = get_latest_timestamp()
@@ -8,9 +8,12 @@ def show_sidebar():
 
     st.sidebar.markdown(f"""
     ### 説明
-    最終更新：{latest_timestamp}JST\n
+    毎時00分更新\n
     日付の区切りは04:00JST\n
-    一時間毎の更新
+    最新のトランザクション：{latest_timestamp}JST\n
+    テーブル上で右クリックからCSVダウンロード可能\n
+    
+    
     """)
     
     st.sidebar.markdown("""
@@ -19,5 +22,5 @@ def show_sidebar():
     """)
 
     st.sidebar.markdown(f"""
-    何かご意見・ご要望があればDiscordもしくは[X](https://twitter.com/tseki_is)で言ってください。
+    ご意見・ご要望があればDiscordもしくは[X](https://twitter.com/tseki_is)までお知らせください。
     """)

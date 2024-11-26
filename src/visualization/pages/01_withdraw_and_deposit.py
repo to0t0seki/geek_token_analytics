@@ -1,8 +1,9 @@
 import streamlit as st
 from src.visualization.components.charts.chart import display_chart1
-from src.data_access.database import get_daily_xgeek_to_geek, get_daily_export_token, db_file
+from src.data_access.query import get_daily_xgeek_to_geek, get_daily_export_token
 from src.visualization.components.layout.sidebar import show_sidebar
-from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
@@ -17,9 +18,13 @@ st.title("入出金")
 
 
 st.write("### 入金")
-xgeek_to_geek_df = get_daily_xgeek_to_geek(db_file)
+xgeek_to_geek_df = get_daily_xgeek_to_geek()
 xgeek_to_geek_df['per_address'] = xgeek_to_geek_df['per_address'].round(0)
 
+
+
+
+gb = GridOptionsBuilder.from_dataframe(xgeek_to_geek_df)
 
 column_names = {
     'date': '日付',
@@ -27,8 +32,6 @@ column_names = {
     'address_count': 'アドレス数',
     'per_address': '平均'
 }
-
-gb = GridOptionsBuilder.from_dataframe(xgeek_to_geek_df)
 
 for col_name, jp_name in column_names.items():
     gb.configure_column(
@@ -45,6 +48,7 @@ grid_response = AgGrid(
     height=300,
     width='100%',
     theme='streamlit' ,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
 )
 
 total_xgeek_to_geek = xgeek_to_geek_df['value'].sum()
@@ -53,8 +57,9 @@ st.write(f"総入金枚数: {total_xgeek_to_geek:,.0f}")
 st.write("")
 
 st.write("### 出金")
-export_token_df = get_daily_export_token(db_file)
+export_token_df = get_daily_export_token()
 export_token_df['per_address'] = export_token_df['per_address'].round(0)
+# export_token_df['date'] = pd.to_datetime(export_token_df['date'])
 
 column_names = {
     'date': '日付',
@@ -63,6 +68,13 @@ column_names = {
     'per_address': '平均'
 }
 gb = GridOptionsBuilder.from_dataframe(export_token_df)
+
+column_names = {
+    'date': '日付',
+    'value': '出金枚数',
+    'address_count': 'アドレス数',
+    'per_address': '平均'
+}
 
 for col_name, jp_name in column_names.items():
     gb.configure_column(

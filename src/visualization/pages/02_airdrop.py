@@ -1,8 +1,8 @@
 import streamlit as st
 from src.visualization.components.charts.chart import display_chart
-from src.data_access.database import get_daily_airdrops, db_file
+from src.data_access.query import get_daily_airdrops
 from src.visualization.components.layout.sidebar import show_sidebar
-from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
@@ -16,8 +16,12 @@ st.title(f"エアドロップ")
 
 # xgeekToGeek の日次チャートを作成と表示
 # st.write("日次エアドロップ"
-airdrops_df = get_daily_airdrops(db_file)
+airdrops_df = get_daily_airdrops()
 airdrops_df['per_address'] = airdrops_df['per_address'].round(0)
+
+
+
+gb = GridOptionsBuilder.from_dataframe(airdrops_df)
 
 column_names = {
     'date': '日付',
@@ -26,8 +30,6 @@ column_names = {
     'per_address': '平均'
 }
 
-
-gb = GridOptionsBuilder.from_dataframe(airdrops_df)
 
 for col_name, jp_name in column_names.items():
     gb.configure_column(
@@ -45,6 +47,7 @@ grid_response = AgGrid(
     height=300,
     width='100%',
     theme='streamlit' ,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
 )
 
 
@@ -59,19 +62,3 @@ display_chart(
     airdrops_df,
     # title='Geekトークンエアドロップ枚数',
 )
-
-# export_token_csv = export_token_df.to_csv(encoding='utf-8')
-# st.download_button(
-#     label="出金データをCSVとしてダウンロード",
-#     data=export_token_csv,
-#     file_name='export_token_data.csv',
-#     mime='text/csv',
-# )
-
-# xgeek_to_geek_csv = xgeek_to_geek_df.to_csv(encoding='utf-8')
-# st.download_button(
-#     label="入金データをCSVとしてダウンロード",
-#     data=xgeek_to_geek_csv,
-#     file_name='xgeek_to_geek_data.csv',
-#     mime='text/csv',
-# )
