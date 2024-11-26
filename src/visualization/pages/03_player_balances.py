@@ -22,6 +22,7 @@ grouped_df = daily_total_balances_df.groupby(level=1).sum()
 grouped_df = grouped_df[grouped_df.index > '2024-09-26']
 grouped_df.sort_index(ascending=False,inplace=True)
 grouped_df.reset_index(inplace=True)
+grouped_df['date'] = grouped_df['date'].dt.strftime('%Y-%m-%d')
 
 
 gb = GridOptionsBuilder.from_dataframe(grouped_df)
