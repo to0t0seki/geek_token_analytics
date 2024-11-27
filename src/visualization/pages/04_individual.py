@@ -63,7 +63,8 @@ grid_response = AgGrid(
 )
 
 st.write("行を選択すると残高推移が表示されます。")
-st.write("アドレス列の三本線からフィルタリングも可能です。")
+st.write("アドレス列ちょいちょいいじるとフィルタリングやソートも可能です。")
+st.image("src/visualization/pages/img/filter.png",width=30)
 st.write("")
 st.write("")
 
@@ -116,7 +117,7 @@ if isinstance(selected_row, pd.DataFrame):
 
     display_chart(
         address_info_df_tmp,
-        title="エアドロップ推移",
+        title="エアドロップ取得推移",
     )
 
     address_info_df_tmp = address_info_df[['date', 'withdraw']]
