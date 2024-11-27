@@ -64,7 +64,7 @@ grid_response = AgGrid(
 
 st.write("行を選択すると残高推移が表示されます。")
 st.write("アドレス列ちょいちょいいじるとフィルタリングやソートも可能です。")
-st.image("src/visualization/pages/img/filter.png",width=30)
+
 st.write("")
 st.write("")
 
