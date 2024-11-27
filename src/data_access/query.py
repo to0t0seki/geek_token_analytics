@@ -432,8 +432,7 @@ def get_address_info(address: str) -> pd.DataFrame:
     client = DatabaseClient()
     df = client.query_to_df(query, params=(address, address, address, address))
     return df
-df = get_address_info('0xD56a823971228F7a066dE58263f345C090597CD9')
-print(df)
+
 
 
 
