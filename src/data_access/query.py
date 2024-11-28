@@ -285,41 +285,77 @@ def get_latest_balances_from_exchange() -> pd.DataFrame:
     df = client.query_to_df(query, params=tuple(addresses))
     return df
 
-def get_latest_balances_from_operator() -> pd.DataFrame:
-    """
-    運営アドレスの最新の残高を取得
-    """
-    addresses = [
-        '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
-        '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
-        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'   # Game_Ops_Wallet
-    ]
+# def get_latest_balances_from_operator() -> pd.DataFrame:
+#     """
+#     運営アドレスの最新の残高を取得
+#     """
+#     addresses = [
+#         '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
+#         '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
+#         '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'   # Game_Ops_Wallet
+#     ]
+#     query = """
+#     WITH latest_balances AS (
+#         SELECT
+#             t1.date,
+#             t1.address,
+#             t1.balance
+#         FROM adjusted_daily_balances t1
+#         INNER JOIN (
+#             SELECT address, MAX(date) as max_date
+#             FROM adjusted_daily_balances
+#             GROUP BY address
+#         ) t2 ON t1.address = t2.address 
+#             AND t1.date = t2.max_date
+#     )
+#     SELECT lb.address, lb.date, lb.balance
+#     FROM latest_balances as lb
+#     INNER JOIN (
+#         SELECT ? as address
+#         UNION ALL
+#         SELECT ?
+#         UNION ALL
+#         SELECT ?
+#     ) as op ON lb.address = op.address
+#     """
+#     client = DatabaseClient()
+#     df = client.query_to_df(query, params=tuple(addresses))
+#     return df
+
+def get_latest_balances_from_game_ops_wallet() -> pd.DataFrame:
     query = """
-    WITH latest_balances AS (
-        SELECT
-            t1.date,
-            t1.address,
-            t1.balance
-        FROM adjusted_daily_balances t1
-        INNER JOIN (
-            SELECT address, MAX(date) as max_date
-            FROM adjusted_daily_balances
-            GROUP BY address
-        ) t2 ON t1.address = t2.address 
-            AND t1.date = t2.max_date
-    )
-    SELECT lb.address, lb.date, lb.balance
-    FROM latest_balances as lb
-    INNER JOIN (
-        SELECT ? as address
-        UNION ALL
-        SELECT ?
-        UNION ALL
-        SELECT ?
-    ) as op ON lb.address = op.address
+    SELECT balance
+    FROM adjusted_daily_balances
+    where address = '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
+    ORDER BY date DESC
+    LIMIT 1
     """
     client = DatabaseClient()
-    df = client.query_to_df(query, params=tuple(addresses))
+    df = client.query_to_df(query)
+    return df
+
+def get_latest_balances_from_withdrawal_wallet() -> pd.DataFrame:
+    query = """
+    SELECT balance
+    FROM adjusted_daily_balances
+    where address = '0x687F3413C7f0e089786546BedF809b8F8885B051'
+    ORDER BY date DESC
+    LIMIT 1
+    """
+    client = DatabaseClient()
+    df = client.query_to_df(query)
+    return df
+
+def get_latest_balances_from_airdrop_wallet() -> pd.DataFrame:
+    query = """
+    SELECT balance
+    FROM adjusted_daily_balances
+    where address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
+    ORDER BY date DESC
+    LIMIT 1
+    """
+    client = DatabaseClient()
+    df = client.query_to_df(query)
     return df
 
 def get_latest_balances_from_others() -> pd.DataFrame:

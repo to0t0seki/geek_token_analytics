@@ -22,5 +22,5 @@ def show_sidebar():
     """)
 
     st.sidebar.markdown(f"""
-    ご意見・ご要望があればDiscordもしくは[X](https://twitter.com/tseki_is)までお知らせください。
+    データに不適切な部分、ご意見、ご要望等あれば[X](https://twitter.com/tseki_is)まで！。
     """)
