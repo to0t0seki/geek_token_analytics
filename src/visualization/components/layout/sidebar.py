@@ -5,6 +5,7 @@ from src.data_access.query import get_latest_timestamp
 def show_sidebar():
     latest_timestamp = get_latest_timestamp()
     latest_timestamp = (datetime.fromisoformat(latest_timestamp.replace('Z', '+00:00')) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
+    st.sidebar.image("img/logo2.jpg", width=200)
 
     st.sidebar.markdown(f"""
     ### 説明
