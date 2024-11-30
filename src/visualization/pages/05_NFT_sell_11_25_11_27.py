@@ -34,6 +34,7 @@ for col_name, jp_name in column_names.items():
     )
 
 st.title('NFT購入個数分布')
+st.write('11/25-11/28のNFTセールをGeekで購入した方の購入数別データです。')
 
 grid_response = AgGrid(
     groupby_value_df,
