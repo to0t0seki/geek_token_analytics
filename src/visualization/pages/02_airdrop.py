@@ -60,5 +60,7 @@ airdrops_df.drop(airdrops_df.columns[2:4], axis=1, inplace=True)
 
 display_chart(
     airdrops_df,
-    # title='Geekトークンエアドロップ枚数',
+    title='折れ線グラフ',
+    chart_type='line',
+    legend_name='エアドロップ',
 )

@@ -470,6 +470,18 @@ def get_address_info(address: str) -> pd.DataFrame:
     return df
 
 
+def get_NFT_sell_transactions(address:str)->pd.DataFrame:
+    query = f"""
+    SELECT * 
+    FROM transactions t join transfer_details td on t.tx_hash = td.tx_hash
+    WHERE td.to_address = '{address}' and
+    t.timestamp between '2024-11-25T10:00:00.000000Z' and '2024-11-27T15:00:00.000000Z' and 
+    td.method = 'transfer'
+    """
+    client = DatabaseClient()
+    df = client.query_to_df(query)
+    return df
+
 
 
 # df = get_least_balances_from_all_addresses()

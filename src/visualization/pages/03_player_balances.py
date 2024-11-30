@@ -51,4 +51,7 @@ grid_response = AgGrid(
 
 display_chart(
     grouped_df,
+    title='折れ線グラフ',
+    chart_type='line',
+    legend_name='合計枚数',
 )

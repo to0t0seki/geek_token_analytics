@@ -4,17 +4,16 @@ from plotly.subplots import make_subplots
 import streamlit as st
 
 
-def create_chart(df: pd.DataFrame, title: str = None, y_axis_titles: dict = None, **kwargs):
-    # 2カラムの場合（1つのサブプロット、2軸）
+def create_chart(df: pd.DataFrame, title: str, chart_type: str,legend_name:str):
     fig = make_subplots(
             rows=1, cols=1,
             subplot_titles=(title,)
         )
 
-    # 左Y軸の折れ線
-    fig.add_trace(
-        go.Scatter(
-            name='エアドロップ',
+    if chart_type == 'line':
+        fig.add_trace(
+            go.Scatter(
+                name=legend_name,
                 x=df[df.columns[0]],
                 y=df[df.columns[1]],
                 mode='lines+markers',
@@ -26,6 +25,17 @@ def create_chart(df: pd.DataFrame, title: str = None, y_axis_titles: dict = None
                 )
             )
         )
+    elif chart_type == 'bar':
+        fig.add_trace(
+            go.Bar(
+                name=legend_name,
+                x=df[df.columns[0]],
+                y=df[df.columns[1]],
+            )
+        )
+    else:
+        raise ValueError(f"Invalid chart type: {chart_type}")
+    
     fig.update_layout(
         xaxis=dict(
             rangeslider=dict(visible=True),
@@ -108,18 +118,37 @@ def create_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
 
     return fig
 
-def display_chart(df: pd.DataFrame, title: str = None, y_axis_titles: dict = None, **kwargs):
+def display_chart(df: pd.DataFrame, title: str = 'チャート', chart_type: str = 'line',legend_name:str = None, **kwargs):
     """
     チャートを作成し、Streamlitで表示する関数
     
     :param df: 入力データフレーム
     :param title: チャートのタイトル
-    :param y_axis_titles: Y軸のタイトル（辞書形式）
+    :param chart_type: チャートのタイプ
+    :param legend_name: 凡例の名前
     :param kwargs: その他のオプション引数
     """
-    chart = create_chart(df, title, y_axis_titles, **kwargs)
+    chart = create_chart(df, title, chart_type, legend_name, **kwargs)
     st.plotly_chart(chart, use_container_width=True)
 
 def display_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str = None, **kwargs):
     chart = create_chart1(df, df2, title, **kwargs)
     st.plotly_chart(chart, use_container_width=True)
+
+
+def display_nft_sell_chart(df: pd.DataFrame, title: str = None, legend_name:str = None, **kwargs):
+    fig = go.Figure(data=[go.Bar(x=df['buy_count'], 
+                                 y=df['count'],
+                                 hovertemplate=(
+                                "人数: %{x:,}<br>" +    # カンマ区切りの数値
+                                "購入個数: %{y:,}<br>" +      # カンマ区切りの数値
+                                "<extra></extra>"           # 余分な情報を非表示
+                                ),
+                                
+                                 marker_color='#0000FF')])
+    fig.update_layout(title=title,
+                  xaxis_title='人数',
+                  yaxis_title='購入個数',
+                  bargap=0.1
+                  )    
+    st.plotly_chart(fig, use_container_width=True)

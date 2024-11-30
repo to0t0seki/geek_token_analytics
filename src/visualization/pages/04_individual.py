@@ -111,6 +111,8 @@ if isinstance(selected_row, pd.DataFrame):
     display_chart(
         address_info_df_tmp,
         title="残高推移",
+        chart_type='line',
+        legend_name='残高',
     )
 
     address_info_df_tmp = address_info_df[['date', 'airdrop']]
@@ -118,6 +120,8 @@ if isinstance(selected_row, pd.DataFrame):
     display_chart(
         address_info_df_tmp,
         title="エアドロップ取得推移",
+        chart_type='line',
+        legend_name='エアドロップ',
     )
 
     address_info_df_tmp = address_info_df[['date', 'withdraw']]
@@ -125,6 +129,8 @@ if isinstance(selected_row, pd.DataFrame):
     display_chart(
         address_info_df_tmp,
         title="出金推移",
+        chart_type='line',
+        legend_name='出金',
     )
 
     address_info_df_tmp = address_info_df[['date', 'deposit']]
@@ -132,6 +138,8 @@ if isinstance(selected_row, pd.DataFrame):
     display_chart(
         address_info_df_tmp,
         title="入金推移",
+        chart_type='line',
+        legend_name='入金',
     )
 
 
