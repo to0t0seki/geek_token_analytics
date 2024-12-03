@@ -19,7 +19,7 @@ st.write("・日付の区切りをJST4時としてあるため、価格は次の
 st.write("・価格はBITGET。")
 st.write("・時価総額は<span style='color: red;'>プレイヤーが持っている時価総額</span>としています。計算：合計枚数×価格。",unsafe_allow_html=True)
 st.write("・最新価格の更新はJST4時。")
-st.write("・作ったばかりなので、<span style='color: red;'>エラーがあるかも知れません。</span>")
+st.write("・<span style='color: red;'>作ったばかりなので、エラーがあるかも知れません。</span>",unsafe_allow_html=True)
 
 
 
