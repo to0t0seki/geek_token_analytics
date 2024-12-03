@@ -152,3 +152,61 @@ def display_nft_sell_chart(df: pd.DataFrame, title: str = None, legend_name:str 
                   bargap=0.1
                   )    
     st.plotly_chart(fig, use_container_width=True)
+
+def display_supply_and_price_chart(df: pd.DataFrame, title: str = None, **kwargs):
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=df['date'],
+        y=df['balance'],
+        name='合計枚数',
+        mode='lines+markers',
+        line=dict(color='blue'),
+        yaxis='y',
+        hovertemplate=(
+        "日付: %{x|%Y-%m-%d}<br>" +    
+        "枚数: %{y:,.0f}<br>" +      
+        "<extra></extra>"           
+        )
+    ))
+    fig.add_trace(go.Scatter(
+        x=df['date'],
+        y=df['market_cap'],
+        name='時価総額',
+        mode='lines+markers',
+        line=dict(color='red'),
+        yaxis='y2',
+        hovertemplate=(
+        "日付: %{x|%Y-%m-%d}<br>" +    
+        "時価総額: $%{y:,.0f}<br>" +      
+        "<extra></extra>"           
+        )
+    ))
+    fig.update_layout(
+        title=title,
+        xaxis=dict(title='日付',
+                   rangeselector=dict(
+                    buttons=list([
+                        dict(count=1, label="1m", step="month", stepmode="backward"),
+                        dict(count=6, label="6m", step="month", stepmode="backward"),
+                        dict(count=1, label="1y", step="year", stepmode="backward"),
+                        dict(step="all", label="All")
+                    ])
+                ),
+        # レンジスライダー（下部のスライダー）
+        rangeslider=dict(visible=True),
+        type="date"),
+        yaxis=dict(
+            title='合計枚数(単位:枚)',
+            titlefont=dict(color='blue'),
+            tickfont=dict(color='blue')
+        ),
+        yaxis2=dict(
+            title='時価総額(単位:$)',
+            titlefont=dict(color='red'),
+            tickfont=dict(color='red'),
+            overlaying='y',
+            side='right'
+        )
+    )
+    st.plotly_chart(fig, use_container_width=True)

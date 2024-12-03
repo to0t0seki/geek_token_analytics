@@ -4,6 +4,7 @@ from src.data_access.client import DatabaseClient
 
 
 
+
 def get_all_balances() -> pd.DataFrame:
     """
     daily_balancesテーブルから全てのアドレスの全ての日付の残高を取得
@@ -481,6 +482,17 @@ def get_NFT_sell_transactions(address:str)->pd.DataFrame:
     client = DatabaseClient()
     df = client.query_to_df(query)
     return df
+
+def get_jst_4am_close_price() -> pd.DataFrame:
+    query = f"""
+    SELECT timestamp, close
+    FROM ohlcv_1h
+    WHERE CAST(timestamp AS INTEGER) % (24 * 60 * 60 * 1000) = 18 * 60 * 60 * 1000
+    """
+    client = DatabaseClient()
+    df = client.query_to_df(query)
+    return df
+
 
 
 
