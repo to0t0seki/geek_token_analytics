@@ -17,7 +17,7 @@ st.title("プレイヤー残高")
 st.write("・一度でもエアドロップを受け取ったことのあるアドレスの残高合計。")
 st.write("・日付の区切りをJST4時としてあるため、価格は次の日のJST3時の終値。例：10/01の価格は10/02の04:00JSTの価格。")
 st.write("・価格はBITGET。")
-st.write("・時価総額は<span style='color: red;'>プレイヤーが持っている合計枚数×価格</span>です。",unsafe_allow_html=True)
+st.write("・時価総額は<span style='color: red;'>プレイヤーが持っている時価総額</span>としています。計算：合計枚数×価格。",unsafe_allow_html=True)
 
 
 
@@ -76,5 +76,5 @@ grid_response = AgGrid(
 
 display_supply_and_price_chart(
     merged_df,
-    title='合計枚数と時価総額',
+    title='合計枚数とプレイヤー時価総額',
 )
