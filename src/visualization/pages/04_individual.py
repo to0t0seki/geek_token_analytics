@@ -36,22 +36,14 @@ df['Note'] = None
 with open("config/address_notes.json", 'r',encoding='utf-8') as f:
        address_notes = json.load(f)
 df['Note'] = df['address'].map(address_notes)
+df.rename(columns={'address':'アドレス','balance':'最新残高'}, inplace=True)
 
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_selection('single')
 gb.configure_column('address', filter=True)
-# gb.configure_default_column(filterable=True)
 
-column_names = {
-    'address': 'アドレス',
-    'balance': '最新残高',
-}
 
-for col_name, jp_name in column_names.items():
-    gb.configure_column(
-        col_name,
-        header_name=jp_name,
-    )
+
 
 grid_response = AgGrid(
     df,
@@ -71,33 +63,17 @@ st.write("")
 
 selected_row = grid_response['selected_rows']
 if isinstance(selected_row, pd.DataFrame):
-    st.write(f"選択されたアドレス: {selected_row.iloc[0]['address']}, 備考: {selected_row.iloc[0]['Note']}")
-    address_info_df = get_address_info(selected_row.iloc[0]['address'])
+    st.write(f"選択されたアドレス: {selected_row.iloc[0]['アドレス']}, 備考: {selected_row.iloc[0]['Note']}")
+    address_info_df = get_address_info(selected_row.iloc[0]['アドレス'])
     
     address_info_df['balance'] = address_info_df['balance'].round(0)
     address_info_df['airdrop'] = address_info_df['airdrop'].round(0)
     address_info_df['withdraw'] = address_info_df['withdraw'].round(0)
     address_info_df['deposit'] = address_info_df['deposit'].round(0)
+    address_info_df.rename(columns={'date':'日付','balance':'残高','airdrop':'エアドロップ','withdraw':'出金','deposit':'入金'}, inplace=True)
 
     gb = GridOptionsBuilder.from_dataframe(address_info_df)
     
-  
-
-    column_names = {
-        'date': '日付',
-        'balance': '残高',
-        'airdrop': 'エアドロ',
-        'withdraw': '出金',
-        'deposit': '入金',
-    }
-
-
-    for col_name, jp_name in column_names.items():
-        gb.configure_column(
-            col_name,
-            header_name=jp_name,
-    )
-
     grid_response = AgGrid(
         address_info_df,
         gridOptions=gb.build(),
@@ -106,7 +82,7 @@ if isinstance(selected_row, pd.DataFrame):
         theme='streamlit' ,
         update_mode=GridUpdateMode.NO_UPDATE
     )
-    address_info_df_tmp = address_info_df[['date', 'balance']]
+    address_info_df_tmp = address_info_df[['日付', '残高']]
 
     display_chart(
         address_info_df_tmp,
@@ -115,7 +91,7 @@ if isinstance(selected_row, pd.DataFrame):
         legend_name='残高',
     )
 
-    address_info_df_tmp = address_info_df[['date', 'airdrop']]
+    address_info_df_tmp = address_info_df[['日付', 'エアドロップ']]
 
     display_chart(
         address_info_df_tmp,
@@ -124,7 +100,7 @@ if isinstance(selected_row, pd.DataFrame):
         legend_name='エアドロップ',
     )
 
-    address_info_df_tmp = address_info_df[['date', 'withdraw']]
+    address_info_df_tmp = address_info_df[['日付', '出金']]
 
     display_chart(
         address_info_df_tmp,
@@ -133,7 +109,7 @@ if isinstance(selected_row, pd.DataFrame):
         legend_name='出金',
     )
 
-    address_info_df_tmp = address_info_df[['date', 'deposit']]
+    address_info_df_tmp = address_info_df[['日付', '入金']]
 
     display_chart(
         address_info_df_tmp,

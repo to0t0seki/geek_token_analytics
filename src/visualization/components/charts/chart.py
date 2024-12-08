@@ -4,7 +4,7 @@ from plotly.subplots import make_subplots
 import streamlit as st
 
 
-def create_chart(df: pd.DataFrame, title: str, chart_type: str,legend_name:str):
+def display_chart(df: pd.DataFrame, title: str, chart_type: str,legend_name:str):
     fig = make_subplots(
             rows=1, cols=1,
             subplot_titles=(title,)
@@ -54,16 +54,9 @@ def create_chart(df: pd.DataFrame, title: str, chart_type: str,legend_name:str):
             )
         )
 
-    # 共通のレイアウト設定
-    # fig.update_layout(
-    #     height=800,
-    #     showlegend=True,
-    #     title_text="Dynamic Subplots"
-    # )
-    
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
 
-def create_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
+def display_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str = None, **kwargs):
     fig = make_subplots(
             rows=1, cols=1,
             subplot_titles=(title,)
@@ -78,7 +71,7 @@ def create_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
                 mode='lines+markers',
                 line=dict(color='blue'),
                 hovertemplate=(
-                "<b>入金情報</b><br>" +
+                "<b>入金</b><br>" +
                 "日時: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
                 "枚数: %{y:,.0f}<br>" +
                 "<extra></extra>"
@@ -93,7 +86,7 @@ def create_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
                 mode='lines+markers',
                 line=dict(color='red'),
                 hovertemplate=(
-                "<b>出金情報</b><br>" +
+                "<b>出金</b><br>" +
                 "日時: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
                 "枚数: %{y:,.0f}<br>" +
                 "<extra></extra>"
@@ -116,39 +109,23 @@ def create_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str, **kwargs):
            
         )
 
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
 
-def display_chart(df: pd.DataFrame, title: str = 'チャート', chart_type: str = 'line',legend_name:str = None, **kwargs):
-    """
-    チャートを作成し、Streamlitで表示する関数
-    
-    :param df: 入力データフレーム
-    :param title: チャートのタイトル
-    :param chart_type: チャートのタイプ
-    :param legend_name: 凡例の名前
-    :param kwargs: その他のオプション引数
-    """
-    chart = create_chart(df, title, chart_type, legend_name, **kwargs)
-    st.plotly_chart(chart, use_container_width=True)
 
-def display_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str = None, **kwargs):
-    chart = create_chart1(df, df2, title, **kwargs)
-    st.plotly_chart(chart, use_container_width=True)
 
 
 def display_nft_sell_chart(df: pd.DataFrame, title: str = None, legend_name:str = None, **kwargs):
-    fig = go.Figure(data=[go.Bar(x=df['buy_count'], 
-                                 y=df['count'],
-                                 hovertemplate=(
-                                "人数: %{x:,}<br>" +    # カンマ区切りの数値
-                                "購入個数: %{y:,}<br>" +      # カンマ区切りの数値
-                                "<extra></extra>"           # 余分な情報を非表示
+    fig = go.Figure(data=[go.Bar(x=df.iloc[:,0], 
+                                y=df.iloc[:,1],
+                                hovertemplate=(
+                                f"{df.columns[0]}: %{{x:,}}<br>" +    # カンマ区切りの数値を維持
+                                f"{df.columns[1]}: %{{y:,}}<br>" +    # カンマ区切りの数値を維持
+                                "<extra></extra>"
                                 ),
-                                
-                                 marker_color='#0000FF')])
+                                marker_color='#0000FF')])
     fig.update_layout(title=title,
-                  xaxis_title='人数',
-                  yaxis_title='購入個数',
+                  xaxis_title=df.columns[0],
+                  yaxis_title=df.columns[1],
                   bargap=0.1
                   )    
     st.plotly_chart(fig, use_container_width=True)
@@ -157,9 +134,9 @@ def display_supply_and_price_chart(df: pd.DataFrame, title: str = None, **kwargs
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
-        x=df['date'],
-        y=df['balance'],
-        name='合計枚数',
+        x=df[df.columns[0]],
+        y=df[df.columns[1]],
+        name=df.columns[1],
         mode='lines+markers',
         line=dict(color='blue'),
         yaxis='y',
@@ -170,9 +147,9 @@ def display_supply_and_price_chart(df: pd.DataFrame, title: str = None, **kwargs
         )
     ))
     fig.add_trace(go.Scatter(
-        x=df['date'],
-        y=df['market_cap'],
-        name='時価総額',
+        x=df[df.columns[0]],
+        y=df[df.columns[3]],
+        name=df.columns[3],
         mode='lines+markers',
         line=dict(color='red'),
         yaxis='y2',

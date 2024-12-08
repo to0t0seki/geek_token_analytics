@@ -24,22 +24,8 @@ xgeek_to_geek_df['per_address'] = xgeek_to_geek_df['per_address'].round(0)
 
 
 
+xgeek_to_geek_df.rename(columns={'date':'日付','value':'入金枚数','address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
 gb = GridOptionsBuilder.from_dataframe(xgeek_to_geek_df)
-
-column_names = {
-    'date': '日付',
-    'value': '入金枚数',
-    'address_count': 'アドレス数',
-    'per_address': '平均'
-}
-
-for col_name, jp_name in column_names.items():
-    gb.configure_column(
-        col_name,
-        header_name=jp_name,
-        # 必要に応じて追加の設定
-        # type=['numericColumn', 'numberColumnFilter'] など
-    )
 
 
 grid_response = AgGrid(
@@ -48,10 +34,10 @@ grid_response = AgGrid(
     height=300,
     width='100%',
     theme='streamlit' ,
-    update_mode=GridUpdateMode.SELECTION_CHANGED,
+    update_mode=GridUpdateMode.SELECTION_CHANGED
 )
 
-total_xgeek_to_geek = xgeek_to_geek_df['value'].sum()
+total_xgeek_to_geek = xgeek_to_geek_df['入金枚数'].sum()
 st.write(f"総入金枚数: {total_xgeek_to_geek:,.0f}")
 
 st.write("")
@@ -59,28 +45,23 @@ st.write("")
 st.write("### 出金")
 export_token_df = get_daily_export_token()
 export_token_df['per_address'] = export_token_df['per_address'].round(0)
-# export_token_df['date'] = pd.to_datetime(export_token_df['date'])
 
-column_names = {
-    'date': '日付',
-    'value': '出金枚数',
-    'address_count': 'アドレス数',
-    'per_address': '平均'
-}
+export_token_df.rename(columns={'date':'日付','value':'出金枚数','address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
+
 gb = GridOptionsBuilder.from_dataframe(export_token_df)
 
-column_names = {
-    'date': '日付',
-    'value': '出金枚数',
-    'address_count': 'アドレス数',
-    'per_address': '平均'
-}
+# column_names = {
+#     'date': '日付',
+#     'value': '出金枚数',
+#     'address_count': 'アドレス数',
+#     'per_address': '平均'
+# }
 
-for col_name, jp_name in column_names.items():
-    gb.configure_column(
-        col_name,
-        header_name=jp_name,
-    )
+# for col_name, jp_name in column_names.items():
+#     gb.configure_column(
+#         col_name,
+#         header_name=jp_name,
+#     )
 
 grid_response = AgGrid(
     export_token_df,
@@ -91,7 +72,7 @@ grid_response = AgGrid(
 )
 
 
-total_export_token = export_token_df['value'].sum()
+total_export_token = export_token_df['出金枚数'].sum()
 st.write(f"総出金枚数: {total_export_token:,.0f}")
 
 

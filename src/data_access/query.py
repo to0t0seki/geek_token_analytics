@@ -471,7 +471,7 @@ def get_address_info(address: str) -> pd.DataFrame:
     return df
 
 
-def get_NFT_sell_transactions(address:str)->pd.DataFrame:
+def get_nft_sell_transactions(address:str)->pd.DataFrame:
     query = f"""
     SELECT * 
     FROM transactions t join transfer_details td on t.tx_hash = td.tx_hash
@@ -493,7 +493,45 @@ def get_jst_4am_close_price() -> pd.DataFrame:
     df = client.query_to_df(query)
     return df
 
+def get_nft_transactions() -> pd.DataFrame:
+    # pd.set_option('display.max_columns', None)
+    # pd.set_option('display.width', None)
+    # pd.set_option('display.max_colwidth', None)
+    query = """
+    with combined_results as (
+        SELECT to_address, count(to_address) as count
+        FROM nft_transactions
+        where method = '0xe3456fbb'
+        and ((datetime(timestamp) between datetime('2024-11-12 13:00:00') and datetime('2024-11-12 15:59:59'))
+        or (datetime(timestamp) between datetime('2024-11-19 13:00:00') and datetime('2024-11-19 15:59:59')))
+        group by to_address
 
+        union all
+
+        SELECT to_address, count(to_address) as count
+        FROM nft_transactions
+        where method = 'safeTransferFrom'
+        and datetime(timestamp) < datetime('2024-12-04 00:00:00')
+        group by to_address
+    )
+    select to_address, sum(count) as count
+    from combined_results
+    group by to_address
+    order by sum(count) desc
+    """
+    
+
+    client = DatabaseClient()
+    df = client.query_to_df(query)
+    return df
+
+
+#    count(date(datetime(timestamp))) date(datetime(timestamp))
+# 0                                33                2024-11-08
+# 1                               618                2024-11-12
+# 2                                 1                2024-11-13
+# 3                                22                2024-11-18
+# 4                              1495                2024-11-19
 
 
 # df = get_least_balances_from_all_addresses()

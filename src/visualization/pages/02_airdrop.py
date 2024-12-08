@@ -19,26 +19,9 @@ st.title(f"エアドロップ")
 airdrops_df = get_daily_airdrops()
 airdrops_df['per_address'] = airdrops_df['per_address'].round(0)
 
-
+airdrops_df.rename(columns={'date':'日付','value':'枚数','to_address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
 
 gb = GridOptionsBuilder.from_dataframe(airdrops_df)
-
-column_names = {
-    'date': '日付',
-    'value': '枚数',
-    'to_address_count': 'アドレス数（受け取った）',
-    'per_address': '平均'
-}
-
-
-for col_name, jp_name in column_names.items():
-    gb.configure_column(
-        col_name,
-        header_name=jp_name,
-        # 必要に応じて追加の設定
-        # type=['numericColumn', 'numberColumnFilter'] など
-    )
-
 
 
 grid_response = AgGrid(
@@ -51,7 +34,7 @@ grid_response = AgGrid(
 )
 
 
-total_airdrops = airdrops_df['value'].sum()
+total_airdrops = airdrops_df['枚数'].sum()
 st.write(f"総エアドロップ枚数: {total_airdrops:,.0f}")
 
 

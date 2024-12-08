@@ -19,16 +19,15 @@ st.write("・日付の区切りをJST4時としてあるため、価格は次の
 st.write("・価格はBITGET。")
 st.write("・時価総額は<span style='color: red;'>プレイヤーが持っている時価総額</span>としています。計算：合計枚数×価格。",unsafe_allow_html=True)
 st.write("・最新価格の更新はJST4時。")
-st.write("・<span style='color: red;'>作ったばかりなので、エラーがあるかも知れません。</span>",unsafe_allow_html=True)
+# st.write("・<span style='color: red;'>作ったばかりなので、エラーがあるかも知れません。</span>",unsafe_allow_html=True)
 
 
 
 daily_total_balances_df = get_airdrop_recipient_balances()
 grouped_df = daily_total_balances_df.groupby(level=1).sum()
 grouped_df = grouped_df[grouped_df.index > '2024-09-26']
-# grouped_df.sort_index(ascending=False,inplace=True)
 grouped_df.reset_index(inplace=True)
-# grouped_df['date'] = grouped_df['date'].dt.strftime('%Y-%m-%d')
+
 
 
 
@@ -47,25 +46,13 @@ merged_df['market_cap'] = (merged_df['balance'] * merged_df['close'])
 merged_df.sort_values(by='date',ascending=False,inplace=True)
 merged_df['date'] = merged_df['date'].dt.strftime('%Y-%m-%d')
 
+merged_df.rename(columns={'date':'日付','balance':'合計枚数','close':'GEEK価格','market_cap':'時価総額'}, inplace=True)
+
 gb = GridOptionsBuilder.from_dataframe(merged_df)
 
-column_names = {
-    'date': '日付',
-    'balance': '合計枚数(単位:枚)',
-    'close': 'GEEK価格(単位:$)',
-    'market_cap': '時価総額(単位:$)'
-}
-for col_name, jp_name in column_names.items():
-    if col_name in ['balance', 'market_cap']:
-        gb.configure_column(col_name,
-                            header_name=jp_name,
-                            valueFormatter="Math.floor(value).toLocaleString()"
-        )
-    else:
-        gb.configure_column(col_name,
-                            header_name=jp_name,
-        )
-
+gb.configure_column('合計枚数',valueFormatter="Math.floor(value).toLocaleString()")
+gb.configure_column('時価総額',valueFormatter="Math.floor(value).toLocaleString()")
+  
 grid_response = AgGrid(
     merged_df,
     gridOptions=gb.build(),

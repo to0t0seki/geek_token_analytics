@@ -1,0 +1,72 @@
+import streamlit as st
+from src.visualization.components.layout.sidebar import show_sidebar
+from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode
+from src.visualization.components.charts.chart import display_nft_sell_chart
+from src.data_access.query import get_nft_transactions
+
+st.set_page_config(page_title="GEEK Token アナリティクス",
+                    page_icon="📊",
+                    layout="wide")
+
+show_sidebar()
+
+df = get_nft_transactions()
+tmp = df.groupby('count').count().reset_index()
+tmp.rename(columns={'count':'購入個数','to_address':'ウォレット数'}, inplace=True)
+
+total_count = tmp['購入個数'] * tmp['ウォレット数']
+total_people = tmp['ウォレット数'].sum()
+
+
+st.title("NFTセール集計（11/12-11/27）")
+
+gb = GridOptionsBuilder.from_dataframe(tmp)
+
+# column_names = {
+#     'count': '購入個数',
+#     'to_address': '人数',
+# }
+
+# for col_name, jp_name in column_names.items():
+#     gb.configure_column(
+#         col_name,
+#         header_name=jp_name,
+#     )
+
+grid_response = AgGrid(
+    tmp,
+    gridOptions=gb.build(),
+    height=300,
+    width='100%',
+    theme='streamlit' ,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
+)
+
+st.write(f"合計個数：{total_count.sum()}")
+st.write(f"合計ウォレット数: {total_people}")
+
+display_nft_sell_chart(
+    tmp,
+    title='棒グラフ',
+    legend_name='購入数',
+)
+
+st.markdown("""
+## 羽根つきの数について
+
+結果からいう最低SSが12個、Sが43個ほど出回っていると思います。
+
+理由は以下の通り：
+
+- SSにおいては100以上購入したウォレットは11で、その内200以上購入したウォレットは1つ（192のウォレットは多分合算している）
+
+- Sにおいては：
+  - 50-99は18個
+  - 100-149は9個
+  - 150-199は1個
+  - 200以上は1個
+  
+  よって、1×18 + 2×9 + 3×1 + 4×1 = 43個ほど
+
+ただし合算しているウォレットもあるため、最低ラインです。
+""")
