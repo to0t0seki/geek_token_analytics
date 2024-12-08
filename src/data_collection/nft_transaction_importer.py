@@ -49,7 +49,7 @@ def get_nft_data():
     params = {}
     db_client = DatabaseClient()
     create_normalized_tables(db_client)
-    latest_block_number, latest_log_index = get_letest_transaction()
+    latest_block_number, latest_log_index = get_letest_transaction() if get_letest_transaction() else (0, 0)
     record_count = 0
     
     try:
