@@ -19,7 +19,7 @@ groupby_value_df = groupby_value_df[['buy_count', 'count']]
 # groupby_value_df.sort_values(by='buy_count', ascending=False, inplace=True)
 
 
-groupby_value_df.rename(columns={'count':'ウォレット数','buy_count':'購入個数'}, inplace=True)
+groupby_value_df.rename(columns={'count':'ユニークアドレス数','buy_count':'購入個数'}, inplace=True)
 gb = GridOptionsBuilder.from_dataframe(groupby_value_df)
 
 
@@ -36,8 +36,8 @@ grid_response = AgGrid(
 )
 
 st.markdown(f"""
-合計個数：{(groupby_value_df['購入個数'] * groupby_value_df['ウォレット数']).sum()}
-合計ウォレット数: {groupby_value_df['ウォレット数'].sum()}
+合計個数：{(groupby_value_df['購入個数'] * groupby_value_df['ユニークアドレス数']).sum()}
+合計アドレス数: {groupby_value_df['ユニークアドレス数'].sum()}
 """)
 
 display_nft_sell_chart(

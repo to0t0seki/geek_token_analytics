@@ -40,7 +40,7 @@ df.rename(columns={'address':'アドレス','balance':'最新残高'}, inplace=T
 
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_selection('single')
-gb.configure_column('address', filter=True)
+gb.configure_column('アドレス', filter=True)
 
 
 

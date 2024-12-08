@@ -12,10 +12,10 @@ show_sidebar()
 
 df = get_nft_transactions()
 tmp = df.groupby('count').count().reset_index()
-tmp.rename(columns={'count':'購入個数','to_address':'ウォレット数'}, inplace=True)
+tmp.rename(columns={'count':'購入個数','to_address':'ユニークアドレス数'}, inplace=True)
 
-total_count = tmp['購入個数'] * tmp['ウォレット数']
-total_people = tmp['ウォレット数'].sum()
+total_count = tmp['購入個数'] * tmp['ユニークアドレス数']
+total_people = tmp['ユニークアドレス数'].sum()
 
 
 st.title("NFTセール集計（11/12-11/27）")
@@ -43,7 +43,7 @@ grid_response = AgGrid(
 )
 
 st.write(f"合計個数：{total_count.sum()}")
-st.write(f"合計ウォレット数: {total_people}")
+st.write(f"合計アドレス数: {total_people}")
 
 display_nft_sell_chart(
     tmp,
@@ -58,7 +58,7 @@ st.markdown("""
 
 理由は以下の通り：
 
-- SSにおいては100以上購入したウォレットは11で、その内200以上購入したウォレットは1つ（192のウォレットは多分合算している）
+- SSにおいては100以上購入したアドレスは11で、その内200以上購入したアドレスは1つ（192のアドレスは多分合算している）
 
 - Sにおいては：
   - 50-99は18個
@@ -68,5 +68,5 @@ st.markdown("""
   
   よって、1×18 + 2×9 + 3×1 + 4×1 = 43個ほど
 
-ただし合算しているウォレットもあるため、最低ラインです。
+ただし合算しているアドレスもあるため、最低ラインです。
 """)
