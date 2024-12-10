@@ -24,7 +24,7 @@ class DatabaseClient:
         df = df.set_index(['address', 'date'])
         return df
     
-    def execute(self, query: str, params: tuple = None) -> None:
+    def execute(self, query: str, params: tuple = ()) -> None:
         """更新系クエリを実行"""
         with sqlite3.connect(self.db_file) as conn:
             conn.execute(query, params)

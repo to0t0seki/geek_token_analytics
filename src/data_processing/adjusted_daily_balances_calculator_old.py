@@ -1,11 +1,11 @@
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Dict, Tuple, List
+from typing import Dict
 
 def create_daily_balances_table(conn: sqlite3.Connection) -> None:
     """日次残高テーブルを作成する"""
     create_table_query = """
-    CREATE TABLE IF NOT EXISTS daily_balances (
+    CREATE TABLE IF NOT EXISTS adjusted_daily_balances_old (
         date TEXT,
         address TEXT,
         balance REAL,
@@ -13,6 +13,19 @@ def create_daily_balances_table(conn: sqlite3.Connection) -> None:
     )
     """
     conn.execute(create_table_query)
+
+    create_index_query = """
+    CREATE INDEX IF NOT EXISTS idx_daily_balances_address 
+    ON adjusted_daily_balances_old(address);
+    """
+    conn.execute(create_index_query)
+
+    create_index_query = """
+    CREATE INDEX IF NOT EXISTS idx_daily_balances_date 
+    ON adjusted_daily_balances_old(date);
+    """
+    conn.execute(create_index_query)
+
     conn.commit()
 
 def get_all_transactions(conn: sqlite3.Connection) -> list:
@@ -35,13 +48,19 @@ def update_balances(balances: Dict[str, float], from_addr: str, to_addr: str, va
 def insert_daily_balances(conn: sqlite3.Connection, date: str, balances: Dict[str, float]) -> None:
     """日次残高をデータベースに挿入する"""
     insert_query = """
-    INSERT OR REPLACE INTO daily_balances (date, address, balance)
+    INSERT OR REPLACE INTO adjusted_daily_balances_old (date, address, balance)
     VALUES (?, ?, ?)
     """
     cursor = conn.cursor()
     for address, balance in balances.items():
         cursor.execute(insert_query, (date, address, balance))
     conn.commit()
+
+def get_adjusted_date(timestamp: str) -> datetime.date:
+    """タイムスタンプに5時間を加算して日付を取得する"""
+    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+    adjusted_dt = dt + timedelta(hours=5)
+    return adjusted_dt.date()
 
 def calculate_daily_balances(db_file: str) -> None:
     """日次残高を計算してデータベースに保存する"""
@@ -53,7 +72,8 @@ def calculate_daily_balances(db_file: str) -> None:
     current_date = None
     
     for timestamp, from_addr, to_addr, value in transactions:
-        transaction_date = datetime.fromisoformat(timestamp.replace('Z', '+00:00')).date()
+        # タイムスタンプに5時間を加算して日付を判定
+        transaction_date = get_adjusted_date(timestamp)
         
         if current_date is None:
             current_date = transaction_date
@@ -71,41 +91,11 @@ def calculate_daily_balances(db_file: str) -> None:
     conn.close()
     print("日次残高の計算が完了しました。")
 
-def get_daily_balances_for_address(db_file: str, address: str) -> List[Tuple[str, float]]:
-    """指定されたアドレスの日次残高を取得する"""
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    
-    query = """
-    SELECT date, balance
-    FROM daily_balances
-    WHERE address = ?
-    ORDER BY date
-    """
-    
-    cursor.execute(query, (address,))
-    results = cursor.fetchall()
-    
-    conn.close()
-    
-
-def print_daily_balances(balances: List[Tuple[str, float]]):
-    """日次残高を表示する"""
-    print("日付\t\t残高")
-    print("-" * 30)
-    for date, balance in balances:
-        print(f"{date}\t{balance:.6f}")
 
 def run_update():
     db_file = "data/processed/geek_transfers.db"
     calculate_daily_balances(db_file)
-    
+    print("日次残高の更新が完了しました。")
 
 if __name__ == "__main__":
     run_update()
-
-     # 特定のアドレスの日次残高を取得して表示
-    # address_to_check = "0x0744135E39FE9935e94432aFc387BB48060cA35C"  # 確認したいアドレスを指定
-    # daily_balances = get_daily_balances_for_address(db_file, address_to_check)
-    # print(f"アドレス {address_to_check} の日次残高:")
-    # print_daily_balances(daily_balances)

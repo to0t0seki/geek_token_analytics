@@ -4,7 +4,7 @@ import sqlite3
 from decimal import Decimal
 from src.utils.db_utils import get_db_connection, execute_query
 from typing import Dict, Any
-from src.data_processing import adjusted_daily_balances_calculator
+from src.data_processing import adjusted_daily_balances_calculator_old
 
 def create_normalized_tables(conn: sqlite3.Connection) -> None:
     """正規化されたテーブルを作成する"""
@@ -312,7 +312,7 @@ def check_database_integrity(db_file: str) -> dict:
 def run_update():
     requests_count, new_records_count = update_db_from_api("data/processed/geek_transfers.db")
     print(f"処理完了: {requests_count} 回のリクエスト, {new_records_count} 件の新規トランザクション")
-    adjusted_daily_balances_calculator.run_update()
+    # adjusted_daily_balances_calculator_old.run_update()
 
     return requests_count, new_records_count
 
