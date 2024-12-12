@@ -66,7 +66,7 @@ def insert_ohlcv_1h(ohlcv_list: list):
     skipped_rows = len(ohlcv_list) - inserted_rows
     print(f"inserted {inserted_rows} rows, skipped {skipped_rows} rows")
 
-def run():
+def import_market_data():
     ohlcv_list = aggregate_ohlcv_history()
     insert_ohlcv_1h(ohlcv_list)
 
@@ -76,7 +76,8 @@ def ohlcv_1h_to_csv(csv_file: str = 'ohlcv_1h.csv'):
     df.to_csv(csv_file, index=False)
 
 if __name__ == "__main__":
-    run()
+    import_market_data()
     # create_ohlcv_1h()
     # ohlcv_1h_to_csv()
+
 
