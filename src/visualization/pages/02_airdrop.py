@@ -23,6 +23,11 @@ airdrops_df['value'] = airdrops_df['value'].round(0)
 airdrops_df.rename(columns={'date':'日付','value':'枚数','to_address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
 
 gb = GridOptionsBuilder.from_dataframe(airdrops_df)
+gb.configure_columns(
+    ["枚数", "ユニークアドレス数", "平均"],
+    valueFormatter="Math.floor(value).toLocaleString()"
+)
+gb.configure_grid_options(rowSelection='multiple',enableRangeSelection=True)
 
 
 grid_response = AgGrid(
@@ -31,7 +36,7 @@ grid_response = AgGrid(
     height=300,
     width='100%',
     theme='streamlit' ,
-    update_mode=GridUpdateMode.SELECTION_CHANGED,
+    update_mode=GridUpdateMode.NO_UPDATE,
 )
 
 

@@ -21,6 +21,21 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
     """
     db_client.execute_ddl(create_transactions_table)
 
+    create_index_timestamp = """
+    CREATE INDEX IF NOT EXISTS idx_gt_timestamp ON geek_transactions(timestamp);
+    """
+    db_client.execute_ddl(create_index_timestamp)
+
+    create_index_from_address = """
+    CREATE INDEX IF NOT EXISTS idx_gt_from_address ON geek_transactions(from_address);
+    """
+    db_client.execute_ddl(create_index_from_address)
+
+    create_index_to_address = """
+    CREATE INDEX IF NOT EXISTS idx_gt_to_address ON geek_transactions(to_address);
+    """
+    db_client.execute_ddl(create_index_to_address)
+
 
 def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> None:
     """正規化されたデータを挿入する"""

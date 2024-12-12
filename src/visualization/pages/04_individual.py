@@ -41,6 +41,8 @@ df.rename(columns={'address':'アドレス','balance':'最新残高'}, inplace=T
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_selection('single')
 gb.configure_column('アドレス', filter=True)
+gb.configure_column("最新残高",valueFormatter="Math.floor(value).toLocaleString()")
+
 
 
 
@@ -73,7 +75,9 @@ if isinstance(selected_row, pd.DataFrame):
     address_info_df.rename(columns={'date':'日付','balance':'残高','airdrop':'エアドロップ','withdraw':'出金','deposit':'入金'}, inplace=True)
 
     gb = GridOptionsBuilder.from_dataframe(address_info_df)
-    
+    gb.configure_columns(["残高", "エアドロップ", "出金", "入金"],valueFormatter="Math.floor(value).toLocaleString()")
+    gb.configure_grid_options(rowSelection='multiple',enableRangeSelection=True)
+
     grid_response = AgGrid(
         address_info_df,
         gridOptions=gb.build(),

@@ -26,8 +26,15 @@ deposits_df['value'] = deposits_df['value'].round(0)
 
 
 deposits_df.rename(columns={'date':'日付','value':'入金枚数','address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
-gb = GridOptionsBuilder.from_dataframe(deposits_df)
 
+
+gb = GridOptionsBuilder.from_dataframe(deposits_df)
+gb.configure_columns(
+    ["入金枚数", "ユニークアドレス数", "平均"],
+    # type=["numericColumn", "numberColumnFilter", "customNumericFormat"],
+    valueFormatter="Math.floor(value).toLocaleString()"
+)
+gb.configure_grid_options(rowSelection='multiple',enableRangeSelection=True)
 
 grid_response = AgGrid(
     deposits_df,
@@ -35,7 +42,7 @@ grid_response = AgGrid(
     height=300,
     width='100%',
     theme='streamlit' ,
-    update_mode=GridUpdateMode.SELECTION_CHANGED
+    update_mode=GridUpdateMode.NO_UPDATE
 )
 
 total_deposits = deposits_df['入金枚数'].sum()
@@ -51,6 +58,11 @@ withdrawals_df['value'] = withdrawals_df['value'].round(0)
 withdrawals_df.rename(columns={'date':'日付','value':'出金枚数','address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
 
 gb = GridOptionsBuilder.from_dataframe(withdrawals_df)
+gb.configure_columns(
+    ["出金枚数", "ユニークアドレス数", "平均"],
+    valueFormatter="Math.floor(value).toLocaleString()"
+)
+gb.configure_grid_options(rowSelection='multiple',enableRangeSelection=True)
 
 
 grid_response = AgGrid(
@@ -59,6 +71,7 @@ grid_response = AgGrid(
     height=300,
     width='100%',
     theme='streamlit' ,
+    update_mode=GridUpdateMode.NO_UPDATE
 )
 
 
