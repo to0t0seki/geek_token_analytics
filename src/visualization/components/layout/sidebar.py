@@ -11,7 +11,7 @@ def show_sidebar():
 
     st.sidebar.markdown(f"""
     ### 説明
-    毎時00分更新\n
+    毎時10分更新\n
     日付の区切りは04:00JST\n
     最終更新時間：{update_time}JST\n
     テーブル上で右クリックからCSVダウンロード可能\n
