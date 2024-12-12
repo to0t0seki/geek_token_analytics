@@ -1,4 +1,4 @@
-import src.data_access.client as db_client
+from src.data_access.client import DatabaseClient
 
 def create_daily_balances_table() -> None:
     """日次残高テーブルを作成する"""
@@ -10,7 +10,7 @@ def create_daily_balances_table() -> None:
         PRIMARY KEY (date, address)
     )
     """
-    client = db_client.DatabaseClient()
+    client = DatabaseClient()
     client.execute_ddl(create_table_query)
 
     create_index_query = """
@@ -26,7 +26,7 @@ def calculate_daily_balances() -> None:
     SELECT
         DATE(datetime(timestamp, '+5 hours')) AS date,
         from_address AS address,
-        -CAST(value AS NUMERIC) / 1000000000000000000.0 AS balance_change
+        -CAST(value AS REAL) / 1000000000000000000.0 AS balance_change
     FROM geek_transactions
     WHERE from_address IS NOT NULL
 
@@ -35,7 +35,7 @@ def calculate_daily_balances() -> None:
     SELECT
         DATE(datetime(timestamp, '+5 hours')) AS date,
         to_address AS address,
-        CAST(value AS NUMERIC) / 1000000000000000000.0 AS balance_change
+        CAST(value AS REAL) / 1000000000000000000.0 AS balance_change
     FROM geek_transactions
     WHERE to_address IS NOT NULL
 ),
@@ -81,7 +81,7 @@ SELECT
 FROM filled_balances
 ORDER BY date, address;
     """
-    client = db_client.DatabaseClient()
+    client = DatabaseClient()
     client.execute(query)
 
 def calculate_todays_balances() -> None:
@@ -90,7 +90,7 @@ def calculate_todays_balances() -> None:
     SELECT
         DATE(datetime(timestamp, '+5 hours')) AS date,
         from_address AS address,
-        -CAST(value AS NUMERIC) / 1000000000000000000.0 AS balance_change
+        -CAST(value AS REAL) / 1000000000000000000.0 AS balance_change
     FROM geek_transactions
     WHERE DATE(datetime(timestamp, '+5 hours')) = DATE(DATETIME('now', '+5 hours'))
     AND from_address IS NOT NULL
@@ -100,7 +100,7 @@ def calculate_todays_balances() -> None:
     SELECT
         DATE(datetime(timestamp, '+5 hours')) AS date,
         to_address AS address,
-        CAST(value AS NUMERIC) / 1000000000000000000.0 AS balance_change
+        CAST(value AS REAL) / 1000000000000000000.0 AS balance_change
     FROM geek_transactions
     WHERE DATE(datetime(timestamp, '+5 hours')) = DATE(DATETIME('now', '+5 hours'))
     AND to_address IS NOT NULL
@@ -116,7 +116,7 @@ def calculate_todays_balances() -> None:
     previous_balances AS (
     SELECT address, balance
     FROM adjusted_daily_balances
-    WHERE date = DATE(DATETIME('now', '-1 day'))
+    WHERE date = DATE(DATETIME('now', '+5 hours', '-1 day'))
     )
     INSERT OR REPLACE INTO adjusted_daily_balances (date, address, balance)
     SELECT 
@@ -127,36 +127,67 @@ def calculate_todays_balances() -> None:
     FULL OUTER JOIN previous_balances pb ON tab.address = pb.address
     WHERE COALESCE(tab.address, pb.address) IS NOT NULL;
     """
-    client = db_client.DatabaseClient()
+    client = DatabaseClient()
     client.execute(query)
 
-def test_db():
-    client = db_client.DatabaseClient()
-    data = client.query_to_df("SELECT * FROM adjusted_daily_balances")
-    print(data)
+def calculate_yesterday_balances() -> None:
+    query = """
+    WITH yesterday_transactions AS (
+    SELECT
+        DATE(datetime(timestamp, '+5 hours')) AS date,
+        from_address AS address,
+        -CAST(value AS REAL) / 1000000000000000000.0 AS balance_change
+    FROM geek_transactions
+    WHERE DATE(datetime(timestamp, '+5 hours')) = DATE(DATETIME('now', '+5 hours', '-1 day'))
+    AND from_address IS NOT NULL
 
-def test1():
-    client = db_client.DatabaseClient()
-    query = """SELECT count(*) FROM geek_transactions
-    where datetime(timestamp) > datetime('2024-09-26')
+    UNION ALL
+
+    SELECT
+        DATE(datetime(timestamp, '+5 hours')) AS date,
+        to_address AS address,
+        CAST(value AS REAL) / 1000000000000000000.0 AS balance_change
+    FROM geek_transactions
+    WHERE DATE(datetime(timestamp, '+5 hours')) = DATE(DATETIME('now', '+5 hours', '-1 day'))
+    AND to_address IS NOT NULL
+    ),
+    yesterday_aggregated_balances AS (
+    SELECT
+        date,
+        address,
+        SUM(balance_change) AS daily_change
+    FROM yesterday_transactions
+    GROUP BY date, address
+    ),
+    previous_balances AS (
+    SELECT address, balance
+    FROM adjusted_daily_balances
+    WHERE date = DATE(DATETIME('now', '+5 hours', '-2 day'))
+    )
+    INSERT OR REPLACE INTO adjusted_daily_balances (date, address, balance)
+    SELECT 
+        DATE(DATETIME('now', '+5 hours', '-1 day')) as date,
+        COALESCE(tab.address, pb.address) as address,
+        COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) as balance
+    FROM yesterday_aggregated_balances tab
+    FULL OUTER JOIN previous_balances pb ON tab.address = pb.address
+    WHERE COALESCE(tab.address, pb.address) IS NOT NULL;
     """
-    data = client.fetch_one(query)
-    print(data)
+    client = DatabaseClient()
+    client.execute(query)
 
-    query2 = """SELECT count(*) FROM transfer_details left join transactions on transfer_details.tx_hash = transactions.tx_hash
-    where datetime(transactions.timestamp) > datetime('2024-09-26')
+
+def test():
+    query = """
+    SELECT datetime('now', '+5 hours', '-1 day')
     """
-    data2 = client.fetch_one(query2)
-    print(data2)
-    
-# test1()
+    client = DatabaseClient()
+    result = client.fetch_one(query)
+    print(result)
 
-# def rename_table():
-#     client = db_client.DatabaseClient()
-#     client.execute_ddl("ALTER TABLE adjusted_daily_balances RENAME TO adjusted_daily_balances_old;")
-
-
-# rename_table()
-create_daily_balances_table()
-calculate_daily_balances()
-# test_db()
+if __name__ == "__main__":
+    # create_daily_balances_table()
+    # calculate_daily_balances()
+    # calculate_yesterday_balances()
+    calculate_todays_balances()
+    # test()

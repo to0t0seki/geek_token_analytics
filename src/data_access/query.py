@@ -2,15 +2,12 @@ import pandas as pd
 from src.data_access.client import DatabaseClient
 
 
-
-
-
 def get_all_balances() -> pd.DataFrame:
     """
     daily_balancesテーブルから全てのアドレスの全ての日付の残高を取得
     """
     query = """
-    SELECT address, date, CAST(balance AS INTEGER) as balance
+    SELECT address, date, balance
     FROM adjusted_daily_balances
     WHERE address NOT LIKE '0x0000000000000000000000000000000000000000'
     ORDER BY date, balance DESC
@@ -23,14 +20,14 @@ def get_all_balances() -> pd.DataFrame:
 
 def get_airdrop_recipient_balances() -> pd.DataFrame:
     """
-    airdropテーブルにあるアドレスの全ての日付の残高を取得
+    airdropsテーブルにあるアドレスの全ての日付の残高を取得
     """
     query = """
     WITH airdrop_addresses AS (
         SELECT DISTINCT to_address as address
         FROM airdrops
     )
-    SELECT db.address, db.date, CAST(db.balance AS INTEGER) as balance
+    SELECT db.address, db.date, db.balance
     FROM adjusted_daily_balances db
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     """
@@ -49,7 +46,7 @@ def get_exchange_balances() -> pd.DataFrame:
         '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'
     ]
     query = """
-    SELECT address, date, CAST(balance AS INTEGER) as balance
+    SELECT address, date, balance
     FROM adjusted_daily_balances
     WHERE address IN ({})
     ORDER BY address, date
@@ -60,47 +57,14 @@ def get_exchange_balances() -> pd.DataFrame:
 
     return df
 
-# def get_total_airdrops() -> dict:
-#     """
-#     各アドレスのtotal airdropを計算する
-#     """
-#     db_file = 'data/processed/geek_transfers.db'
-    
-    
-#     query = """
-#     SELECT to_address, CAST(SUM(value) AS INTEGER) as total_airdrop
-#     FROM airdrops
-#     GROUP BY to_address
-#     """
 
-    
-#     conn = sqlite3.connect(db_file)
-#     cursor = conn.cursor()
-
-#     cursor.execute(query)
-#     results = cursor.fetchall()
-    
-#     conn.close()
-    
-#     return {address: total for address, total in results}
-
-
-def get_daily_airdrops() -> pd.DataFrame:
-    """
-    指定されたアドレスの日次エアドロップ量を取得する
-    日付の区切りは5時間後ろにずらす（例:2023-05-01 05:00:00 までは前日の2023-04-30としてカウント）
-    
-    :param db_file: データベースファイルのパス
-    :param address: 取得対象のアドレス
-    :return: 日付とエアドロップ量のDataFrame
-    """
-    
+def get_daily_airdrops() -> pd.DataFrame:   
     query = """
     SELECT 
         DATE(DATETIME(timestamp, '+5 hours')) as date,
-        CAST(SUM(value) AS INTEGER) as value,
+        SUM(cast(value as REAL) / 1000000000000000000.0) as value,
         COUNT(DISTINCT to_address) as to_address_count,
-        CAST(SUM(value) AS FLOAT) / COUNT(DISTINCT to_address) as per_address
+        SUM(cast(value as REAL) / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
     FROM 
         airdrops
     WHERE
@@ -117,20 +81,15 @@ def get_daily_airdrops() -> pd.DataFrame:
     return df
 
 
-def get_daily_xgeek_to_geek() -> pd.DataFrame:
-    """
-    日付毎の出金枚数を取得
-    日付の区切りは5時間後ろにずらす（例:2023-05-01 05:00:00 までは前日の2023-04-30としてカウント）
-    """
-    
+def get_daily_deposits() -> pd.DataFrame:
     query = """
     SELECT 
         DATE(DATETIME(timestamp, '+5 hours')) as date,
-        CAST(SUM(value) AS INTEGER) as value,
+        SUM(cast(value as REAL) / 1000000000000000000.0) as value,
         COUNT(DISTINCT from_address) as address_count,
-        CAST(SUM(value) AS FLOAT) / COUNT(DISTINCT from_address) as per_address
+        SUM(cast(value as REAL) / 1000000000000000000.0) / COUNT(DISTINCT from_address) as per_address
     FROM 
-        xgeek_to_geek
+        deposits
     WHERE
         DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
     GROUP BY 
@@ -146,22 +105,15 @@ def get_daily_xgeek_to_geek() -> pd.DataFrame:
 
 
 
-def get_daily_export_token() -> pd.DataFrame:
-    """
-    export_tokenビューから日次の合計値を計算する
-    日付の区切りは5時間後ろにずらす（例:2023-05-01 05:00:00 までは前日の2023-04-30としてカウント）
-    
-    :param db_file: データベースファイルのパス
-    :return: 日付とexportToken量の合計値のDataFrame
-    """
+def get_daily_withdrawals() -> pd.DataFrame:
     query = """
     SELECT 
         DATE(DATETIME(timestamp, '+5 hours')) as date,
-        CAST(SUM(value) AS INTEGER) as value,
+        SUM(cast(value as REAL) / 1000000000000000000.0) as value,
         COUNT(DISTINCT to_address) as address_count,
-        CAST(SUM(value) AS FLOAT) / COUNT(DISTINCT to_address) as per_address
+        SUM(cast(value as REAL) / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
     FROM 
-        export_token
+        withdrawals
     WHERE
         to_address != '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' and
         DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
@@ -179,7 +131,7 @@ def get_daily_export_token() -> pd.DataFrame:
 
 def get_latest_timestamp() -> str:
     """
-    transactionsテーブルから最新のタイムスタンプを取得する
+    geek_transactionsテーブルから最新のタイムスタンプを取得する
     
     :param db_file: データベースファイルのパス
     :return: 最新のタイムスタンプ（文字列形式）
@@ -188,7 +140,7 @@ def get_latest_timestamp() -> str:
     
     query = """
     SELECT max(timestamp)
-    FROM transactions
+    FROM geek_transactions
     """
     
     client = DatabaseClient()
@@ -427,7 +379,7 @@ def get_address_info(address: str) -> pd.DataFrame:
     airdrop as (
         SELECT 
             DATE(DATETIME(timestamp, '+5 hours')) as date,
-            SUM(value) as airdrop
+            SUM(cast(value as REAL) / 1000000000000000000.0) as airdrop
         FROM airdrops
         WHERE 
             to_address = ? and 
@@ -437,8 +389,8 @@ def get_address_info(address: str) -> pd.DataFrame:
     withdraw as (   
         SELECT 
             DATE(DATETIME(timestamp, '+5 hours')) as date,
-            SUM(value) as withdraw
-        FROM export_token
+            SUM(cast(value as REAL) / 1000000000000000000.0) as withdraw
+        FROM withdrawals
         WHERE 
             to_address = ? and
             DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
@@ -447,8 +399,8 @@ def get_address_info(address: str) -> pd.DataFrame:
     deposit as (
         SELECT 
             DATE(DATETIME(timestamp, '+5 hours')) as date,
-            SUM(value) as deposit
-        FROM xgeek_to_geek
+            SUM(cast(value as REAL) / 1000000000000000000.0) as deposit
+        FROM deposits
         WHERE 
             from_address = ? and 
             DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
@@ -473,11 +425,11 @@ def get_address_info(address: str) -> pd.DataFrame:
 
 def get_nft_sell_transactions(address:str)->pd.DataFrame:
     query = f"""
-    SELECT * 
-    FROM transactions t join transfer_details td on t.tx_hash = td.tx_hash
-    WHERE td.to_address = '{address}' and
-    t.timestamp between '2024-11-25T10:00:00.000000Z' and '2024-11-27T15:00:00.000000Z' and 
-    td.method = 'transfer'
+    SELECT from_address, cast(value as REAL) / 1000000000000000000.0 as value
+    FROM geek_transactions
+    WHERE to_address = '{address}' and
+    timestamp between '2024-11-25T10:00:00.000000Z' and '2024-11-27T15:00:00.000000Z' and 
+    method = 'transfer'
     """
     client = DatabaseClient()
     df = client.query_to_df(query)

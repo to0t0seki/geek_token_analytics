@@ -28,27 +28,27 @@ other_holders_balances = get_latest_balances_from_others()
 category_totals = pd.DataFrame([
     {
         '名前': '運営',
-        '枚数': operators_balances['balance'].sum()
+        '枚数': operators_balances['balance'].sum().round(0)
     },
         {
         '名前': 'エアドロップウォレット',
-        '枚数': airdrop_wallet_balances['balance'].sum()
+        '枚数': airdrop_wallet_balances['balance'].sum().round(0)
     },
         {
         '名前': '出金ウォレット',
-        '枚数': withdrawal_wallet_balances['balance'].sum()
+        '枚数': withdrawal_wallet_balances['balance'].sum().round(0)
     },
     {
         '名前': 'プレイヤー',
-        '枚数': airdrop_recipients_balances['balance'].sum()
+        '枚数': airdrop_recipients_balances['balance'].sum().round(0)
     },
     {
         '名前': '取引所',
-        '枚数': exchanges_balances['balance'].sum()
+        '枚数': exchanges_balances['balance'].sum().round(0)
     },
     {
         '名前': 'その他',
-        '枚数': other_holders_balances['balance'].sum()
+        '枚数': other_holders_balances['balance'].sum().round(0)
     }
 ])
 # 円グラフの作成

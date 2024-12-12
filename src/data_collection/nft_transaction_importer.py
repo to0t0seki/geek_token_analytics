@@ -1,5 +1,4 @@
 import requests
-import pandas as pd
 import time
 from typing import Dict, Any
 from src.data_access.client import DatabaseClient
@@ -93,12 +92,6 @@ def get_nft_data():
     finally:
         print(f"合計 {requests_count} 回のAPIリクエストを送信しました")
         print(f"合計 {record_count} 件のデータを挿入しました")
-
-def drop_table():
-    db_client = DatabaseClient()
-    db_client.execute_ddl("DROP TABLE IF EXISTS nft_transfer_details")
-
-  
 
 if __name__ == "__main__":
     get_nft_data()

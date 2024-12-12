@@ -18,6 +18,7 @@ st.title(f"エアドロップ")
 # st.write("日次エアドロップ"
 airdrops_df = get_daily_airdrops()
 airdrops_df['per_address'] = airdrops_df['per_address'].round(0)
+airdrops_df['value'] = airdrops_df['value'].round(0)
 
 airdrops_df.rename(columns={'date':'日付','value':'枚数','to_address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
 

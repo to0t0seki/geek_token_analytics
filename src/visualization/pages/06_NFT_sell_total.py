@@ -22,16 +22,6 @@ st.title("NFTセール集計（11/12-11/27）")
 
 gb = GridOptionsBuilder.from_dataframe(tmp)
 
-# column_names = {
-#     'count': '購入個数',
-#     'to_address': '人数',
-# }
-
-# for col_name, jp_name in column_names.items():
-#     gb.configure_column(
-#         col_name,
-#         header_name=jp_name,
-#     )
 
 grid_response = AgGrid(
     tmp,

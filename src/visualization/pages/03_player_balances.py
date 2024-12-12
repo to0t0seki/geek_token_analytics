@@ -52,14 +52,15 @@ gb = GridOptionsBuilder.from_dataframe(merged_df)
 
 gb.configure_column('合計枚数',valueFormatter="Math.floor(value).toLocaleString()")
 gb.configure_column('時価総額',valueFormatter="Math.floor(value).toLocaleString()")
-  
+gb.configure_grid_options(rowSelection='multiple',enableRangeSelection=True)
+
 grid_response = AgGrid(
     merged_df,
     gridOptions=gb.build(),
     height=300,
     width='100%',
     theme='streamlit' ,
-    update_mode=GridUpdateMode.SELECTION_CHANGED
+    update_mode=GridUpdateMode.NO_UPDATE,
 )
 
 

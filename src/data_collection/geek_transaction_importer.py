@@ -1,5 +1,4 @@
 import requests
-import pandas as pd
 import time
 from typing import Dict, Any
 from src.data_access.client import DatabaseClient

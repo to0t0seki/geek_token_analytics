@@ -27,8 +27,9 @@ class DatabaseClient:
     def execute(self, query: str, params: tuple = ()) -> None:
         """更新系クエリを実行"""
         with sqlite3.connect(self.db_file) as conn:
-            conn.execute(query, params)
+            cursor = conn.execute(query, params)
             conn.commit()
+            return cursor
     
     def fetch_one(self, query: str) -> tuple:
         """1行だけ取得"""
@@ -36,6 +37,13 @@ class DatabaseClient:
             cursor = conn.cursor()
             return cursor.execute(query).fetchone()
         
+    def fetch_all(self, query: str) -> list:
+        """全ての行を取得"""
+        with sqlite3.connect(self.db_file) as conn:
+            cursor = conn.cursor()
+            return cursor.execute(query).fetchall()
+            
+
     def execute_many(self, query: str, params_list: list) -> None:
         """更新系クエリを実行"""
 

@@ -1,6 +1,6 @@
 import streamlit as st
 from src.visualization.components.charts.chart import display_chart1
-from src.data_access.query import get_daily_xgeek_to_geek, get_daily_export_token
+from src.data_access.query import get_daily_deposits, get_daily_withdrawals
 from src.visualization.components.layout.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
@@ -18,18 +18,19 @@ st.title("入出金")
 
 
 st.write("### 入金")
-xgeek_to_geek_df = get_daily_xgeek_to_geek()
-xgeek_to_geek_df['per_address'] = xgeek_to_geek_df['per_address'].round(0)
+deposits_df = get_daily_deposits()
+deposits_df['per_address'] = deposits_df['per_address'].round(0)
+deposits_df['value'] = deposits_df['value'].round(0)
 
 
 
 
-xgeek_to_geek_df.rename(columns={'date':'日付','value':'入金枚数','address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
-gb = GridOptionsBuilder.from_dataframe(xgeek_to_geek_df)
+deposits_df.rename(columns={'date':'日付','value':'入金枚数','address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
+gb = GridOptionsBuilder.from_dataframe(deposits_df)
 
 
 grid_response = AgGrid(
-    xgeek_to_geek_df,
+    deposits_df,
     gridOptions=gb.build(),
     height=300,
     width='100%',
@@ -37,34 +38,23 @@ grid_response = AgGrid(
     update_mode=GridUpdateMode.SELECTION_CHANGED
 )
 
-total_xgeek_to_geek = xgeek_to_geek_df['入金枚数'].sum()
-st.write(f"総入金枚数: {total_xgeek_to_geek:,.0f}")
+total_deposits = deposits_df['入金枚数'].sum()
+st.write(f"総入金枚数: {total_deposits:,.0f}")
 
 st.write("")
 
 st.write("### 出金")
-export_token_df = get_daily_export_token()
-export_token_df['per_address'] = export_token_df['per_address'].round(0)
+withdrawals_df = get_daily_withdrawals()
+withdrawals_df['per_address'] = withdrawals_df['per_address'].round(0)
+withdrawals_df['value'] = withdrawals_df['value'].round(0)
 
-export_token_df.rename(columns={'date':'日付','value':'出金枚数','address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
+withdrawals_df.rename(columns={'date':'日付','value':'出金枚数','address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
 
-gb = GridOptionsBuilder.from_dataframe(export_token_df)
+gb = GridOptionsBuilder.from_dataframe(withdrawals_df)
 
-# column_names = {
-#     'date': '日付',
-#     'value': '出金枚数',
-#     'address_count': 'アドレス数',
-#     'per_address': '平均'
-# }
-
-# for col_name, jp_name in column_names.items():
-#     gb.configure_column(
-#         col_name,
-#         header_name=jp_name,
-#     )
 
 grid_response = AgGrid(
-    export_token_df,
+    withdrawals_df,
     gridOptions=gb.build(),
     height=300,
     width='100%',
@@ -72,31 +62,15 @@ grid_response = AgGrid(
 )
 
 
-total_export_token = export_token_df['出金枚数'].sum()
-st.write(f"総出金枚数: {total_export_token:,.0f}")
+total_withdrawals = withdrawals_df['出金枚数'].sum()
+st.write(f"総出金枚数: {total_withdrawals:,.0f}")
 
 
-export_token_df.drop(export_token_df.columns[2:4], axis=1, inplace=True)
-xgeek_to_geek_df.drop(xgeek_to_geek_df.columns[2:4], axis=1, inplace=True)
+withdrawals_df.drop(withdrawals_df.columns[2:4], axis=1, inplace=True)
+deposits_df.drop(deposits_df.columns[2:4], axis=1, inplace=True)
 
 display_chart1(
-    xgeek_to_geek_df,
-    export_token_df,
-    # title='Geekトークン入出金枚数',
+    deposits_df,
+    withdrawals_df,
 )
 
-# export_token_csv = export_token_df.to_csv(encoding='utf-8')
-# st.download_button(
-#     label="出金データをCSVとしてダウンロード",
-#     data=export_token_csv,
-#     file_name='export_token_data.csv',
-#     mime='text/csv',
-# )
-
-# xgeek_to_geek_csv = xgeek_to_geek_df.to_csv(encoding='utf-8')
-# st.download_button(
-#     label="入金データをCSVとしてダウンロード",
-#     data=xgeek_to_geek_csv,
-#     file_name='xgeek_to_geek_data.csv',
-#     mime='text/csv',
-# )
