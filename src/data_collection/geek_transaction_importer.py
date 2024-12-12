@@ -2,6 +2,7 @@ import requests
 import time
 from typing import Dict, Any
 from src.data_access.client import DatabaseClient
+from src.data_processing.adjusted_daily_balances_calculator import calculate_todays_balances
 
 def create_normalized_tables(db_client: DatabaseClient) -> None:
     """正規化されたテーブルを作成する"""
@@ -135,3 +136,4 @@ if __name__ == "__main__":
     # response = get_geek_data({'block_number': 1433326, 'index': 1})
     # print(generate_url_with_params(params={'block_number': 1433326, 'log_index': 1}))
     get_geek_data()
+    calculate_todays_balances()
