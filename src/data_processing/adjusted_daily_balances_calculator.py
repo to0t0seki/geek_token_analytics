@@ -1,3 +1,4 @@
+import sys
 from src.data_access.client import DatabaseClient
 
 def create_daily_balances_table() -> None:
@@ -129,6 +130,7 @@ def calculate_todays_balances() -> None:
     """
     client = DatabaseClient()
     client.execute(query)
+    print("今日の残高を計算しました")
 
 def calculate_yesterday_balances() -> None:
     query = """
@@ -175,6 +177,7 @@ def calculate_yesterday_balances() -> None:
     """
     client = DatabaseClient()
     client.execute(query)
+    print("昨日の残高を計算しました")
 
 
 def test():
@@ -188,6 +191,9 @@ def test():
 if __name__ == "__main__":
     # create_daily_balances_table()
     # calculate_daily_balances()
-    # calculate_yesterday_balances()
-    calculate_todays_balances()
+    if sys.argv[1] == "yesterday":  
+        calculate_yesterday_balances()
+    elif sys.argv[1] == "today":
+        calculate_todays_balances()
     # test()
+
