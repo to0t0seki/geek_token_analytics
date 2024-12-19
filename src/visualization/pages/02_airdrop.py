@@ -1,22 +1,27 @@
 import streamlit as st
-from src.visualization.components.charts.chart import display_chart
+# from src.visualization.components.charts.chart import display_chart
 from src.data_access.query import get_daily_airdrops
 from src.visualization.components.layout.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+from src.data_access.client import DatabaseClient
+
+
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
-
 show_sidebar()
+
 
 st.title(f"エアドロップ")
 
+if 'db_client' not in st.session_state:
+    st.session_state.db_client = DatabaseClient()
+with st.spinner('データを取得中...'):
+    airdrops_df = get_daily_airdrops()
 
+st.write("日次エアドロップ")
 
-# xgeekToGeek の日次チャートを作成と表示
-# st.write("日次エアドロップ"
-airdrops_df = get_daily_airdrops()
 airdrops_df['per_address'] = airdrops_df['per_address'].round(0)
 airdrops_df['value'] = airdrops_df['value'].round(0)
 
@@ -45,11 +50,11 @@ st.write(f"総エアドロップ枚数: {total_airdrops:,.0f}")
 
 
 
-airdrops_df.drop(airdrops_df.columns[2:4], axis=1, inplace=True)
+# airdrops_df.drop(airdrops_df.columns[2:4], axis=1, inplace=True)
 
-display_chart(
-    airdrops_df,
-    title='折れ線グラフ',
-    chart_type='line',
-    legend_name='エアドロップ',
-)
+# display_chart(
+#     airdrops_df,
+#     title='折れ線グラフ',
+#     chart_type='line',
+#     legend_name='エアドロップ',
+# )
