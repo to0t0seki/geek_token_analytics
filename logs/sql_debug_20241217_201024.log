@@ -1,0 +1,6 @@
+2024-12-17 20:10:24,482 - __main__ - INFO - デバッグスクリプト開始
+2024-12-17 20:10:24,484 - src.data_access.test - INFO - DatabaseClient初期化開始
+2024-12-17 20:10:24,484 - src.data_access.test - INFO - データベースURI: mysql+mysqlconnector://root:taka4586@localhost:13306/geek-database
+2024-12-17 20:10:24,484 - src.data_access.test - INFO - SQLAlchemyエンジン作成開始
+2024-12-17 20:10:24,539 - src.data_access.test - INFO - エンジン作成完了
+2024-12-17 20:10:24,539 - src.data_access.test - INFO - 接続テスト開始

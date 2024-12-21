@@ -1,12 +1,9 @@
 import streamlit as st
-import os
 from datetime import datetime, timezone, timedelta
-# from src.data_access.query import get_latest_timestamp
+from src.data_access.query import get_latest_timestamp
 def show_sidebar():
-    timestamp = os.path.getmtime("data/processed/geek_transfers.db")
-    update_time = datetime.fromtimestamp(timestamp, timezone.utc).astimezone(timezone(timedelta(hours=9))).strftime('%Y-%m-%d %H:%M')
-    # latest_timestamp = get_latest_timestamp()
-    # latest_timestamp = (datetime.fromisoformat(latest_timestamp.replace('Z', '+00:00')) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
+    latest_timestamp = get_latest_timestamp()
+    latest_timestamp = (latest_timestamp + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
     st.sidebar.image("img/logo2.jpg", width=200)
 
     st.sidebar.markdown(f"""
@@ -14,7 +11,7 @@ def show_sidebar():
     毎時10分更新\n
     毎日の更新は04:15JST\n
     日付の区切りは04:00JST\n
-    最終更新時間：{update_time}JST\n
+    取得した最新のTX：{latest_timestamp}JST\n
     テーブル上で右クリックからCSVダウンロード可能\n
     
     

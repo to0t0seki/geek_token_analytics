@@ -1,24 +1,22 @@
-import pandas as pd
-from src.data_access.client import DatabaseClient
+import streamlit as st
 
-
-def get_all_balances() -> pd.DataFrame:
+def get_all_balances():
     """
     daily_balancesテーブルから全てのアドレスの全ての日付の残高を取得
     """
     query = """
     SELECT address, date, balance
     FROM adjusted_daily_balances
-    WHERE address NOT LIKE '0x0000000000000000000000000000000000000000'
+    WHERE address != '0x0000000000000000000000000000000000000000'
     ORDER BY date, balance DESC
+    limit 10
     """
-    client = DatabaseClient()
-    df = client.query_to_df_with_address_date_index(query)
+    df = st.session_state.db_client.query_to_df_with_address_date_index(query)
 
     return df
 
 
-def get_airdrop_recipient_balances() -> pd.DataFrame:
+def get_airdrop_recipient_balances():
     """
     airdropsテーブルにあるアドレスの全ての日付の残高を取得
     """
@@ -31,13 +29,12 @@ def get_airdrop_recipient_balances() -> pd.DataFrame:
     FROM adjusted_daily_balances db
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     """
-    client = DatabaseClient()
-    df = client.query_to_df_with_address_date_index(query)
+    df = st.session_state.db_client.query_to_df_with_address_date_index(query)
    
     return df
 
 
-def get_exchange_balances() -> pd.DataFrame:
+def get_exchange_balances():
     """
     指定されたアドレスの全ての日付の残高を取得
     """
@@ -50,81 +47,73 @@ def get_exchange_balances() -> pd.DataFrame:
     FROM adjusted_daily_balances
     WHERE address IN ({})
     ORDER BY address, date
-    """.format(','.join(['?']*len(addresses)))
+    """.format(','.join(['%s']*len(addresses)))
 
-    client = DatabaseClient()
-    df = client.query_to_df_with_address_date_index(query, params=tuple(addresses))
+    df = st.session_state.db_client.query_to_df_with_address_date_index(query, params=tuple(addresses))
 
     return df
 
-
-def get_daily_airdrops() -> pd.DataFrame:   
+def get_daily_airdrops():   
     query = """
     SELECT 
-        DATE(DATETIME(timestamp, '+5 hours')) as date,
-        SUM(cast(value as REAL) / 1000000000000000000.0) as value,
+        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+        SUM(value / 1000000000000000000.0) as value,
         COUNT(DISTINCT to_address) as to_address_count,
-        SUM(cast(value as REAL) / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
+        SUM(value / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
     FROM 
         airdrops
     WHERE
-        DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
+        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
     GROUP BY 
-        DATE(DATETIME(timestamp, '+5 hours'))  
+        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))  
     ORDER BY 
         date desc
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
-    
-    
+    df = st.session_state.db_client.query_to_df(query)
     return df
 
 
-def get_daily_deposits() -> pd.DataFrame:
+def get_daily_deposits():
     query = """
     SELECT 
-        DATE(DATETIME(timestamp, '+5 hours')) as date,
-        SUM(cast(value as REAL) / 1000000000000000000.0) as value,
+        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+        SUM(value / 1000000000000000000.0) as value,
         COUNT(DISTINCT from_address) as address_count,
-        SUM(cast(value as REAL) / 1000000000000000000.0) / COUNT(DISTINCT from_address) as per_address
+        SUM(value / 1000000000000000000.0) / COUNT(DISTINCT from_address) as per_address
     FROM 
         deposits
     WHERE
-        DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
+        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
     GROUP BY 
-        DATE(DATETIME(timestamp, '+5 hours'))
+        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
     ORDER BY 
         date desc
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
-
+    df = st.session_state.db_client.query_to_df(query)
     
     return df
 
 
 
-def get_daily_withdrawals() -> pd.DataFrame:
+def get_daily_withdrawals():
     query = """
     SELECT 
-        DATE(DATETIME(timestamp, '+5 hours')) as date,
-        SUM(cast(value as REAL) / 1000000000000000000.0) as value,
+        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+        SUM(value / 1000000000000000000.0) as value,
         COUNT(DISTINCT to_address) as address_count,
-        SUM(cast(value as REAL) / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
+        SUM(value / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
     FROM 
         withdrawals
     WHERE
         to_address != '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' and
-        DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
+        +DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
     GROUP BY 
-        DATE(DATETIME(timestamp, '+5 hours'))
+        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
     ORDER BY 
         date desc
     """
     
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     
     return df
 
@@ -143,14 +132,13 @@ def get_latest_timestamp() -> str:
     FROM geek_transactions
     """
     
-    client = DatabaseClient()
-    result = client.fetch_one(query)
+    result = st.session_state.db_client.fetch_one(query)
     
     return result[0]
 
 
 
-def get_latest_balances_from_all_addresses() -> pd.DataFrame:
+def get_latest_balances_from_all_addresses():
     """
     全てのアドレスの最新の残高を取得
     """
@@ -169,11 +157,10 @@ def get_latest_balances_from_all_addresses() -> pd.DataFrame:
     WHERE t1.address != '0x0000000000000000000000000000000000000000'
     ORDER BY t1.balance DESC
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_airdrop_recipient() -> pd.DataFrame:
+def get_latest_balances_from_airdrop_recipient():
     """
     エアドロップを一度でも受け取ったことがあるアドレスの最新の残高を取得
     """
@@ -198,13 +185,12 @@ def get_latest_balances_from_airdrop_recipient() -> pd.DataFrame:
         FROM airdrops
     ) as apd ON lb.address = apd.address
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     return df
 
 
 
-def get_latest_balances_from_exchange() -> pd.DataFrame:
+def get_latest_balances_from_exchange():
     """
     エクスチェンジアドレスの最新の残高を取得
     """
@@ -234,11 +220,10 @@ def get_latest_balances_from_exchange() -> pd.DataFrame:
         SELECT ?
     ) as exd ON lb.address = exd.address
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query, params=tuple(addresses))
+    df = st.session_state.db_client.query_to_df(query, params=tuple(addresses))
     return df
 
-def get_latest_balances_from_operator() -> pd.DataFrame:
+def get_latest_balances_from_operator():
     """
     運営アドレスの最新の残高を取得
     """
@@ -271,11 +256,10 @@ def get_latest_balances_from_operator() -> pd.DataFrame:
         SELECT ?
     ) as op ON lb.address = op.address
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query, params=tuple(addresses))
+    df = st.session_state.db_client.query_to_df(query, params=tuple(addresses))
     return df
 
-def get_latest_balances_from_game_ops_wallet() -> pd.DataFrame:
+def get_latest_balances_from_game_ops_wallet():
     query = """
     SELECT balance
     FROM adjusted_daily_balances
@@ -283,11 +267,10 @@ def get_latest_balances_from_game_ops_wallet() -> pd.DataFrame:
     ORDER BY date DESC
     LIMIT 1
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_withdrawal_wallet() -> pd.DataFrame:
+def get_latest_balances_from_withdrawal_wallet():
     query = """
     SELECT balance
     FROM adjusted_daily_balances
@@ -295,11 +278,10 @@ def get_latest_balances_from_withdrawal_wallet() -> pd.DataFrame:
     ORDER BY date DESC
     LIMIT 1
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_airdrop_wallet() -> pd.DataFrame:
+def get_latest_balances_from_airdrop_wallet():
     query = """
     SELECT balance
     FROM adjusted_daily_balances
@@ -307,11 +289,10 @@ def get_latest_balances_from_airdrop_wallet() -> pd.DataFrame:
     ORDER BY date DESC
     LIMIT 1
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_others() -> pd.DataFrame:
+def get_latest_balances_from_others():
     """
     運営、取引所、エアドロップ受領者以外のアドレスの最新残高を取得
     
@@ -362,11 +343,10 @@ def get_latest_balances_from_others() -> pd.DataFrame:
     WHERE ea.address IS NULL
     """
     
-    client = DatabaseClient()
-    df = client.query_to_df(query, params=tuple(operator_addresses + exchange_addresses))
+    df = st.session_state.db_client.query_to_df(query, params=tuple(operator_addresses + exchange_addresses))
     return df
 
-def get_address_info(address: str) -> pd.DataFrame:
+def get_address_info(address: str):
     """
     指定されたアドレスの情報を取得
     """
@@ -378,33 +358,33 @@ def get_address_info(address: str) -> pd.DataFrame:
     ),
     airdrop as (
         SELECT 
-            DATE(DATETIME(timestamp, '+5 hours')) as date,
-            SUM(cast(value as REAL) / 1000000000000000000.0) as airdrop
+            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+            SUM(value / 1000000000000000000.0) as airdrop
         FROM airdrops
         WHERE 
             to_address = ? and 
-            DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
-        GROUP BY DATE(DATETIME(timestamp, '+5 hours'))
+            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
+        GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
     ),
     withdraw as (   
         SELECT 
-            DATE(DATETIME(timestamp, '+5 hours')) as date,
-            SUM(cast(value as REAL) / 1000000000000000000.0) as withdraw
+            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+            SUM(value / 1000000000000000000.0) as withdraw
         FROM withdrawals
         WHERE 
             to_address = ? and
-            DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
-        GROUP BY DATE(DATETIME(timestamp, '+5 hours'))
+            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
+        GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
     ),
     deposit as (
         SELECT 
-            DATE(DATETIME(timestamp, '+5 hours')) as date,
-            SUM(cast(value as REAL) / 1000000000000000000.0) as deposit
+            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+            SUM(value / 1000000000000000000.0) as deposit
         FROM deposits
         WHERE 
             from_address = ? and 
-            DATE(DATETIME(timestamp, '+5 hours')) >= '2024-09-26'
-        GROUP BY DATE(DATETIME(timestamp, '+5 hours'))
+            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
+        GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
     )
     SELECT 
         b.date,
@@ -418,34 +398,32 @@ def get_address_info(address: str) -> pd.DataFrame:
     LEFT JOIN deposit d ON b.date = d.date
     ORDER BY b.date DESC    
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query, params=(address, address, address, address))
+    df = st.session_state.db_client.query_to_df(query, params=(address, address, address, address))
     return df
 
 
-def get_nft_sell_transactions(address:str)->pd.DataFrame:
+def get_nft_sell_transactions(address:str):
     query = f"""
-    SELECT from_address, cast(value as REAL) / 1000000000000000000.0 as value
+    SELECT from_address, value / 1000000000000000000.0 as value
     FROM geek_transactions
     WHERE to_address = '{address}' and
     timestamp between '2024-11-25T10:00:00.000000Z' and '2024-11-27T15:00:00.000000Z' and 
     method = 'transfer'
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     return df
 
-def get_jst_4am_close_price() -> pd.DataFrame:
+def get_jst_4am_close_price():
     query = f"""
     SELECT timestamp, close
     FROM ohlcv_1h
-    WHERE CAST(timestamp AS INTEGER) % (24 * 60 * 60 * 1000) = 18 * 60 * 60 * 1000
+    WHERE unix_timestamp(timestamp) % (24 * 60 * 60) = 18 * 60 * 60
     """
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     return df
 
-def get_nft_transactions() -> pd.DataFrame:
+
+def get_nft_transactions():
     # pd.set_option('display.max_columns', None)
     # pd.set_option('display.width', None)
     # pd.set_option('display.max_colwidth', None)
@@ -454,8 +432,8 @@ def get_nft_transactions() -> pd.DataFrame:
         SELECT to_address, count(to_address) as count
         FROM nft_transactions
         where method = '0xe3456fbb'
-        and ((datetime(timestamp) between datetime('2024-11-12 13:00:00') and datetime('2024-11-12 15:59:59'))
-        or (datetime(timestamp) between datetime('2024-11-19 13:00:00') and datetime('2024-11-19 15:59:59')))
+        and timestamp between '2024-11-12 13:00:00' and '2024-11-12 15:59:59'
+        or timestamp between '2024-11-19 13:00:00' and '2024-11-19 15:59:59'
         group by to_address
 
         union all
@@ -463,7 +441,7 @@ def get_nft_transactions() -> pd.DataFrame:
         SELECT to_address, count(to_address) as count
         FROM nft_transactions
         where method = 'safeTransferFrom'
-        and datetime(timestamp) < datetime('2024-12-04 00:00:00')
+        and timestamp < '2024-12-04 00:00:00'
         group by to_address
     )
     select to_address, sum(count) as count
@@ -471,11 +449,9 @@ def get_nft_transactions() -> pd.DataFrame:
     group by to_address
     order by sum(count) desc
     """
-    
-
-    client = DatabaseClient()
-    df = client.query_to_df(query)
+    df = st.session_state.db_client.query_to_df(query)
     return df
+
 
 
 #    count(date(datetime(timestamp))) date(datetime(timestamp))

@@ -1,64 +1,63 @@
-import sqlite3
+import mysql.connector
 import pandas as pd
     
 class DatabaseClient:
     """データベースアクセスを管理するクライアント"""
     
-    def __init__(self, db_file: str = 'data/processed/geek_transfers.db'):
-        self.db_file = db_file
+    def __init__(self):
+        self.config = {
+           
+        }
+  
 
-    def execute_ddl(self, query: str) -> None:
+    def get_connection(self):
+        return mysql.connector.connect(**self.config)
+
+
+    def execute(self, query: str) -> None:
         """DDLを実行"""
-        with sqlite3.connect(self.db_file) as conn:
-            conn.execute(query)
+        with self.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                conn.commit()
+
+    def execute_params(self, query: str, params: tuple = ()) -> None:
+        """更新系クエリを実行"""
+        with self.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, params)
+                conn.commit()
+                return cursor
+
     def query_to_df(self, query: str, params: tuple = None) -> pd.DataFrame:
         """クエリを実行しDataFrameを返す"""
-        with sqlite3.connect(self.db_file) as conn:
+        with self.get_connection() as conn:
             return pd.read_sql_query(query, conn, params=params)
         
-    def query_to_df_with_address_date_index(self, query: str) -> pd.DataFrame:
+    def query_to_df_with_address_date_index(self, query: str, params: tuple = None) -> pd.DataFrame:
         """クエリを実行しDataFrameを返す"""
-        with sqlite3.connect(self.db_file) as conn:
-            df = pd.read_sql_query(query, conn)
-        df['date'] = pd.to_datetime(df['date'])
-        df = df.set_index(['address', 'date'])
-        return df
+        with self.get_connection() as conn:
+            df = pd.read_sql_query(query, conn, params=params)
+            df['date'] = pd.to_datetime(df['date'])
+            df = df.set_index(['address', 'date'])
+            return df
     
-    def execute(self, query: str, params: tuple = ()) -> None:
-        """更新系クエリを実行"""
-        with sqlite3.connect(self.db_file) as conn:
-            cursor = conn.execute(query, params)
-            conn.commit()
-            return cursor
+   
     
     def fetch_one(self, query: str) -> tuple:
         """1行だけ取得"""
-        with sqlite3.connect(self.db_file) as conn:
-            cursor = conn.cursor()
-            return cursor.execute(query).fetchone()
+        with self.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                return cursor.fetchone()
+
         
     def fetch_all(self, query: str) -> list:
         """全ての行を取得"""
-        with sqlite3.connect(self.db_file) as conn:
-            cursor = conn.cursor()
-            return cursor.execute(query).fetchall()
+        with self.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                return cursor.fetchall()
             
 
-    def execute_many(self, query: str, params_list: list) -> None:
-        """更新系クエリを実行"""
 
-        if not params_list:
-            raise ValueError("params_list is required")
-        
-        for i,params in enumerate(params_list):
-            if None in params:
-                raise ValueError(f"params_list[{i}] is None")
-            if any(param == '' for param in params):
-                raise ValueError(f"params_list[{i}] contains empty string")
-
-        with sqlite3.connect(self.db_file) as conn:
-            cursor = conn.cursor()
-            cursor.executemany(query, params_list)
-            inserted_rows = cursor.rowcount
-            conn.commit()
-            return inserted_rows

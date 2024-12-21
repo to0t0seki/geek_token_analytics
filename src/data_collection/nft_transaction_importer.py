@@ -7,29 +7,29 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
     """正規化されたテーブルを作成する"""
     create_transactions_table = """
     CREATE TABLE IF NOT EXISTS nft_transactions (
-        block_number INTEGER,
-        log_index INTEGER,
-        tx_hash TEXT,
-        timestamp TEXT,
-        from_address TEXT,
-        to_address TEXT,
-        token_id TEXT,
-        method TEXT,
-        type TEXT,
+        block_number INT NOT NULL,
+        log_index INT NOT NULL,
+        tx_hash VARCHAR(66),
+        timestamp DATETIME(6),
+        from_address VARCHAR(42),
+        to_address VARCHAR(42),
+        token_id VARCHAR(10),
+        method VARCHAR(20),
+        type VARCHAR(20),
         PRIMARY KEY (block_number, log_index)
     )
     """
-    db_client.execute_ddl(create_transactions_table)
+    db_client.execute(create_transactions_table)
 
 
 def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> None:
     """正規化されたデータを挿入する"""
 
     insert_transfer_detail_query = """
-    INSERT OR IGNORE INTO nft_transactions (block_number, log_index, tx_hash, timestamp, from_address, to_address, token_id, method, type)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT IGNORE INTO nft_transactions (block_number, log_index, tx_hash, timestamp, from_address, to_address, token_id, method, type)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
-    db_client.execute(insert_transfer_detail_query, (data['block_number'], data['log_index'], data['tx_hash'], data['timestamp'], data['from_address'], data['to_address'], data['token_id'], data['method'], data['type']))
+    db_client.execute_params(insert_transfer_detail_query, (data['block_number'], data['log_index'], data['tx_hash'], data['timestamp'], data['from_address'], data['to_address'], data['token_id'], data['method'], data['type']))
 
 def get_letest_transaction():
     db_client = DatabaseClient()
@@ -69,7 +69,7 @@ def get_nft_data():
                     'block_number': item['block_number'],
                     'log_index': item['log_index'],
                     'tx_hash': item['tx_hash'],
-                    'timestamp': item['timestamp'],
+                    'timestamp': item['timestamp'].replace('T', ' ').replace('Z', ''),
                     'from_address': item['from']['hash'],
                     'to_address': item['to']['hash'],
                     'token_id': item['total']['token_id'],
