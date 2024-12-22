@@ -4,13 +4,13 @@ from src.visualization.components.charts.chart import display_supply_and_price_c
 from src.data_access.query import get_airdrop_recipient_balances, get_jst_4am_close_price
 from src.visualization.components.layout.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+from src.data_access.client import DatabaseClient
+import pandas as pd
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
-
-show_sidebar()
 
 
 st.title("プレイヤー残高")
@@ -22,17 +22,24 @@ st.write("・最新価格の更新はJST4時。")
 # st.write("・<span style='color: red;'>作ったばかりなので、エラーがあるかも知れません。</span>",unsafe_allow_html=True)
 
 
+if 'db_client' not in st.session_state:
+    st.session_state.db_client = DatabaseClient()
 
-daily_total_balances_df = get_airdrop_recipient_balances()
+show_sidebar()
+
+with st.spinner('データを取得中...'):
+    daily_total_balances_df = get_airdrop_recipient_balances()
+
 grouped_df = daily_total_balances_df.groupby(level=1).sum()
 grouped_df = grouped_df[grouped_df.index > '2024-09-26']
 grouped_df.reset_index(inplace=True)
-
+# grouped_df['date'] = grouped_df['date'].dt.strftime('%Y-%m-%d')
 
 
 
 ohlcv_df = get_jst_4am_close_price()
-ohlcv_df['timestamp'] = pd.to_datetime(ohlcv_df['timestamp'].astype(int),unit='ms').dt.floor('D')
+ohlcv_df['timestamp'] = ohlcv_df['timestamp'].dt.floor('D')
+# ohlcv_df['timestamp'] = ohlcv_df['timestamp'].dt.strftime('%Y-%m-%d')
 
 merged_df = pd.merge(
     grouped_df[['date', 'balance']],

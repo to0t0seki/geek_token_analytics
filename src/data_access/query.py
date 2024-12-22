@@ -1,4 +1,6 @@
 import streamlit as st
+from src.data_access.client import DatabaseClient
+import pandas as pd
 
 def get_all_balances():
     """
@@ -25,13 +27,18 @@ def get_airdrop_recipient_balances():
         SELECT DISTINCT to_address as address
         FROM airdrops
     )
-    SELECT db.address, db.date, db.balance
+    SELECT db.address, db.date, db.balance / 1000000000000000000.0 as balance
     FROM adjusted_daily_balances db
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     """
     df = st.session_state.db_client.query_to_df_with_address_date_index(query)
+    # client = DatabaseClient()
+    # df = client.query_to_df_with_address_date_index(query)
    
+
     return df
+# df = get_airdrop_recipient_balances()
+# print(df)
 
 
 def get_exchange_balances():
@@ -90,7 +97,7 @@ def get_daily_deposits():
         date desc
     """
     df = st.session_state.db_client.query_to_df(query)
-    
+
     return df
 
 
@@ -420,8 +427,11 @@ def get_jst_4am_close_price():
     WHERE unix_timestamp(timestamp) % (24 * 60 * 60) = 18 * 60 * 60
     """
     df = st.session_state.db_client.query_to_df(query)
+    # client = DatabaseClient()
+    # df = client.query_to_df(query)
     return df
-
+# df = get_jst_4am_close_price()
+# print(df)
 
 def get_nft_transactions():
     # pd.set_option('display.max_columns', None)
