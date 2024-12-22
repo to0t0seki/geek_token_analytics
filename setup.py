@@ -9,8 +9,8 @@ setup(
         "plotly",
         "pandas",
         "streamlit-aggrid",
-        "cryptography",
-        "mysql-connector-python"
+        "mysql-connector-python",
+        "python-dotenv"
     ],
     python_requires=">=3.8",
 )

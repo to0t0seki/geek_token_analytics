@@ -1,12 +1,20 @@
 import mysql.connector
 import pandas as pd
+import os
+from dotenv import load_dotenv
     
 class DatabaseClient:
     """データベースアクセスを管理するクライアント"""
     
     def __init__(self):
+
+        load_dotenv()
         self.config = {
-           
+           'host': os.getenv('MYSQL_HOST'),
+           'user': os.getenv('MYSQL_USER'),
+           'password': os.getenv('MYSQL_PASSWORD'),
+           'database': os.getenv('MYSQL_DATABASE'),
+           'port': int(os.getenv('MYSQL_PORT', 3306))
         }
   
 
