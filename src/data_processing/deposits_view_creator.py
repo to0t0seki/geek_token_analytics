@@ -14,7 +14,7 @@ def create_deposits_view() -> None:
         FROM geek_transactions 
         WHERE method IN ('xgeekToGeek', '0x1a682064')
         """
-        client.execute_ddl(create_view)
+        client.execute(create_view)
         print("depositsビューを作成しました。")
         
     except Exception as e:

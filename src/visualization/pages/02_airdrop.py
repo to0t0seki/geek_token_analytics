@@ -4,6 +4,7 @@ from src.data_access.query import get_daily_airdrops
 from src.visualization.components.layout.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.data_access.client import DatabaseClient
+import pandas as pd
 
 
 
@@ -29,6 +30,7 @@ st.write("日次エアドロップ")
 
 airdrops_df['per_address'] = airdrops_df['per_address'].round(0)
 airdrops_df['value'] = airdrops_df['value'].round(0)
+airdrops_df['date'] = pd.to_datetime(airdrops_df['date']).dt.strftime('%Y-%m-%d')
 
 airdrops_df.rename(columns={'date':'日付','value':'枚数','to_address_count':'ユニークアドレス数','per_address':'平均'}, inplace=True)
 

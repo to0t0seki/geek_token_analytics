@@ -14,7 +14,7 @@ def create_airdrops_view() -> None:
         FROM geek_transactions 
         WHERE method IN ('exportAdp', '0xf423abe6')
         """
-        client.execute_ddl(create_view)
+        client.execute(create_view)
         print("airdropsビューを作成しました。")
         
     except Exception as e:
