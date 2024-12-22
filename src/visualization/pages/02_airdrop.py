@@ -10,15 +10,20 @@ from src.data_access.client import DatabaseClient
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
-show_sidebar()
+
 
 
 st.title(f"エアドロップ")
 
 if 'db_client' not in st.session_state:
     st.session_state.db_client = DatabaseClient()
+
+show_sidebar()
+
 with st.spinner('データを取得中...'):
     airdrops_df = get_daily_airdrops()
+
+
 
 st.write("日次エアドロップ")
 
