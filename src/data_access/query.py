@@ -270,7 +270,7 @@ def get_latest_balances_from_operator():
 
 def get_latest_balances_from_game_ops_wallet():
     query = """
-    SELECT balance
+    SELECT balance / 1000000000000000000.0 as balance
     FROM adjusted_daily_balances
     where address = '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
     ORDER BY date DESC
@@ -281,7 +281,7 @@ def get_latest_balances_from_game_ops_wallet():
 
 def get_latest_balances_from_withdrawal_wallet():
     query = """
-    SELECT balance
+    SELECT balance / 1000000000000000000.0 as balance
     FROM adjusted_daily_balances
     where address = '0x687F3413C7f0e089786546BedF809b8F8885B051'
     ORDER BY date DESC
@@ -292,7 +292,7 @@ def get_latest_balances_from_withdrawal_wallet():
 
 def get_latest_balances_from_airdrop_wallet():
     query = """
-    SELECT balance
+    SELECT balance / 1000000000000000000.0 as balance
     FROM adjusted_daily_balances
     where address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
     ORDER BY date DESC
@@ -336,23 +336,23 @@ def get_latest_balances_from_others():
             AND t1.date = t2.max_date
     ),
     excluded_addresses AS (
-        SELECT ? as address
-        UNION ALL SELECT ?
-        UNION ALL SELECT ?
-        UNION ALL SELECT ?
-        UNION ALL SELECT ?
+        SELECT %(address1)s as address
+        UNION ALL SELECT %(address2)s
+        UNION ALL SELECT %(address3)s
+        UNION ALL SELECT %(address4)s
+        UNION ALL SELECT %(address5)s
         UNION ALL SELECT "0x0000000000000000000000000000000000000000"
         UNION ALL
         SELECT DISTINCT to_address as address
         FROM airdrops
     )
-    SELECT lb.address, lb.date, lb.balance
+    SELECT lb.address, lb.date, lb.balance / 1000000000000000000.0 as balance
     FROM latest_balances lb
     LEFT JOIN excluded_addresses ea ON lb.address = ea.address
     WHERE ea.address IS NULL
     """
-    
-    df = st.session_state.db_client.query_to_df(query, params=tuple(operator_addresses + exchange_addresses))
+    params = {'address1':operator_addresses[0], 'address2':operator_addresses[1], 'address3':operator_addresses[2], 'address4':exchange_addresses[0], 'address5':exchange_addresses[1]}
+    df = st.session_state.db_client.query_to_df(query, params=params)
     return df
 
 def get_address_info(address: str):
