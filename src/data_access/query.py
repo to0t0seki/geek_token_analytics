@@ -153,7 +153,7 @@ def get_latest_balances_from_all_addresses():
     SELECT
         t1.date,
         t1.address,
-        t1.balance
+        t1.balance / 1000000000000000000.0 as balance
     FROM adjusted_daily_balances t1
     INNER JOIN (
         SELECT address, MAX(date) as max_date
@@ -185,7 +185,7 @@ def get_latest_balances_from_airdrop_recipient():
         ) t2 ON t1.address = t2.address 
             AND t1.date = t2.max_date
     )
-    SELECT lb.address, lb.date, lb.balance
+    SELECT lb.address, lb.date, lb.balance / 1000000000000000000.0 as balance
     FROM latest_balances as lb
     INNER JOIN (
         SELECT DISTINCT to_address as address
@@ -219,15 +219,16 @@ def get_latest_balances_from_exchange():
         ) t2 ON t1.address = t2.address 
         AND t1.date = t2.max_date
     )
-    SELECT lb.address, lb.date, lb.balance
+    SELECT lb.address, lb.date, lb.balance / 1000000000000000000.0 as balance
     FROM latest_balances as lb
     INNER JOIN (
-        SELECT ? as address
+        SELECT %(address1)s as address
         UNION ALL
-        SELECT ?
+        SELECT %(address2)s
     ) as exd ON lb.address = exd.address
     """
-    df = st.session_state.db_client.query_to_df(query, params=tuple(addresses))
+    params = {'address1':addresses[0], 'address2':addresses[1]}
+    df = st.session_state.db_client.query_to_df(query, params=params)
     return df
 
 def get_latest_balances_from_operator():
@@ -253,17 +254,18 @@ def get_latest_balances_from_operator():
         ) t2 ON t1.address = t2.address 
             AND t1.date = t2.max_date
     )
-    SELECT lb.address, lb.date, lb.balance
+    SELECT lb.address, lb.date, lb.balance / 1000000000000000000.0 as balance
     FROM latest_balances as lb
     INNER JOIN (
-        SELECT ? as address
+        SELECT %(address1)s as address
         UNION ALL
-        SELECT ?
+        SELECT %(address2)s
         UNION ALL
-        SELECT ?
+        SELECT %(address3)s
     ) as op ON lb.address = op.address
     """
-    df = st.session_state.db_client.query_to_df(query, params=tuple(addresses))
+    params = {'address1':addresses[0], 'address2':addresses[1], 'address3':addresses[2]}
+    df = st.session_state.db_client.query_to_df(query, params=params)
     return df
 
 def get_latest_balances_from_game_ops_wallet():
@@ -361,7 +363,7 @@ def get_address_info(address: str):
     WITH balances AS (
         SELECT date, balance as balance
         FROM adjusted_daily_balances
-        WHERE address = ? and date >= '2024-09-26'
+        WHERE address = %(address)s and date >= '2024-09-26'
     ),
     airdrop as (
         SELECT 
@@ -369,7 +371,7 @@ def get_address_info(address: str):
             SUM(value / 1000000000000000000.0) as airdrop
         FROM airdrops
         WHERE 
-            to_address = ? and 
+            to_address = %(address)s and 
             DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
         GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
     ),
@@ -379,7 +381,7 @@ def get_address_info(address: str):
             SUM(value / 1000000000000000000.0) as withdraw
         FROM withdrawals
         WHERE 
-            to_address = ? and
+            to_address = %(address)s and
             DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
         GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
     ),
@@ -389,13 +391,13 @@ def get_address_info(address: str):
             SUM(value / 1000000000000000000.0) as deposit
         FROM deposits
         WHERE 
-            from_address = ? and 
+            from_address = %(address)s and 
             DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
         GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
     )
     SELECT 
         b.date,
-        b.balance,
+        b.balance / 1000000000000000000.0 as balance,
         COALESCE(a.airdrop, 0) as airdrop,
         COALESCE(w.withdraw, 0) as withdraw,
         COALESCE(d.deposit, 0) as deposit
@@ -405,8 +407,14 @@ def get_address_info(address: str):
     LEFT JOIN deposit d ON b.date = d.date
     ORDER BY b.date DESC    
     """
-    df = st.session_state.db_client.query_to_df(query, params=(address, address, address, address))
+    params = {'address':address}
+    df = st.session_state.db_client.query_to_df(query, params=params)
+    # client = DatabaseClient()
+    # df = client.query_to_df(query, params=params)
     return df
+
+# df = get_address_info('0xD56a823971228F7a066dE58263f345C090597CD9')
+# print(df)
 
 
 def get_nft_sell_transactions(address:str):

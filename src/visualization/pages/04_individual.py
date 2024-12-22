@@ -6,15 +6,20 @@ from src.visualization.components.layout.sidebar import show_sidebar
 from src.data_access.query import get_latest_balances_from_all_addresses, get_latest_balances_from_airdrop_recipient, get_latest_balances_from_exchange, get_latest_balances_from_operator, get_address_info
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.visualization.components.charts.chart import display_chart
+from src.data_access.client import DatabaseClient
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
 
-show_sidebar()
 
 
 st.title("個別アドレス情報")
+
+if 'db_client' not in st.session_state:
+    st.session_state.db_client = DatabaseClient()
+
+show_sidebar()
 
 # データソースの選択
 data_sources = {
@@ -26,7 +31,9 @@ data_sources = {
 
 
 selected_source = st.selectbox("アドレスのカテゴリーを選択してください:", list(data_sources.keys()))
-df = data_sources[selected_source]()
+
+with st.spinner('データを取得中...'):
+    df = data_sources[selected_source]()
 
 
 df = df[['address', 'balance']]
