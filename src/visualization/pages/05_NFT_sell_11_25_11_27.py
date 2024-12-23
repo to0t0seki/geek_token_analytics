@@ -3,10 +3,25 @@ from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode
 from src.visualization.components.charts.chart import display_nft_sell_chart
 import streamlit as st
 from src.visualization.components.layout.sidebar import show_sidebar
+from src.data_access.client import DatabaseClient
+
+st.set_page_config(page_title="GEEK Token アナリティクス",
+                    page_icon="📊",
+                    layout="wide")
 
 
 
-df = get_nft_sell_transactions("0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62")
+
+
+st.title('NFT購入個数分布')
+st.write('11/25-11/28のNFTセールをGeekで購入した人の個数分布です。')
+if 'db_client' not in st.session_state:
+    st.session_state.db_client = DatabaseClient()
+
+show_sidebar()
+
+with st.spinner('データを取得中...'):
+    df = get_nft_sell_transactions("0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62")
 df['value'] = df['value'].round(0).astype(int)
 groupby_address_df = df.groupby('from_address')['value'].sum()
 groupby_value_df = groupby_address_df.value_counts().sort_index().reset_index()
@@ -26,14 +41,8 @@ groupby_value_df = groupby_value_df[['buy_count', 'count']]
 groupby_value_df.rename(columns={'count':'ユニークアドレス数','buy_count':'購入個数'}, inplace=True)
 gb = GridOptionsBuilder.from_dataframe(groupby_value_df)
 
-st.set_page_config(page_title="GEEK Token アナリティクス",
-                    page_icon="📊",
-                    layout="wide")
 
-show_sidebar()
 
-st.title('NFT購入個数分布')
-st.write('11/25-11/28のNFTセールをGeekで購入した人の個数分布です。')
 
 grid_response = AgGrid(
     groupby_value_df,

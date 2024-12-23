@@ -3,14 +3,21 @@ from src.visualization.components.layout.sidebar import show_sidebar
 from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode
 from src.visualization.components.charts.chart import display_nft_sell_chart
 from src.data_access.query import get_nft_transactions
+from src.data_access.client import DatabaseClient
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
 
+st.title("NFTセール集計（11/12-11/27）")
+
+if 'db_client' not in st.session_state:
+    st.session_state.db_client = DatabaseClient()
+
 show_sidebar()
 
-df = get_nft_transactions()
+with st.spinner('データを取得中...'):
+    df = get_nft_transactions()
 tmp = df.groupby('count').count().reset_index()
 tmp.rename(columns={'count':'購入個数','to_address':'ユニークアドレス数'}, inplace=True)
 
@@ -18,7 +25,7 @@ total_count = tmp['購入個数'] * tmp['ユニークアドレス数']
 total_people = tmp['ユニークアドレス数'].sum()
 
 
-st.title("NFTセール集計（11/12-11/27）")
+
 
 gb = GridOptionsBuilder.from_dataframe(tmp)
 

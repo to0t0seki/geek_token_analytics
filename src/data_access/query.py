@@ -1,6 +1,4 @@
 import streamlit as st
-from src.data_access.client import DatabaseClient
-import pandas as pd
 
 def get_all_balances():
     """
