@@ -32,13 +32,9 @@ def get_airdrop_recipient_balances():
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     """
     df = st.session_state.db_client.query_to_df_with_address_date_index(query)
-    # client = DatabaseClient()
-    # df = client.query_to_df_with_address_date_index(query)
-   
-
+ 
     return df
-# df = get_airdrop_recipient_balances()
-# print(df)
+
 
 
 def get_exchange_balances():
@@ -409,12 +405,8 @@ def get_address_info(address: str):
     """
     params = {'address':address}
     df = st.session_state.db_client.query_to_df(query, params=params)
-    # client = DatabaseClient()
-    # df = client.query_to_df(query, params=params)
     return df
 
-# df = get_address_info('0xD56a823971228F7a066dE58263f345C090597CD9')
-# print(df)
 
 
 def get_nft_sell_transactions(address:str):
@@ -435,11 +427,7 @@ def get_jst_4am_close_price():
     WHERE unix_timestamp(timestamp) % (24 * 60 * 60) = 18 * 60 * 60
     """
     df = st.session_state.db_client.query_to_df(query)
-    # client = DatabaseClient()
-    # df = client.query_to_df(query)
     return df
-# df = get_jst_4am_close_price()
-# print(df)
 
 def get_nft_transactions():
     # pd.set_option('display.max_columns', None)
@@ -450,8 +438,8 @@ def get_nft_transactions():
         SELECT to_address, count(to_address) as count
         FROM nft_transactions
         where method = '0xe3456fbb'
-        and timestamp between '2024-11-12 13:00:00' and '2024-11-12 15:59:59'
-        or timestamp between '2024-11-19 13:00:00' and '2024-11-19 15:59:59'
+        and (timestamp between '2024-11-12 13:00:00' and '2024-11-12 15:59:59'
+        or timestamp between '2024-11-19 13:00:00' and '2024-11-19 15:59:59')
         group by to_address
 
         union all

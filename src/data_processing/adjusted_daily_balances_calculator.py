@@ -192,8 +192,12 @@ def calculate_yesterday_balances() -> None:
 if __name__ == "__main__":
     create_daily_balances_table()
     calculate_daily_balances()
-    if sys.argv[1] == "yesterday":  
-        calculate_yesterday_balances()
-    elif sys.argv[1] == "today":
-        calculate_todays_balances()
+
+    if len(sys.argv) == 1:
+        if sys.argv[1] == "yesterday":  
+            calculate_yesterday_balances()
+        elif sys.argv[1] == "today":
+            calculate_todays_balances()
+        else:
+            print("引数が不正です。")
 

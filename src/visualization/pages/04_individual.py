@@ -74,6 +74,7 @@ selected_row = grid_response['selected_rows']
 if isinstance(selected_row, pd.DataFrame):
     st.write(f"選択されたアドレス: {selected_row.iloc[0]['アドレス']}, 備考: {selected_row.iloc[0]['Note']}")
     address_info_df = get_address_info(selected_row.iloc[0]['アドレス'])
+    address_info_df['date'] = pd.to_datetime(address_info_df['date']).dt.strftime('%Y-%m-%d')
     
     address_info_df['balance'] = address_info_df['balance'].round(0)
     address_info_df['airdrop'] = address_info_df['airdrop'].round(0)
