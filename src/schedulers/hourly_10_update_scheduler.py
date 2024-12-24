@@ -1,3 +1,5 @@
+import sys
+sys.path.append("~/geek_analytics_test")
 from src.data_collection.geek_transaction_importer import get_geek_data, calculate_todays_balances
 
 def hourly_10_update_scheduler():

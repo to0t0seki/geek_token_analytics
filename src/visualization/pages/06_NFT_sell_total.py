@@ -14,7 +14,6 @@ st.title("NFTセール集計（11/12-11/27）")
 if 'db_client' not in st.session_state:
     st.session_state.db_client = DatabaseClient()
 
-st.write(st.session_state.db_client)
 show_sidebar()
 
 with st.spinner('データを取得中...'):
