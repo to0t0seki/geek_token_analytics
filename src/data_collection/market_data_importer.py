@@ -4,6 +4,7 @@ from src.data_access.client import DatabaseClient
 
 
 
+
 #open,high,low,close,volume,usdt_volume
 def fetch_ohlcv_from_bitget(unix_time: int):
     unix_time = int(unix_time*1000)
@@ -18,9 +19,9 @@ def fetch_ohlcv_from_bitget(unix_time: int):
 
 
 def aggregate_ohlcv_history(fetch_ohlcv_func = fetch_ohlcv_from_bitget) -> None:
+    create_ohlcv_1h()
     current_time = int(time.time())
     start_time = 1727881200
-    ohlcv_list = []
     existing_timestamps = set()
     db_client = DatabaseClient()
 
@@ -32,10 +33,6 @@ def aggregate_ohlcv_history(fetch_ohlcv_func = fetch_ohlcv_from_bitget) -> None:
             if ohlcv[0] not in existing_timestamps: 
                 insert_ohlcv_1h(db_client, ohlcv[:7])
                 existing_timestamps.add(ohlcv[0])
-            else:
-                # print(f"skip {ohlcv[0]}")
-                pass
-
         start_time += 60*60*24*8
 
 
@@ -99,7 +96,6 @@ def ohlcv_1h_to_csv(csv_file: str = 'ohlcv_1h.csv'):
 
 
 if __name__ == "__main__":
-    create_ohlcv_1h()
     aggregate_ohlcv_history()
 
 

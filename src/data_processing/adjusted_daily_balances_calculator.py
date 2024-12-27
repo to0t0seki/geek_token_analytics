@@ -127,13 +127,21 @@ def calculate_todays_balances() -> None:
     FROM adjusted_daily_balances
     WHERE date = DATE(DATE_SUB(DATE_ADD(NOW(), INTERVAL 5 HOUR), INTERVAL 1 DAY))
     )
-    SELECT 
-        DATE(DATE_ADD('now', INTERVAL 5 HOUR)) as date,
-        COALESCE(tab.address, pb.address) as address,
-        COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) as balance
+     SELECT 
+        DATE(DATE_ADD('now', INTERVAL 5 HOUR)) AS date,
+        COALESCE(tab.address, pb.address) AS address,
+        COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) AS balance
     FROM today_aggregated_balances tab
-    FULL OUTER JOIN previous_balances pb ON tab.address = pb.address
-    WHERE COALESCE(tab.address, pb.address) IS NOT NULL;
+    LEFT JOIN previous_balances pb ON tab.address = pb.address
+
+    UNION
+
+    SELECT 
+        DATE(DATE_ADD('now', INTERVAL 5 HOUR)) AS date,
+        COALESCE(tab.address, pb.address) AS address,
+        COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) AS balance
+    FROM today_aggregated_balances tab
+    RIGHT JOIN previous_balances pb ON tab.address = pb.address
     ON DUPLICATE KEY UPDATE balance = VALUES(balance);
     """
     client = DatabaseClient()
@@ -176,12 +184,20 @@ def calculate_yesterday_balances() -> None:
     WHERE date = DATE(DATE_SUB(DATE_ADD(NOW(), INTERVAL 5 HOUR), INTERVAL 2 DAY))
     )
     SELECT 
-        DATE(DATE_SUB(DATE_ADD(NOW(), INTERVAL 5 HOUR), INTERVAL 1 DAY)) as date
-        COALESCE(tab.address, pb.address) as address,
-        COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) as balance
+        DATE(DATE_SUB(DATE_ADD(NOW(), INTERVAL 5 HOUR), INTERVAL 1 DAY)) AS date,
+        COALESCE(tab.address, pb.address) AS address,
+        COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) AS balance
     FROM yesterday_aggregated_balances tab
-    FULL OUTER JOIN previous_balances pb ON tab.address = pb.address
-    WHERE COALESCE(tab.address, pb.address) IS NOT NULL;
+    LEFT JOIN previous_balances pb ON tab.address = pb.address
+
+    UNION ALL
+
+    SELECT 
+        DATE(DATE_SUB(DATE_ADD(NOW(), INTERVAL 5 HOUR), INTERVAL 1 DAY)) AS date,
+        COALESCE(tab.address, pb.address) AS address,
+        COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) AS balance
+    FROM yesterday_aggregated_balances tab
+    RIGHT JOIN previous_balances pb ON tab.address = pb.address
     ON DUPLICATE KEY UPDATE balance = VALUES(balance);
     """
     client = DatabaseClient()
@@ -193,7 +209,7 @@ if __name__ == "__main__":
     create_daily_balances_table()
     calculate_daily_balances()
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 2:
         if sys.argv[1] == "yesterday":  
             calculate_yesterday_balances()
         elif sys.argv[1] == "today":
