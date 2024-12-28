@@ -458,6 +458,7 @@ def get_nft_transactions():
 
 
 
+
 #    count(date(datetime(timestamp))) date(datetime(timestamp))
 # 0                                33                2024-11-08
 # 1                               618                2024-11-12

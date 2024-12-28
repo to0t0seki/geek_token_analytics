@@ -18,10 +18,10 @@ def fetch_ohlcv_from_bitget(unix_time: int):
         return None
 
 
-def aggregate_ohlcv_history(fetch_ohlcv_func = fetch_ohlcv_from_bitget) -> None:
+def aggregate_ohlcv_history(fetch_ohlcv_func = fetch_ohlcv_from_bitget,start_time = 1727190000) -> None:
+    start_time += 60*60*24*8
     create_ohlcv_1h()
     current_time = int(time.time())
-    start_time = 1727881200
     existing_timestamps = set()
     db_client = DatabaseClient()
 
@@ -71,12 +71,10 @@ def insert_ohlcv_1h(db_client: DatabaseClient, ohlcv_list: list):
     INSERT IGNORE INTO ohlcv_1h (timestamp, open, high, low, close, volume, usdt_volume) VALUES (from_unixtime(%s), %s, %s, %s, %s, %s, %s)
     """
     try:
-        print(ohlcv_list[0])
+        
         cursor = db_client.execute_params(insert_ohlcv_1h_query, ohlcv_list)
-        if cursor.rowcount == 0:
-            pass
-            # print(f"skip {ohlcv_list[0]}")
-        else:
+        if cursor.rowcount > 0:
+            print(ohlcv_list[0])
             print(f"inserted {cursor.rowcount} rows")
 
     except Exception as e:
@@ -94,9 +92,16 @@ def ohlcv_1h_to_csv(csv_file: str = 'ohlcv_1h.csv'):
 
 
 
+def get_latest_ohlcv_1h():
+    db_client = DatabaseClient()
+    result = db_client.fetch_one("SELECT * FROM ohlcv_1h ORDER BY timestamp DESC LIMIT 1")
+    unixtime = int(result[0].timestamp())
+    return unixtime
+
 
 if __name__ == "__main__":
-    aggregate_ohlcv_history()
+    start_time = get_latest_ohlcv_1h()
+    aggregate_ohlcv_history(start_time=start_time)
 
 
 

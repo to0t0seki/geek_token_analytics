@@ -1,6 +1,5 @@
 import sys
 sys.path.append("/home/ubuntu/geek_analytics_test")
-import time
 from src.data_collection.geek_transaction_importer import get_geek_data, calculate_todays_balances
 from datetime import datetime, timedelta
 
