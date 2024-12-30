@@ -10,3 +10,4 @@ cron.log
 /.devcontainer/
 /.vscode/
 .streamlit/config.toml
+.env

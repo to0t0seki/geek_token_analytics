@@ -8,6 +8,8 @@ def show_sidebar():
     # latest_timestamp = get_latest_timestamp()
     # latest_timestamp = (datetime.fromisoformat(latest_timestamp.replace('Z', '+00:00')) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
     st.sidebar.image("img/logo2.jpg", width=200)
+    # st.write("<span style='color: red;'>現在データに</span>", unsafe_allow_html=True)
+    st.sidebar.warning("⚠️ 注意: 現在表示されているデータに一部不正確な部分があります。近日中に修正予定です。")
 
     st.sidebar.markdown(f"""
     ### 説明
