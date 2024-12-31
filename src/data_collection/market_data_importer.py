@@ -98,10 +98,12 @@ def get_latest_ohlcv_1h():
     unixtime = int(result[0].timestamp())
     return unixtime
 
-
-if __name__ == "__main__":
+def fetch_ohlcv():
     start_time = get_latest_ohlcv_1h()
     aggregate_ohlcv_history(start_time=start_time)
+
+if __name__ == "__main__":
+    fetch_ohlcv()
 
 
 

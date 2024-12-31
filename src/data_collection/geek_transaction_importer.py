@@ -2,7 +2,7 @@ import requests
 import time
 from typing import Dict, Any
 from src.data_access.client import DatabaseClient
-from src.data_processing.adjusted_daily_balances_calculator import calculate_todays_balances
+
 
 def create_normalized_tables(db_client: DatabaseClient) -> None:
     """正規化されたテーブルを作成する"""
