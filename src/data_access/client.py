@@ -22,20 +22,22 @@ class DatabaseClient:
         return mysql.connector.connect(**self.config)
 
 
-    def execute(self, query: str) -> None:
-        """DDLを実行"""
+    def execute(self, query: str, params: tuple| None = None) -> None:
         with self.get_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query)
+                if params is None:  
+                    cursor.execute(query)
+                else:
+                    cursor.execute(query, params)
                 conn.commit()
 
-    def execute_params(self, query: str, params: tuple = ()) -> None:
-        """更新系クエリを実行"""
-        with self.get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query, params)
-                conn.commit()
-                return cursor
+    # def execute_params(self, query: str, params: tuple = ()) -> None:
+    #     """更新系クエリを実行"""
+    #     with self.get_connection() as conn:
+    #         with conn.cursor() as cursor:
+    #             cursor.execute(query, params)
+    #             conn.commit()
+    #             return cursor
 
     def query_to_df(self, query: str, params: tuple = None) -> pd.DataFrame:
         """クエリを実行しDataFrameを返す"""

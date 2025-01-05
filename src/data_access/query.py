@@ -428,9 +428,6 @@ def get_jst_4am_close_price():
     return df
 
 def get_nft_transactions():
-    # pd.set_option('display.max_columns', None)
-    # pd.set_option('display.width', None)
-    # pd.set_option('display.max_colwidth', None)
     query = """
     with combined_results as (
         SELECT to_address, count(to_address) as count
