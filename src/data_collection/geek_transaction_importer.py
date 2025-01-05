@@ -182,4 +182,4 @@ if __name__ == "__main__":
     # print(generate_url_with_params(params={'block_number': 1433326, 'log_index': 1}))
     get_geek_data()
     # resume_geek_data(2180939, 2)
-    # calculate_todays_balances()
+    # calculate_today_balances()

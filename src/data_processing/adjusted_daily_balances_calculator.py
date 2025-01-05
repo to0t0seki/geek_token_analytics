@@ -92,7 +92,7 @@ def calculate_daily_balances() -> None:
     client.execute(query)
     print("日次残高を計算しました")
 
-def calculate_todays_balances() -> None:
+def calculate_today_balances() -> None:
     query = """
     INSERT INTO adjusted_daily_balances (date, address, balance)
     WITH today_transactions AS (
@@ -101,7 +101,7 @@ def calculate_todays_balances() -> None:
         from_address AS address,
         -value AS balance_change
     FROM geek_transactions
-    WHERE DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) = DATE(DATE_ADD('now', INTERVAL 5 HOUR))
+    WHERE DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) = DATE(DATE_ADD(NOW(), INTERVAL 5 HOUR))
     AND from_address IS NOT NULL
 
     UNION ALL
@@ -111,8 +111,7 @@ def calculate_todays_balances() -> None:
         to_address AS address,
         value AS balance_change
     FROM geek_transactions
-    WHERE DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) = DATE(DATE_ADD('now', INTERVAL 5 HOUR))
-    AND to_address IS NOT NULL
+    WHERE DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) = DATE(DATE_ADD(NOW(), INTERVAL 5 HOUR))
     ),
     today_aggregated_balances AS (
     SELECT
@@ -128,7 +127,7 @@ def calculate_todays_balances() -> None:
     WHERE date = DATE(DATE_SUB(DATE_ADD(NOW(), INTERVAL 5 HOUR), INTERVAL 1 DAY))
     )
      SELECT 
-        DATE(DATE_ADD('now', INTERVAL 5 HOUR)) AS date,
+        DATE(DATE_ADD(NOW(), INTERVAL 5 HOUR)) AS date,
         COALESCE(tab.address, pb.address) AS address,
         COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) AS balance
     FROM today_aggregated_balances tab
@@ -137,7 +136,7 @@ def calculate_todays_balances() -> None:
     UNION
 
     SELECT 
-        DATE(DATE_ADD('now', INTERVAL 5 HOUR)) AS date,
+        DATE(DATE_ADD(NOW(), INTERVAL 5 HOUR)) AS date,
         COALESCE(tab.address, pb.address) AS address,
         COALESCE(pb.balance, 0) + COALESCE(tab.daily_change, 0) AS balance
     FROM today_aggregated_balances tab
@@ -213,7 +212,7 @@ if __name__ == "__main__":
         if sys.argv[1] == "yesterday":  
             calculate_yesterday_balances()
         elif sys.argv[1] == "today":
-            calculate_todays_balances()
+            calculate_today_balances()
         else:
             print("引数が不正です。")
 
