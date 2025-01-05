@@ -26,7 +26,7 @@ def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> N
     INSERT IGNORE INTO reorg_blocks (height, block_hash, timestamp, tx_count, transaction_count, type)
     VALUES (%s, %s, %s, %s, %s, %s)
     """
-    db_client.execute_params(insert_transfer_detail_query, (data['height'], data['block_hash'], data['timestamp'], data['tx_count'], data['transaction_count'], data['type']))
+    db_client.execute(insert_transfer_detail_query, (data['height'], data['block_hash'], data['timestamp'], data['tx_count'], data['transaction_count'], data['type']))
     
 def get_letest_block():
     db_client = DatabaseClient()

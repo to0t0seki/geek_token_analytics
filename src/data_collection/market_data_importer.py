@@ -72,7 +72,7 @@ def insert_ohlcv_1h(db_client: DatabaseClient, ohlcv_list: list):
     """
     try:
         
-        cursor = db_client.execute_params(insert_ohlcv_1h_query, ohlcv_list)
+        cursor = db_client.execute(insert_ohlcv_1h_query, ohlcv_list)
         if cursor.rowcount > 0:
             print(ohlcv_list[0])
             print(f"inserted {cursor.rowcount} rows")

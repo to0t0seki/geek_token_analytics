@@ -64,7 +64,7 @@ def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> N
     INSERT IGNORE INTO geek_transactions (block_number, log_index, tx_hash, timestamp, from_address, to_address, value, method, type)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
-    db_client.execute_params(insert_transfer_detail_query, (data['block_number'], data['log_index'], data['tx_hash'], data['timestamp'], data['from_address'], data['to_address'], data['value'], data['method'], data['type']))
+    db_client.execute(insert_transfer_detail_query, (data['block_number'], data['log_index'], data['tx_hash'], data['timestamp'], data['from_address'], data['to_address'], data['value'], data['method'], data['type']))
     
 def get_letest_transaction():
     db_client = DatabaseClient()

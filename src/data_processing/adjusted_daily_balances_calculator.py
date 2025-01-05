@@ -215,4 +215,3 @@ if __name__ == "__main__":
             calculate_today_balances()
         else:
             print("引数が不正です。")
-

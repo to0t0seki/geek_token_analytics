@@ -93,10 +93,14 @@ def cleanup_reorg_records():
         return
     
     df = find_reorg_records_from_db(client, reorg_blocks)
-    if not df:
-        print("dfが取得できませんでした")
+    if df.empty:
+        print("削除対象のレコードがありませんでした")
         return
     
     tx_hash_list = df['tx_hash'].to_list()
     delete_reorg_records_from_db(client, tx_hash_list)
+
+
+if __name__ == "__main__":
+    cleanup_reorg_records()
 
