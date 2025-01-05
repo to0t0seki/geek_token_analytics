@@ -13,6 +13,7 @@ def show_sidebar():
 
     st.sidebar.markdown(f"""
     ### 説明
+    こちらはGEEKVerseのみのデータになります。\n
     毎時10分更新\n
     毎日の更新は04:15JST\n
     日付の区切りは04:00JST\n
