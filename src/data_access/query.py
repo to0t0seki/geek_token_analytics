@@ -46,9 +46,9 @@ def get_exchange_balances():
     query = """
     SELECT address, date, balance
     FROM adjusted_daily_balances
-    WHERE address IN ({})
+    WHERE address = ANY(%s)
     ORDER BY address, date
-    """.format(','.join(['%s']*len(addresses)))
+    """
 
     df = st.session_state.db_client.query_to_df_with_address_date_index(query, params=tuple(addresses))
 
@@ -57,16 +57,16 @@ def get_exchange_balances():
 def get_daily_airdrops():   
     query = """
     SELECT 
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+        DATE(timestamp + INTERVAL '5 hours') as date,
         SUM(value / 1000000000000000000.0) as value,
         COUNT(DISTINCT to_address) as to_address_count,
         SUM(value / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
     FROM 
         airdrops
     WHERE
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
+        DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
     GROUP BY 
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))  
+        DATE(timestamp + INTERVAL '5 hours')
     ORDER BY 
         date desc
     """
@@ -77,16 +77,16 @@ def get_daily_airdrops():
 def get_daily_deposits():
     query = """
     SELECT 
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+        DATE(timestamp + INTERVAL '5 hours') as date,
         SUM(value / 1000000000000000000.0) as value,
         COUNT(DISTINCT from_address) as address_count,
         SUM(value / 1000000000000000000.0) / COUNT(DISTINCT from_address) as per_address
     FROM 
         deposits
     WHERE
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
+        DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
     GROUP BY 
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
+        DATE(timestamp + INTERVAL '5 hours')
     ORDER BY 
         date desc
     """
@@ -99,7 +99,7 @@ def get_daily_deposits():
 def get_daily_withdrawals():
     query = """
     SELECT 
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+        DATE(timestamp + INTERVAL '5 hours') as date,
         SUM(value / 1000000000000000000.0) as value,
         COUNT(DISTINCT to_address) as address_count,
         SUM(value / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
@@ -107,9 +107,9 @@ def get_daily_withdrawals():
         withdrawals
     WHERE
         to_address != '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' and
-        +DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
+        DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
     GROUP BY 
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
+        DATE(timestamp + INTERVAL '5 hours')
     ORDER BY 
         date desc
     """
@@ -361,33 +361,33 @@ def get_address_info(address: str):
     ),
     airdrop as (
         SELECT 
-            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+            DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1000000000000000000.0) as airdrop
         FROM airdrops
         WHERE 
             to_address = %(address)s and 
-            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
-        GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
+            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
+        GROUP BY DATE(timestamp + INTERVAL '5 hours')
     ),
     withdraw as (   
         SELECT 
-            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+            DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1000000000000000000.0) as withdraw
         FROM withdrawals
         WHERE 
             to_address = %(address)s and
-            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
-        GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
+            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
+        GROUP BY DATE(timestamp + INTERVAL '5 hours')
     ),
     deposit as (
         SELECT 
-            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) as date,
+            DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1000000000000000000.0) as deposit
         FROM deposits
         WHERE 
             from_address = %(address)s and 
-            DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) >= '2024-09-26'
-        GROUP BY DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR))
+            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
+        GROUP BY DATE(timestamp + INTERVAL '5 hours')
     )
     SELECT 
         b.date,

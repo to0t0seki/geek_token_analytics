@@ -36,8 +36,7 @@ def get_reorg_blocks_from_api(params: dict = {}):
 def find_reorg_records_from_db(db_client: DatabaseClient, reorg_blocks: list):
     try:
         print(f"{len(reorg_blocks)} 件のブロックを検索します")
-        placeholders = ', '.join(['%s'] * len(reorg_blocks))
-        query = f"SELECT * FROM geek_transactions where block_number IN ({placeholders})"
+        query = f"SELECT * FROM geek_transactions where block_number = ANY(%s)"
         df = db_client.query_to_df(query, tuple(reorg_blocks))
         print(f"{len(df)} 件のトランザクションを取得しました")
         return df
@@ -78,8 +77,7 @@ def check_record_count_decorator(func):
 def delete_reorg_records_from_db(db_client: DatabaseClient, tx_hash: list):
     try:
         print(f"{len(tx_hash)}件のトランザクションを削除します")
-        placeholders = ', '.join(['%s'] * len(tx_hash))
-        query = f"DELETE FROM geek_transactions WHERE tx_hash IN ({placeholders})"
+        query = f"DELETE FROM geek_transactions WHERE tx_hash = ANY(%s)"
         db_client.execute(query, tuple(tx_hash))
     except Exception as e:
         print(f"delete_reorg_records_from_db中にエラーが発生しました: {e}")

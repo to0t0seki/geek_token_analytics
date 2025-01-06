@@ -7,7 +7,7 @@ from src.data_collection.market_data_importer import fetch_ohlcv
 
 def hourly_10_update_scheduler():
     current_time = datetime.now() + timedelta(hours=9)
-    print(f"start: {current_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"start: {current_time.strftime('%Y-%m-%d %H:%M:%s')}")
     print("10分の更新を行います")
     get_geek_data()
     calculate_today_balances()

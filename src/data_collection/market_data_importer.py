@@ -40,12 +40,12 @@ def create_ohlcv_1h():
     create_ohlcv_1h_table = """
         CREATE TABLE IF NOT EXISTS ohlcv_1h (
             timestamp timestamp PRIMARY KEY,
-            open DECIMAL(20,8),
-            high DECIMAL(20,8),
-            low DECIMAL(20,8),
-            close DECIMAL(20,8),
-            volume DECIMAL(20,8),
-            usdt_volume DECIMAL(20,8)
+            open NUMERIC(20,8),
+            high NUMERIC(20,8),
+            low NUMERIC(20,8),
+            close NUMERIC(20,8),
+            volume NUMERIC(20,8),
+            usdt_volume NUMERIC(20,8)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     """
     db_client = DatabaseClient()
@@ -54,21 +54,20 @@ def create_ohlcv_1h():
    
     
 
-    index_exists = db_client.fetch_one("""
-    SHOW INDEX FROM ohlcv_1h WHERE Key_name = 'idx_ohlcv_1h_timestamp';
-    """)
-
-    if not index_exists:
-        create_index_timestamp = """
-        CREATE INDEX idx_ohlcv_1h_timestamp ON ohlcv_1h(timestamp);
-        """
-        db_client.execute(create_index_timestamp)
+ 
+    create_index_timestamp = """
+    CREATE INDEX IF NOT EXISTS idx_ohlcv_1h_timestamp ON ohlcv_1h(timestamp);
+    """
+    result = db_client.execute(create_index_timestamp)
+    if result:
         print("timestampインデックスが作成されました")
 
 
 def insert_ohlcv_1h(db_client: DatabaseClient, ohlcv_list: list):
     insert_ohlcv_1h_query = """
-    INSERT IGNORE INTO ohlcv_1h (timestamp, open, high, low, close, volume, usdt_volume) VALUES (from_unixtime(%s), %s, %s, %s, %s, %s, %s)
+    INSERT INTO ohlcv_1h (timestamp, open, high, low, close, volume, usdt_volume) 
+    VALUES (from_unixtime(%(timestamp)s), %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s, %(usdt_volume)s)
+    ON CONFLICT (timestamp) DO NOTHING
     """
     try:
         

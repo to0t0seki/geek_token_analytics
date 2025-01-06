@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 def daily_1915_utc_update_scheduler():
     current_time = datetime.now() + timedelta(hours=9)
-    print(f"start: {current_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"start: {current_time.strftime('%Y-%m-%d %H:%M:%s')}")
     print("1915 UTCの更新を行います")
     calculate_yesterday_balances()
     print("1915 UTCの更新を行いました")

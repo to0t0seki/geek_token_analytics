@@ -7,10 +7,10 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
     """正規化されたテーブルを作成する"""
     create_transactions_table = """
     CREATE TABLE IF NOT EXISTS nft_transactions (
-        block_number INT NOT NULL,
-        log_index INT NOT NULL,
+        block_number INTEGER NOT NULL,
+        log_index INTEGER NOT NULL,
         tx_hash VARCHAR(66),
-        timestamp DATETIME(6),
+        timestamp TIMESTAMP(6),
         from_address VARCHAR(42),
         to_address VARCHAR(42),
         token_id VARCHAR(10),
@@ -24,12 +24,23 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
 
 def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> None:
     """正規化されたデータを挿入する"""
-
+    params = {
+        'block_number': data['block_number'],
+        'log_index': data['log_index'],
+        'tx_hash': data['tx_hash'],
+        'timestamp': data['timestamp'],
+        'from_address': data['from_address'],
+        'to_address': data['to_address'],
+        'token_id': data['token_id'],
+        'method': data['method'],
+        'type': data['type']
+    }
     insert_transfer_detail_query = """
-    INSERT IGNORE INTO nft_transactions (block_number, log_index, tx_hash, timestamp, from_address, to_address, token_id, method, type)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    INSERT INTO nft_transactions (block_number, log_index, tx_hash, timestamp, from_address, to_address, token_id, method, type)
+    VALUES (%(block_number)s, %(log_index)s, %(tx_hash)s, %(timestamp)s, %(from_address)s, %(to_address)s, %(token_id)s, %(method)s, %(type)s)
+    ON CONFLICT (block_number, log_index) DO NOTHING
     """
-    db_client.execute(insert_transfer_detail_query, (data['block_number'], data['log_index'], data['tx_hash'], data['timestamp'], data['from_address'], data['to_address'], data['token_id'], data['method'], data['type']))
+    db_client.execute(insert_transfer_detail_query, params)
 
 def get_letest_transaction():
     db_client = DatabaseClient()

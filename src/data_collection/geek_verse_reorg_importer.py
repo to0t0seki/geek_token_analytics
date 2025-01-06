@@ -7,9 +7,9 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
     """正規化されたテーブルを作成する"""
     create_transactions_table = """
     CREATE TABLE IF NOT EXISTS reorg_blocks (
-        height INT NOT NULL,
+        height INTEGER NOT NULL,
         block_hash VARCHAR(66),
-        timestamp DATETIME(6),
+        timestamp TIMESTAMP(6),
         PRIMARY KEY (height),
         tx_count INT,
         transaction_count INT,
@@ -21,12 +21,20 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
 
 def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> None:
     """正規化されたデータを挿入する"""
-
+    params = {
+        'height': data['height'],
+        'block_hash': data['block_hash'],
+        'timestamp': data['timestamp'],
+        'tx_count': data['tx_count'],
+        'transaction_count': data['transaction_count'],
+        'type': data['type']
+    }
     insert_transfer_detail_query = """
-    INSERT IGNORE INTO reorg_blocks (height, block_hash, timestamp, tx_count, transaction_count, type)
-    VALUES (%s, %s, %s, %s, %s, %s)
+    INSERT INTO reorg_blocks (height, block_hash, timestamp, tx_count, transaction_count, type)
+    VALUES (%(height)s, %(block_hash)s, %(timestamp)s, %(tx_count)s, %(transaction_count)s, %(type)s)
+    ON CONFLICT (height) DO NOTHING
     """
-    db_client.execute(insert_transfer_detail_query, (data['height'], data['block_hash'], data['timestamp'], data['tx_count'], data['transaction_count'], data['type']))
+    db_client.execute(insert_transfer_detail_query, params)
     
 def get_letest_block():
     db_client = DatabaseClient()

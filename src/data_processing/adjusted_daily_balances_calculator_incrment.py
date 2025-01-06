@@ -4,7 +4,7 @@ def create_daily_players_balance_table():
     create_table_query = """
     CREATE TABLE IF NOT EXISTS daily_players_balance (
         date DATE PRIMARY KEY,
-        balance DECIMAL(65,0)
+        balance NUMERIC(65,0)
     );
     """
     db_client = DatabaseClient()
@@ -15,7 +15,7 @@ def calculate_daily_players_balance():
     INSERT INTO daily_players_balance (date, address, balance)
     WITH adjusted_transactions AS (
     SELECT
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) AS date,
+        DATE(timestamp + INTERVAL '5 hours') AS date,
         from_address AS address,
         -value AS balance_change
     FROM geek_transactions
@@ -24,7 +24,7 @@ def calculate_daily_players_balance():
     UNION ALL
 
     SELECT
-        DATE(DATE_ADD(timestamp, INTERVAL 5 HOUR)) AS date,
+        DATE(timestamp + INTERVAL '5 hours') AS date,
         to_address AS address,
         value AS balance_change
     FROM geek_transactions
@@ -70,7 +70,7 @@ def calculate_daily_players_balance():
         ) AS balance
     FROM filled_balances
     ORDER BY date, address
-    ON DUPLICATE KEY UPDATE balance = VALUES(balance);
+    ON CONFLICT (date, address) DO UPDATE SET balance = EXCLUDED.balance;
     """
     db_client = DatabaseClient()
     db_client.execute(query)

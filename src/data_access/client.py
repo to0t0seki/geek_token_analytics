@@ -1,4 +1,4 @@
-import mysql.connector
+import psycopg2
 import pandas as pd
 import os
 from dotenv import load_dotenv
@@ -10,27 +10,26 @@ class DatabaseClient:
 
         load_dotenv()
         self.config = {
-           'host': os.getenv('MYSQL_HOST'),
-           'user': os.getenv('MYSQL_USER'),
-           'password': os.getenv('MYSQL_PASSWORD'),
-           'database': os.getenv('MYSQL_DATABASE'),
-           'port': int(os.getenv('MYSQL_PORT', 3306))
+           'host': os.getenv('POSTGRES_HOST'),
+           'user': os.getenv('POSTGRES_USER'),
+           'password': os.getenv('POSTGRES_PASSWORD'),
+           'database': os.getenv('POSTGRES_DATABASE'),
+           'port': int(os.getenv('POSTGRES_PORT', 5432))
         }
   
 
     def get_connection(self):
-        return mysql.connector.connect(**self.config)
+        return psycopg2.connect(**self.config)
 
 
-    def execute(self, query: str, params: tuple| None = None) -> None:
+    def execute(self, query: str, params: tuple| None = None) -> int:
         with self.get_connection() as conn:
             with conn.cursor() as cursor:
                 if params is None:  
                     cursor.execute(query)
                 else:
                     cursor.execute(query, params)
-                conn.commit()
-                return cursor
+                return cursor.rowcount
 
     def query_to_df(self, query: str, params: tuple = None) -> pd.DataFrame:
         """クエリを実行しDataFrameを返す"""
