@@ -19,7 +19,7 @@ def create_daily_balances_table() -> None:
     CREATE INDEX IF NOT EXISTS idx_daily_balances_address ON adjusted_daily_balances(address);
     """
     result = db_client.execute(create_index_address)
-    if result:
+    if result > 0:
         print("addressインデックスが作成されました")
 
 

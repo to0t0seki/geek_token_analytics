@@ -28,7 +28,7 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
     CREATE INDEX IF NOT EXISTS idx_gt_timestamp ON geek_transactions(timestamp);
     """
     result = db_client.execute(create_index_timestamp)
-    if result:
+    if result > 0:
         print("timestampインデックスが作成されました")
         
 
@@ -37,7 +37,7 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
     CREATE INDEX IF NOT EXISTS idx_gt_from_address ON geek_transactions(from_address);
     """
     result = db_client.execute(create_index_from_address)
-    if result:
+    if result > 0:
         print("from_addressインデックスが作成されました")
 
     
@@ -45,7 +45,7 @@ def create_normalized_tables(db_client: DatabaseClient) -> None:
     CREATE INDEX IF NOT EXISTS idx_gt_to_address ON geek_transactions(to_address);
     """
     result = db_client.execute(create_index_to_address)
-    if result:
+    if result > 0:
         print("to_addressインデックスが作成されました")
 
 def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> None:
