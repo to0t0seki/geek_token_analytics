@@ -46,7 +46,7 @@ def create_ohlcv_1h():
             close NUMERIC(20,8),
             volume NUMERIC(20,8),
             usdt_volume NUMERIC(20,8)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        );
     """
     db_client = DatabaseClient()
     db_client.execute(create_ohlcv_1h_table)
@@ -59,31 +59,36 @@ def create_ohlcv_1h():
     CREATE INDEX IF NOT EXISTS idx_ohlcv_1h_timestamp ON ohlcv_1h(timestamp);
     """
     result = db_client.execute(create_index_timestamp)
-    if result:
+    if result > 0:
         print("timestampインデックスが作成されました")
 
 
 def insert_ohlcv_1h(db_client: DatabaseClient, ohlcv_list: list):
+    params = {
+        'timestamp': ohlcv_list[0],
+        'open': ohlcv_list[1],
+        'high': ohlcv_list[2],
+        'low': ohlcv_list[3],
+        'close': ohlcv_list[4],
+        'volume': ohlcv_list[5],
+        'usdt_volume': ohlcv_list[6]
+    }
     insert_ohlcv_1h_query = """
     INSERT INTO ohlcv_1h (timestamp, open, high, low, close, volume, usdt_volume) 
-    VALUES (from_unixtime(%(timestamp)s), %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s, %(usdt_volume)s)
+    VALUES (to_timestamp(%(timestamp)s), %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s, %(usdt_volume)s)
     ON CONFLICT (timestamp) DO NOTHING
     """
     try:
         
-        cursor = db_client.execute(insert_ohlcv_1h_query, ohlcv_list)
-        if cursor.rowcount > 0:
+        row_count = db_client.execute(insert_ohlcv_1h_query, params)
+        if row_count > 0:
             print(ohlcv_list[0])
-            print(f"inserted {cursor.rowcount} rows")
+            print(f"inserted {row_count} rows")
 
     except Exception as e:
         print(f"Error during insertion: {e}")
         print(f"Sample data: {ohlcv_list[0]}")
  
-
-
-    
-
 def ohlcv_1h_to_csv(csv_file: str = 'ohlcv_1h.csv'):
     db_client = DatabaseClient()
     df = db_client.query_to_df("SELECT * FROM ohlcv_1h")
@@ -91,18 +96,34 @@ def ohlcv_1h_to_csv(csv_file: str = 'ohlcv_1h.csv'):
 
 
 
-def get_latest_ohlcv_1h():
-    db_client = DatabaseClient()
-    result = db_client.fetch_one("SELECT * FROM ohlcv_1h ORDER BY timestamp DESC LIMIT 1")
+def get_latest_ohlcv_1h(client: DatabaseClient):
+    check_table_exists_query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'ohlcv_1h')"
+    result = client.fetch_one(check_table_exists_query)
+    if not result[0]:
+        print("ohlcv_1hテーブルが存在しません")
+        return None
+    
+    check_exists_query = "SELECT EXISTS(SELECT 1 FROM ohlcv_1h)"
+    result = client.fetch_one(check_exists_query)
+    if not result[0]:
+        print("ohlcv_1hテーブルにデータが存在しません")
+        return None
+
+    result = client.fetch_one("SELECT * FROM ohlcv_1h ORDER BY timestamp DESC LIMIT 1")
     unixtime = int(result[0].timestamp())
     return unixtime
 
-def fetch_ohlcv():
-    start_time = get_latest_ohlcv_1h()
-    aggregate_ohlcv_history(start_time=start_time)
+def fetch_ohlcv(client: DatabaseClient):
+    result_time = get_latest_ohlcv_1h(client)
+    if result_time is None:
+        aggregate_ohlcv_history()
+    else:
+        aggregate_ohlcv_history(start_time=result_time)
+
 
 if __name__ == "__main__":
-    fetch_ohlcv()
+    client = DatabaseClient()
+    fetch_ohlcv(client)
 
 
 
