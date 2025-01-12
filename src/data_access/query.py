@@ -186,6 +186,9 @@ def get_latest_balances_from_airdrop_recipient():
         FROM airdrops
     ) as apd ON lb.address = apd.address
     """
+    # from src.data_access.client import DatabaseClient
+    # db_client = DatabaseClient()
+    # df = db_client.query_to_df(query)
     df = st.session_state.db_client.query_to_df(query)
     return df
 
