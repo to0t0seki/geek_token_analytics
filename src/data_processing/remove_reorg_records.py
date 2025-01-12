@@ -36,8 +36,9 @@ def get_reorg_blocks_from_api(params: dict = {}):
 def find_reorg_records_from_db(db_client: DatabaseClient, reorg_blocks: list):
     try:
         print(f"{len(reorg_blocks)} 件のブロックを検索します")
+        params = (reorg_blocks,)
         query = f"SELECT * FROM geek_transactions where block_number = ANY(%s)"
-        df = db_client.query_to_df(query, tuple(reorg_blocks))
+        df = db_client.query_to_df(query, params)
         print(f"{len(df)} 件のトランザクションを取得しました")
         return df
     except Exception as e:
@@ -46,13 +47,19 @@ def find_reorg_records_from_db(db_client: DatabaseClient, reorg_blocks: list):
 
 
 
-def check_transaction_from_api(tx_hash: str):
+def check_transaction_from_api(tx_hash_list: list):
+    reorg_tx_hash_list = []
     try:
-        url = f"https://explorer.geekout-pte.com/api/v2/transactions/{tx_hash}"
-        data = requests.get(url, timeout=10).json()
-        message = data.get('message')
-        if message is not None:
-            return tx_hash
+        for tx_hash in tx_hash_list:
+            print(f"{tx_hash} をチェックします")
+            url = f"https://explorer.geekout-pte.com/api/v2/transactions/{tx_hash}"
+            data = requests.get(url, timeout=10).json()
+            message = data.get('message')
+            if message is not None:
+                print(f"{tx_hash} はリオーガニゼーションです")
+                reorg_tx_hash_list.append(tx_hash)
+        return reorg_tx_hash_list
+            
     except Exception as e:
         print(f"check_transaction_from_api中にエラーが発生しました: {e}")
         return None
@@ -96,7 +103,13 @@ def cleanup_reorg_records():
         return
     
     tx_hash_list = df['tx_hash'].to_list()
-    delete_reorg_records_from_db(client, tx_hash_list)
+    reorg_tx_hash_list = check_transaction_from_api(tx_hash_list)
+    if len(reorg_tx_hash_list) > 0:
+        print(f"{len(reorg_tx_hash_list)}件のリオーガニゼーションを削除します")
+        delete_reorg_records_from_db(client, reorg_tx_hash_list)
+    else:
+        print("リオーガニゼーションであるtxはありませんでした")
+
 
 
 if __name__ == "__main__":

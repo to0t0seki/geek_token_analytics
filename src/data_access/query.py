@@ -6,7 +6,7 @@ def get_all_balances():
     """
     query = """
     SELECT address, date, balance
-    FROM adjusted_daily_balances
+    FROM daily_balances
     WHERE address != '0x0000000000000000000000000000000000000000'
     ORDER BY date, balance DESC
     limit 10
@@ -26,7 +26,7 @@ def get_airdrop_recipient_balances():
         FROM airdrops
     )
     SELECT db.address, db.date, db.balance / 1000000000000000000.0 as balance
-    FROM adjusted_daily_balances db
+    FROM daily_balances db
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     """
     df = st.session_state.db_client.query_to_df_with_address_date_index(query)
@@ -45,7 +45,7 @@ def get_exchange_balances():
     ]
     query = """
     SELECT address, date, balance
-    FROM adjusted_daily_balances
+    FROM daily_balances
     WHERE address = ANY(%s)
     ORDER BY address, date
     """
@@ -148,10 +148,10 @@ def get_latest_balances_from_all_addresses():
         t1.date,
         t1.address,
         t1.balance / 1000000000000000000.0 as balance
-    FROM adjusted_daily_balances t1
+    FROM daily_balances t1
     INNER JOIN (
         SELECT address, MAX(date) as max_date
-        FROM adjusted_daily_balances
+        FROM daily_balances
         GROUP BY address
         ) t2 ON t1.address = t2.address 
         AND t1.date = t2.max_date
@@ -171,10 +171,10 @@ def get_latest_balances_from_airdrop_recipient():
             t1.date,
             t1.address,
             t1.balance
-        FROM adjusted_daily_balances t1
+        FROM daily_balances t1
         INNER JOIN (
             SELECT address, MAX(date) as max_date
-            FROM adjusted_daily_balances
+            FROM daily_balances
             GROUP BY address
         ) t2 ON t1.address = t2.address 
             AND t1.date = t2.max_date
@@ -205,10 +205,10 @@ def get_latest_balances_from_exchange():
             t1.date,
         t1.address,
         t1.balance
-    FROM adjusted_daily_balances t1
+    FROM daily_balances t1
     INNER JOIN (
         SELECT address, MAX(date) as max_date
-        FROM adjusted_daily_balances
+        FROM daily_balances
         GROUP BY address
         ) t2 ON t1.address = t2.address 
         AND t1.date = t2.max_date
@@ -240,10 +240,10 @@ def get_latest_balances_from_operator():
             t1.date,
             t1.address,
             t1.balance
-        FROM adjusted_daily_balances t1
+        FROM daily_balances t1
         INNER JOIN (
             SELECT address, MAX(date) as max_date
-            FROM adjusted_daily_balances
+            FROM daily_balances
             GROUP BY address
         ) t2 ON t1.address = t2.address 
             AND t1.date = t2.max_date
@@ -265,7 +265,7 @@ def get_latest_balances_from_operator():
 def get_latest_balances_from_game_ops_wallet():
     query = """
     SELECT balance / 1000000000000000000.0 as balance
-    FROM adjusted_daily_balances
+    FROM daily_balances
     where address = '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
     ORDER BY date DESC
     LIMIT 1
@@ -276,7 +276,7 @@ def get_latest_balances_from_game_ops_wallet():
 def get_latest_balances_from_withdrawal_wallet():
     query = """
     SELECT balance / 1000000000000000000.0 as balance
-    FROM adjusted_daily_balances
+    FROM daily_balances
     where address = '0x687F3413C7f0e089786546BedF809b8F8885B051'
     ORDER BY date DESC
     LIMIT 1
@@ -287,7 +287,7 @@ def get_latest_balances_from_withdrawal_wallet():
 def get_latest_balances_from_airdrop_wallet():
     query = """
     SELECT balance / 1000000000000000000.0 as balance
-    FROM adjusted_daily_balances
+    FROM daily_balances
     where address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
     ORDER BY date DESC
     LIMIT 1
@@ -321,10 +321,10 @@ def get_latest_balances_from_others():
             t1.date,
             t1.address,
             t1.balance
-        FROM adjusted_daily_balances t1
+        FROM daily_balances t1
         INNER JOIN (
             SELECT address, MAX(date) as max_date
-            FROM adjusted_daily_balances
+            FROM daily_balances
             GROUP BY address
         ) t2 ON t1.address = t2.address 
             AND t1.date = t2.max_date
@@ -356,7 +356,7 @@ def get_address_info(address: str):
     query = """
     WITH balances AS (
         SELECT date, balance as balance
-        FROM adjusted_daily_balances
+        FROM daily_balances
         WHERE address = %(address)s and date >= '2024-09-26'
     ),
     airdrop as (
@@ -422,7 +422,7 @@ def get_jst_4am_close_price():
     query = f"""
     SELECT timestamp, close
     FROM ohlcv_1h
-    WHERE unix_timestamp(timestamp) % (24 * 60 * 60) = 18 * 60 * 60
+    WHERE EXTRACT(EPOCH FROM timestamp) % (24 * 60 * 60) = 18 * 60 * 60
     """
     df = st.session_state.db_client.query_to_df(query)
     return df
