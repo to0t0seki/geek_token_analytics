@@ -194,32 +194,47 @@ def resume_geek_data(block_number, log_index):
 
 
 def create_trigger() -> None:
+    print("create_triggerを実行します")
     try:
         query = """
-        
-        CREATE OR REPLACE FUNCTION insert_daily_changes RETURNS TRIGGER AS $$
+        DROP TRIGGER IF EXISTS trg_insert_geek_transactions ON geek_transactions;
+
+
+        CREATE OR REPLACE FUNCTION insert_daily_changes() RETURNS TRIGGER AS $$
         BEGIN
-            -- from_addressの処理（マイナス値）
-            INSERT INTO daily_changes (date, address, change)
-            VALUES (
-                (NEW.timestamp + interval '5 hours')::date,  -- timestampを+5時間してdate型に変換
-                NEW.from_address,
-                -NEW.value  -- マイナス値として設定
-            )
-            ON CONFLICT (date, address) 
-            DO UPDATE SET change = daily_changes.change + EXCLUDED.change;
+            BEGIN   
+                RAISE NOTICE 'トリガーが発火しました: block_number=%, log_index=%', 
+                NEW.block_number, 
+                NEW.log_index;
+           
+                -- from_addressの処理（マイナス値）
+                INSERT INTO daily_changes (date, address, change)
+                VALUES (
+                    (NEW.timestamp + interval '5 hours')::date,  -- timestampを+5時間してdate型に変換
+                    NEW.from_address,
+                    -NEW.value  -- マイナス値として設定
+                )
+                ON CONFLICT (date, address) 
+                DO UPDATE SET change = daily_changes.change + EXCLUDED.change;
 
-            -- to_addressの処理（プラス値）
-            INSERT INTO daily_changes (date, address, change)
-            VALUES (
-                (NEW.timestamp + interval '5 hours')::date,  -- timestampを+5時間してdate型に変換
-                NEW.to_address,
-                NEW.value  -- プラス値として設定
-            )
-            ON CONFLICT (date, address) 
-            DO UPDATE SET change = daily_changes.change + EXCLUDED.change;
+                -- to_addressの処理（プラス値）
+                INSERT INTO daily_changes (date, address, change)
+                VALUES (
+                    (NEW.timestamp + interval '5 hours')::date,  -- timestampを+5時間してdate型に変換
+                    NEW.to_address,
+                    NEW.value  -- プラス値として設定
+                )
+                ON CONFLICT (date, address) 
+                DO UPDATE SET change = daily_changes.change + EXCLUDED.change;
 
-            RETURN NULL;
+                RETURN NEW;
+
+            EXCEPTION WHEN OTHERS THEN
+                RAISE EXCEPTION 'トリガー内でエラーが発生しました: block_number=%, log_index=%, error: %', 
+                    NEW.block_number, 
+                    NEW.log_index,
+                    SQLERRM;
+            END;
         END;
         $$
         LANGUAGE plpgsql;
@@ -233,14 +248,24 @@ def create_trigger() -> None:
         client.execute(query)
     except Exception as e:
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_trigger中にエラーが発生しました: {e}")
+    else:
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_triggerが正常に実行されました")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1   :
+    if len(sys.argv) == 1:
         get_geek_data()
-    elif len(sys.argv) == 3:
-        resume_geek_data(sys.argv[1], sys.argv[2])
+    elif len(sys.argv) >= 2:
+        if sys.argv[1] == "resume":
+            resume_geek_data(sys.argv[2], sys.argv[3])
+        elif sys.argv[1] == "create_trigger":
+            create_trigger()
+    else:
+        print("引数が不正です")
     # response = get_geek_data({'block_number': 1433326, 'index': 1})
     # print(generate_url_with_params(params={'block_number': 1433326, 'log_index': 1}))
     # resume_geek_data(2180939, 2)
     # calculate_today_balances()
+
+
+    

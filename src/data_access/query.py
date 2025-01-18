@@ -25,7 +25,7 @@ def get_airdrop_recipient_balances():
         SELECT DISTINCT to_address as address
         FROM airdrops
     )
-    SELECT db.address, db.date, db.balance / 1000000000000000000.0 as balance
+    SELECT db.address, db.date, db.balance / 1e18 as balance
     FROM daily_balances db
     INNER JOIN airdrop_addresses aa ON db.address = aa.address
     """
@@ -58,9 +58,9 @@ def get_daily_airdrops():
     query = """
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
-        SUM(value / 1000000000000000000.0) as value,
+        SUM(value / 1e18) as value,
         COUNT(DISTINCT to_address) as to_address_count,
-        SUM(value / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
+        SUM(value / 1e18) / COUNT(DISTINCT to_address) as per_address
     FROM 
         airdrops
     WHERE
@@ -78,9 +78,9 @@ def get_daily_deposits():
     query = """
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
-        SUM(value / 1000000000000000000.0) as value,
+        SUM(value / 1e18) as value,
         COUNT(DISTINCT from_address) as address_count,
-        SUM(value / 1000000000000000000.0) / COUNT(DISTINCT from_address) as per_address
+        SUM(value / 1e18) / COUNT(DISTINCT from_address) as per_address
     FROM 
         deposits
     WHERE
@@ -100,9 +100,9 @@ def get_daily_withdrawals():
     query = """
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
-        SUM(value / 1000000000000000000.0) as value,
+        SUM(value / 1e18) as value,
         COUNT(DISTINCT to_address) as address_count,
-        SUM(value / 1000000000000000000.0) / COUNT(DISTINCT to_address) as per_address
+        SUM(value / 1e18) / COUNT(DISTINCT to_address) as per_address
     FROM 
         withdrawals
     WHERE
@@ -147,7 +147,7 @@ def get_latest_balances_from_all_addresses():
     SELECT
         t1.date,
         t1.address,
-        t1.balance / 1000000000000000000.0 as balance
+        t1.balance / 1e18 as balance
     FROM daily_balances t1
     INNER JOIN (
         SELECT address, MAX(date) as max_date
@@ -179,16 +179,13 @@ def get_latest_balances_from_airdrop_recipient():
         ) t2 ON t1.address = t2.address 
             AND t1.date = t2.max_date
     )
-    SELECT lb.address, lb.date, lb.balance / 1000000000000000000.0 as balance
+    SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances as lb
     INNER JOIN (
         SELECT DISTINCT to_address as address
         FROM airdrops
     ) as apd ON lb.address = apd.address
     """
-    # from src.data_access.client import DatabaseClient
-    # db_client = DatabaseClient()
-    # df = db_client.query_to_df(query)
     df = st.session_state.db_client.query_to_df(query)
     return df
 
@@ -216,7 +213,7 @@ def get_latest_balances_from_exchange():
         ) t2 ON t1.address = t2.address 
         AND t1.date = t2.max_date
     )
-    SELECT lb.address, lb.date, lb.balance / 1000000000000000000.0 as balance
+    SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances as lb
     INNER JOIN (
         SELECT %(address1)s as address
@@ -251,7 +248,7 @@ def get_latest_balances_from_operator():
         ) t2 ON t1.address = t2.address 
             AND t1.date = t2.max_date
     )
-    SELECT lb.address, lb.date, lb.balance / 1000000000000000000.0 as balance
+    SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances as lb
     INNER JOIN (
         SELECT %(address1)s as address
@@ -267,7 +264,7 @@ def get_latest_balances_from_operator():
 
 def get_latest_balances_from_game_ops_wallet():
     query = """
-    SELECT balance / 1000000000000000000.0 as balance
+    SELECT balance / 1e18 as balance
     FROM daily_balances
     where address = '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
     ORDER BY date DESC
@@ -278,7 +275,7 @@ def get_latest_balances_from_game_ops_wallet():
 
 def get_latest_balances_from_withdrawal_wallet():
     query = """
-    SELECT balance / 1000000000000000000.0 as balance
+    SELECT balance / 1e18 as balance
     FROM daily_balances
     where address = '0x687F3413C7f0e089786546BedF809b8F8885B051'
     ORDER BY date DESC
@@ -289,7 +286,7 @@ def get_latest_balances_from_withdrawal_wallet():
 
 def get_latest_balances_from_airdrop_wallet():
     query = """
-    SELECT balance / 1000000000000000000.0 as balance
+    SELECT balance / 1e18 as balance
     FROM daily_balances
     where address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
     ORDER BY date DESC
@@ -338,12 +335,12 @@ def get_latest_balances_from_others():
         UNION ALL SELECT %(address3)s
         UNION ALL SELECT %(address4)s
         UNION ALL SELECT %(address5)s
-        UNION ALL SELECT "0x0000000000000000000000000000000000000000"
+        UNION ALL SELECT '0x0000000000000000000000000000000000000000'
         UNION ALL
         SELECT DISTINCT to_address as address
         FROM airdrops
     )
-    SELECT lb.address, lb.date, lb.balance / 1000000000000000000.0 as balance
+    SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances lb
     LEFT JOIN excluded_addresses ea ON lb.address = ea.address
     WHERE ea.address IS NULL
@@ -365,7 +362,7 @@ def get_address_info(address: str):
     airdrop as (
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
-            SUM(value / 1000000000000000000.0) as airdrop
+            SUM(value / 1e18) as airdrop
         FROM airdrops
         WHERE 
             to_address = %(address)s and 
@@ -375,7 +372,7 @@ def get_address_info(address: str):
     withdraw as (   
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
-            SUM(value / 1000000000000000000.0) as withdraw
+            SUM(value / 1e18) as withdraw
         FROM withdrawals
         WHERE 
             to_address = %(address)s and
@@ -385,7 +382,7 @@ def get_address_info(address: str):
     deposit as (
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
-            SUM(value / 1000000000000000000.0) as deposit
+            SUM(value / 1e18) as deposit
         FROM deposits
         WHERE 
             from_address = %(address)s and 
@@ -394,7 +391,7 @@ def get_address_info(address: str):
     )
     SELECT 
         b.date,
-        b.balance / 1000000000000000000.0 as balance,
+        b.balance / 1e18 as balance,
         COALESCE(a.airdrop, 0) as airdrop,
         COALESCE(w.withdraw, 0) as withdraw,
         COALESCE(d.deposit, 0) as deposit
@@ -412,7 +409,7 @@ def get_address_info(address: str):
 
 def get_nft_sell_transactions(address:str):
     query = f"""
-    SELECT from_address, value / 1000000000000000000.0 as value
+    SELECT from_address, value / 1e18 as value
     FROM geek_transactions
     WHERE to_address = '{address}' and
     timestamp between '2024-11-25T10:00:00.000000Z' and '2024-11-27T15:00:00.000000Z' and 

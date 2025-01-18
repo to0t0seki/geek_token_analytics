@@ -1,7 +1,7 @@
 import streamlit as st
-from src.visualization.components.charts.chart import display_chart1
+from src.visualization.components.chart import display_chart1
 from src.data_access.query import get_daily_deposits, get_daily_withdrawals
-from src.visualization.components.layout.sidebar import show_sidebar
+from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.data_access.client import DatabaseClient
 import pandas as pd

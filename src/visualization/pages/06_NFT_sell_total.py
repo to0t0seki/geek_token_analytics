@@ -1,7 +1,7 @@
 import streamlit as st
-from src.visualization.components.layout.sidebar import show_sidebar
+from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode
-from src.visualization.components.charts.chart import display_nft_sell_chart
+from src.visualization.components.chart import display_nft_sell_chart
 from src.data_access.query import get_nft_transactions
 from src.data_access.client import DatabaseClient
 

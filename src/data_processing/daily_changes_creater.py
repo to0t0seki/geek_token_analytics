@@ -3,24 +3,28 @@ from datetime import datetime
 
 def create_daily_changes_table() -> None:
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_daily_changes_tableが開始されました")
-    client = DatabaseClient()
-    query = """
-    CREATE TABLE IF NOT EXISTS daily_changes (
-        date DATE NOT NULL,
-        address VARCHAR(42) NOT NULL,
-        change NUMERIC(65,0),
-        PRIMARY KEY (date, address)
-    );
-    """
-    
-    client.execute(query)
+    try:
+        client = DatabaseClient()
+        query = """
+        CREATE TABLE IF NOT EXISTS daily_changes (
+            date DATE NOT NULL,
+            address VARCHAR(42) NOT NULL,
+            change NUMERIC(65,0),
+            PRIMARY KEY (date, address)
+        );
+        """
+        result = client.execute(query)
+        if result > 0:
+            print("daily_changesテーブルが作成されました")
 
-    query = """
-    CREATE INDEX IF NOT EXISTS idx_daily_changes_address ON daily_changes(address);
-    """
-    result = client.execute(query)
-    if result > 0:
-        print("addressインデックスが作成されました")
+        query = """
+        CREATE INDEX IF NOT EXISTS idx_daily_changes_address ON daily_changes(address);
+        """
+        result = client.execute(query)
+        if result > 0:
+            print("addressインデックスが作成されました")
+    except Exception as e:
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_daily_changes_table中にエラーが発生しました: {e}")
 
 def insert_daily_changes() -> None:
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} insert_daily_changesが開始されました")
@@ -51,9 +55,17 @@ def insert_daily_changes() -> None:
             SUM(balance_change) AS daily_change
         FROM transactions
         GROUP BY date, address
+        ON CONFLICT (date, address) 
+        DO UPDATE SET change = EXCLUDED.change;
         """
-        client.execute(query)
+        result = client.execute(query)
     except Exception as e:
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} insert_daily_changes中にエラーが発生しました: {e}")
     else:
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} insert_daily_changesが正常に実行されました")
+        print(result)
+
+if __name__ == "__main__":
+    create_daily_changes_table()
+    insert_daily_changes()
+

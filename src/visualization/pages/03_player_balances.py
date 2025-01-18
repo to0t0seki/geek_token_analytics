@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-from src.visualization.components.charts.chart import display_supply_and_price_chart
+from src.visualization.components.chart import display_supply_and_price_chart
 from src.data_access.query import get_airdrop_recipient_balances, get_jst_4am_close_price
-from src.visualization.components.layout.sidebar import show_sidebar
+from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.data_access.client import DatabaseClient
 import pandas as pd

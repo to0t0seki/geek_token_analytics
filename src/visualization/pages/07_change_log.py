@@ -1,5 +1,5 @@
 import streamlit as st
-from src.visualization.components.layout.sidebar import show_sidebar
+from src.visualization.components.sidebar import show_sidebar
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
