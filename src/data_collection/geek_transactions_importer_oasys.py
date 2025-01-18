@@ -73,9 +73,11 @@ def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> N
         """
         result = db_client.execute(insert_transfer_detail_query, params)
         if result > 0:
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} データを挿入しました: {params}")
+            # print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} データを挿入しました: {params}")
+            pass
         elif result == 0:
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} データは既に存在します: {params}")
+            # print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} データは既に存在します: {params}")
+            pass
         else:
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} データを挿入できませんでした: {result}")
     except Exception as e:
