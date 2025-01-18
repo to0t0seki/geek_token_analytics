@@ -21,13 +21,9 @@ def get_airdrop_recipient_balances():
     airdropsテーブルにあるアドレスの全ての日付の残高を取得
     """
     query = """
-    WITH airdrop_addresses AS (
-        SELECT DISTINCT to_address as address
-        FROM airdrops
-    )
     SELECT db.address, db.date, db.balance / 1e18 as balance
     FROM daily_balances db
-    INNER JOIN airdrop_addresses aa ON db.address = aa.address
+    INNER JOIN airdrop_recipients ar ON db.address = ar.address
     """
     df = st.session_state.db_client.query_to_df_with_address_date_index(query)
  
@@ -145,18 +141,12 @@ def get_latest_balances_from_all_addresses():
     """
     query = """
     SELECT
-        t1.date,
-        t1.address,
-        t1.balance / 1e18 as balance
-    FROM daily_balances t1
-    INNER JOIN (
-        SELECT address, MAX(date) as max_date
-        FROM daily_balances
-        GROUP BY address
-        ) t2 ON t1.address = t2.address 
-        AND t1.date = t2.max_date
-    WHERE t1.address != '0x0000000000000000000000000000000000000000'
-    ORDER BY t1.balance DESC
+        date,
+        address,
+        balance / 1e18 as balance
+    FROM latest_balances
+    WHERE address != '0x0000000000000000000000000000000000000000'
+    ORDER BY balance DESC
     """
     df = st.session_state.db_client.query_to_df(query)
     return df
@@ -166,25 +156,9 @@ def get_latest_balances_from_airdrop_recipient():
     エアドロップを一度でも受け取ったことがあるアドレスの最新の残高を取得
     """
     query = """
-    WITH latest_balances AS (
-        SELECT
-            t1.date,
-            t1.address,
-            t1.balance
-        FROM daily_balances t1
-        INNER JOIN (
-            SELECT address, MAX(date) as max_date
-            FROM daily_balances
-            GROUP BY address
-        ) t2 ON t1.address = t2.address 
-            AND t1.date = t2.max_date
-    )
     SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances as lb
-    INNER JOIN (
-        SELECT DISTINCT to_address as address
-        FROM airdrops
-    ) as apd ON lb.address = apd.address
+    INNER JOIN airdrop_recipients as apd ON lb.address = apd.address
     """
     df = st.session_state.db_client.query_to_df(query)
     return df
@@ -200,19 +174,6 @@ def get_latest_balances_from_exchange():
         '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'
     ]
     query = """
-    WITH latest_balances AS (
-        SELECT
-            t1.date,
-        t1.address,
-        t1.balance
-    FROM daily_balances t1
-    INNER JOIN (
-        SELECT address, MAX(date) as max_date
-        FROM daily_balances
-        GROUP BY address
-        ) t2 ON t1.address = t2.address 
-        AND t1.date = t2.max_date
-    )
     SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances as lb
     INNER JOIN (
@@ -235,19 +196,6 @@ def get_latest_balances_from_operator():
         '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'   # Game_Ops_Wallet
     ]
     query = """
-    WITH latest_balances AS (
-        SELECT
-            t1.date,
-            t1.address,
-            t1.balance
-        FROM daily_balances t1
-        INNER JOIN (
-            SELECT address, MAX(date) as max_date
-            FROM daily_balances
-            GROUP BY address
-        ) t2 ON t1.address = t2.address 
-            AND t1.date = t2.max_date
-    )
     SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances as lb
     INNER JOIN (
@@ -264,33 +212,27 @@ def get_latest_balances_from_operator():
 
 def get_latest_balances_from_game_ops_wallet():
     query = """
-    SELECT balance / 1e18 as balance
-    FROM daily_balances
-    where address = '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
-    ORDER BY date DESC
-    LIMIT 1
+    SELECT lb.balance / 1e18 as balance
+    FROM latest_balances as lb
+    where lb.address = '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
     """
     df = st.session_state.db_client.query_to_df(query)
     return df
 
 def get_latest_balances_from_withdrawal_wallet():
     query = """
-    SELECT balance / 1e18 as balance
-    FROM daily_balances
-    where address = '0x687F3413C7f0e089786546BedF809b8F8885B051'
-    ORDER BY date DESC
-    LIMIT 1
+    SELECT lb.balance / 1e18 as balance
+    FROM latest_balances as lb
+    where lb.address = '0x687F3413C7f0e089786546BedF809b8F8885B051'
     """
     df = st.session_state.db_client.query_to_df(query)
     return df
 
 def get_latest_balances_from_airdrop_wallet():
     query = """
-    SELECT balance / 1e18 as balance
-    FROM daily_balances
-    where address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
-    ORDER BY date DESC
-    LIMIT 1
+    SELECT lb.balance / 1e18 as balance
+    FROM latest_balances as lb
+    where lb.address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
     """
     df = st.session_state.db_client.query_to_df(query)
     return df
@@ -316,32 +258,19 @@ def get_latest_balances_from_others():
     ]
     
     query = """
-    WITH latest_balances AS (
-        SELECT
-            t1.date,
-            t1.address,
-            t1.balance
-        FROM daily_balances t1
-        INNER JOIN (
-            SELECT address, MAX(date) as max_date
-            FROM daily_balances
-            GROUP BY address
-        ) t2 ON t1.address = t2.address 
-            AND t1.date = t2.max_date
-    ),
-    excluded_addresses AS (
+    WITH excluded_addresses AS (
         SELECT %(address1)s as address
-        UNION ALL SELECT %(address2)s
-        UNION ALL SELECT %(address3)s
-        UNION ALL SELECT %(address4)s
-        UNION ALL SELECT %(address5)s
-        UNION ALL SELECT '0x0000000000000000000000000000000000000000'
+        UNION ALL SELECT %(address2)s as address
+        UNION ALL SELECT %(address3)s as address
+        UNION ALL SELECT %(address4)s as address
+        UNION ALL SELECT %(address5)s as address
+        UNION ALL SELECT '0x0000000000000000000000000000000000000000' as address
         UNION ALL
-        SELECT DISTINCT to_address as address
-        FROM airdrops
+        SELECT address
+        FROM airdrop_recipients
     )
     SELECT lb.address, lb.date, lb.balance / 1e18 as balance
-    FROM latest_balances lb
+    FROM latest_balances as lb
     LEFT JOIN excluded_addresses ea ON lb.address = ea.address
     WHERE ea.address IS NULL
     """
@@ -419,10 +348,15 @@ def get_nft_sell_transactions(address:str):
     return df
 
 def get_jst_4am_close_price():
-    query = f"""
-    SELECT timestamp, close
+    query = """
+    SELECT timestamp + INTERVAL '5 hours' as timestamp, close
     FROM ohlcv_1h
     WHERE EXTRACT(EPOCH FROM timestamp) % (24 * 60 * 60) = 18 * 60 * 60
+    union
+    (SELECT timestamp + INTERVAL '5 hours' as timestamp, close
+    FROM ohlcv_1h
+    order by timestamp desc
+    limit 1)
     """
     df = st.session_state.db_client.query_to_df(query)
     return df

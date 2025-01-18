@@ -3,11 +3,11 @@ from datetime import datetime
 import sys
 
 
-def create_daily_balances_table() -> None:
-    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_daily_balances_tableが開始されました")
+def create_daily_balances() -> None:
+    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_daily_balancesが開始されました")
     """日次残高テーブルを作成する"""
     try:
-        create_table_query = """
+        query = """
         CREATE MATERIALIZED VIEW IF NOT EXISTS daily_balances AS
 
         WITH date_series AS (
@@ -44,9 +44,9 @@ def create_daily_balances_table() -> None:
         ORDER BY date, address
         """
         db_client = DatabaseClient()
-        result = db_client.execute(create_table_query)
+        result = db_client.execute(query)
     except Exception as e:
-        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_daily_balances_table中にエラーが発生しました: {e}")
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_daily_balances中にエラーが発生しました: {e}")
     else:
         if result > 0:
             print("daily_balancesが作成されました")
@@ -69,7 +69,7 @@ def refresh_daily_balances() -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        create_daily_balances_table()
+        create_daily_balances()
         refresh_daily_balances()
     elif len(sys.argv) >= 2:
         if sys.argv[1] == "refresh":
