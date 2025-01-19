@@ -1,62 +1,29 @@
 import streamlit as st
 
-def get_all_balances():
-    """
-    daily_balancesテーブルから全てのアドレスの全ての日付の残高を取得
-    """
-    query = """
-    SELECT address, date, balance
-    FROM daily_balances
-    WHERE address != '0x0000000000000000000000000000000000000000'
-    ORDER BY date, balance DESC
-    limit 10
-    """
-    df = st.session_state.db_client.query_to_df_with_address_date_index(query)
-
-    return df
-
 
 def get_airdrop_recipient_balances():
     """
     airdropsテーブルにあるアドレスの全ての日付の残高を取得
     """
     query = """
-    SELECT db.address, db.date, db.balance / 1e18 as balance
+    SELECT db.date, sum(db.balance / 1e18) as balance
     FROM daily_balances db
     INNER JOIN airdrop_recipients ar ON db.address = ar.address
+    where db.date > '2024-09-26'
+    group by db.date
+    order by db.date desc
     """
-    df = st.session_state.db_client.query_to_df_with_address_date_index(query)
+    df = st.session_state.db_client.query_to_df(query)
  
     return df
 
-
-
-def get_exchange_balances():
-    """
-    指定されたアドレスの全ての日付の残高を取得
-    """
-    addresses = [
-        '0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23',
-        '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'
-    ]
-    query = """
-    SELECT address, date, balance
-    FROM daily_balances
-    WHERE address = ANY(%s)
-    ORDER BY address, date
-    """
-
-    df = st.session_state.db_client.query_to_df_with_address_date_index(query, params=tuple(addresses))
-
-    return df
 
 def get_daily_airdrops():   
     query = """
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
         SUM(value / 1e18) as value,
-        COUNT(DISTINCT to_address) as to_address_count,
-        SUM(value / 1e18) / COUNT(DISTINCT to_address) as per_address
+        COUNT(DISTINCT to_address) as address_count
     FROM 
         airdrops
     WHERE
@@ -75,8 +42,7 @@ def get_daily_deposits():
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
         SUM(value / 1e18) as value,
-        COUNT(DISTINCT from_address) as address_count,
-        SUM(value / 1e18) / COUNT(DISTINCT from_address) as per_address
+        COUNT(DISTINCT from_address) as address_count
     FROM 
         deposits
     WHERE
@@ -97,8 +63,7 @@ def get_daily_withdrawals():
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
         SUM(value / 1e18) as value,
-        COUNT(DISTINCT to_address) as address_count,
-        SUM(value / 1e18) / COUNT(DISTINCT to_address) as per_address
+        COUNT(DISTINCT to_address) as address_count
     FROM 
         withdrawals
     WHERE
@@ -349,17 +314,28 @@ def get_nft_sell_transactions(address:str):
 
 def get_jst_4am_close_price():
     query = """
-    SELECT timestamp + INTERVAL '5 hours' as timestamp, close
+    (SELECT date(timestamp + INTERVAL '5 hours') as date, close
     FROM ohlcv_1h
-    WHERE EXTRACT(EPOCH FROM timestamp) % (24 * 60 * 60) = 18 * 60 * 60
+    WHERE EXTRACT(HOUR FROM timestamp) = 18
     union
-    (SELECT timestamp + INTERVAL '5 hours' as timestamp, close
+    (SELECT date(timestamp + INTERVAL '5 hours') as date, close
     FROM ohlcv_1h
     order by timestamp desc
-    limit 1)
+    limit 1))
+    order by date desc
     """
     df = st.session_state.db_client.query_to_df(query)
     return df
+
+def get_latest_geek_price():
+    query = """
+    SELECT close
+    FROM ohlcv_1h
+    ORDER BY timestamp DESC
+    LIMIT 1
+    """
+    result = st.session_state.db_client.fetch_one(query)
+    return result[0]
 
 def get_nft_transactions():
     query = """

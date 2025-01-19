@@ -7,7 +7,6 @@ import streamlit as st
 def display_chart(df: pd.DataFrame, title: str, chart_type: str,legend_name:str):
     fig = make_subplots(
             rows=1, cols=1,
-            subplot_titles=(title,)
         )
 
     if chart_type == 'line':
@@ -19,8 +18,8 @@ def display_chart(df: pd.DataFrame, title: str, chart_type: str,legend_name:str)
                 mode='lines+markers',
                 line=dict(color='blue'),
                 hovertemplate=(
-                "日時: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
-                "枚数: %{y:,.0f}<br>" +
+                "日付: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
+                "ドル: %{y:,.0f}<br>" +
                 "<extra></extra>"
                 )
             )
@@ -37,6 +36,7 @@ def display_chart(df: pd.DataFrame, title: str, chart_type: str,legend_name:str)
         raise ValueError(f"Invalid chart type: {chart_type}")
     
     fig.update_layout(
+        title=title,
         xaxis=dict(
             rangeslider=dict(visible=True),
                 rangeselector=dict(
@@ -56,24 +56,23 @@ def display_chart(df: pd.DataFrame, title: str, chart_type: str,legend_name:str)
 
     st.plotly_chart(fig, use_container_width=True)
 
-def display_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str = None, **kwargs):
+def display_chart1(df1: pd.DataFrame, df2: pd.DataFrame, title: str = None, **kwargs):
     fig = make_subplots(
             rows=1, cols=1,
-            subplot_titles=(title,)
         )
 
     # 左Y軸の折れ線
     fig.add_trace(
             go.Scatter(
                 name='入金',
-                x=df[df.columns[0]],
-                y=df[df.columns[1]],
+                x=df1[df1.columns[0]],
+                y=df1[df1.columns[1]],
                 mode='lines+markers',
                 line=dict(color='blue'),
                 hovertemplate=(
                 "<b>入金</b><br>" +
-                "日時: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
-                "枚数: %{y:,.0f}<br>" +
+                "日付: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
+                "ドル: %{y:,.0f}<br>" +
                 "<extra></extra>"
                 )
             )
@@ -87,14 +86,15 @@ def display_chart1(df: pd.DataFrame, df2: pd.DataFrame, title: str = None, **kwa
                 line=dict(color='red'),
                 hovertemplate=(
                 "<b>出金</b><br>" +
-                "日時: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
-                "枚数: %{y:,.0f}<br>" +
+                "日付: %{x|%Y-%m-%d}<br>" +  # 日付フォーマットを指定
+                "ドル: %{y:,.0f}<br>" +
                 "<extra></extra>"
                 )
             )
         )
     
     fig.update_layout(
+            title=title,
             xaxis=dict(
                 rangeslider=dict(visible=True),
                 rangeselector=dict(
@@ -148,14 +148,14 @@ def display_supply_and_price_chart(df: pd.DataFrame, title: str = None, **kwargs
     ))
     fig.add_trace(go.Scatter(
         x=df[df.columns[0]],
-        y=df[df.columns[3]],
-        name=df.columns[3],
+        y=df[df.columns[2]],
+        name=df.columns[2],
         mode='lines+markers',
         line=dict(color='red'),
         yaxis='y2',
         hovertemplate=(
         "日付: %{x|%Y-%m-%d}<br>" +    
-        "時価総額: $%{y:,.0f}<br>" +      
+        "ドル: $%{y:,.0f}<br>" +      
         "<extra></extra>"           
         )
     ))
@@ -174,12 +174,12 @@ def display_supply_and_price_chart(df: pd.DataFrame, title: str = None, **kwargs
         rangeslider=dict(visible=True),
         type="date"),
         yaxis=dict(
-            title='合計枚数(単位:枚)',
+            title='保有枚数',
             titlefont=dict(color='blue'),
             tickfont=dict(color='blue')
         ),
         yaxis2=dict(
-            title='時価総額(単位:$)',
+            title='ドル換算',
             titlefont=dict(color='red'),
             tickfont=dict(color='red'),
             overlaying='y',

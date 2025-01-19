@@ -89,7 +89,7 @@ def insert_ohlcv_1h(db_client: DatabaseClient, ohlcv_list: list):
     }
     insert_ohlcv_1h_query = """
     INSERT INTO ohlcv_1h (timestamp, open, high, low, close, volume, usdt_volume) 
-    VALUES (to_timestamp(%(timestamp)s), %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s, %(usdt_volume)s)
+    VALUES (timestamp 'epoch' + %(timestamp)s * interval '1 second', %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s, %(usdt_volume)s)
     ON CONFLICT (timestamp) DO NOTHING
     """
     try:
@@ -103,12 +103,6 @@ def insert_ohlcv_1h(db_client: DatabaseClient, ohlcv_list: list):
         print(f"Error during insertion: {e}")
         print(f"Sample data: {ohlcv_list[0]}")
  
-def ohlcv_1h_to_csv(csv_file: str = 'ohlcv_1h.csv'):
-    db_client = DatabaseClient()
-    df = db_client.query_to_df("SELECT * FROM ohlcv_1h")
-    df.to_csv(csv_file, index=False)
-
-
 
 def get_latest_ohlcv_1h(client: DatabaseClient):
     try:

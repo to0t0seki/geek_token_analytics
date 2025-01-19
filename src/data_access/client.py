@@ -36,15 +36,6 @@ class DatabaseClient:
         with self.get_connection() as conn:
             return pd.read_sql_query(query, conn, params=params)
         
-    def query_to_df_with_address_date_index(self, query: str, params: tuple = None) -> pd.DataFrame:
-        """クエリを実行しDataFrameを返す"""
-        with self.get_connection() as conn:
-            df = pd.read_sql_query(query, conn, params=params)
-            df['date'] = pd.to_datetime(df['date'])
-            df = df.set_index(['address', 'date'])
-            return df
-    
-   
     
     def fetch_one(self, query: str) -> tuple:
         """1行だけ取得"""

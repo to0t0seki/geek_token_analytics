@@ -44,7 +44,7 @@ category_totals = pd.DataFrame([
         '枚数': withdrawal_wallet_balances['balance'].sum().round(0)
     },
     {
-        '名前': 'プレイヤー',
+        '名前': 'ユーザー',
         '枚数': airdrop_recipients_balances['balance'].sum().round(0)
     },
     {
@@ -79,7 +79,7 @@ st.markdown("""
 - 運営:0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62
 - エアドロップウォレット:0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7
 - 出金ウォレット:0x687F3413C7f0e089786546BedF809b8F8885B051
-- プレイヤー:エアドロップを一度でも受け取った事のあるアドレス
+- ユーザー:エアドロップを一度でも受け取った事のあるアドレス
 - 取引所
     - Bitget:0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23
     - Gate.io:0x0D0707963952f2fBA59dD06f2b425ace40b492Fe

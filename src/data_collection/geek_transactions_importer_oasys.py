@@ -266,8 +266,3 @@ if __name__ == "__main__":
         print("引数が不正です")
 
 
-#multicall=tealswapでGEEKをWOASにswap
-#exactInput=tealswapでGEEKをERC20にswap（入力指定）
-#exactOutput=tealswapでGEEKをERC20にswap(出力指定)
-#0x057bbee1=bridgeでOASYSにきたGEEK
-#0x58a997f6=GEEK verseにbridge
