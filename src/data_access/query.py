@@ -327,15 +327,6 @@ def get_jst_4am_close_price():
     df = st.session_state.db_client.query_to_df(query)
     return df
 
-def get_latest_geek_price():
-    query = """
-    SELECT close
-    FROM ohlcv_1h
-    ORDER BY timestamp DESC
-    LIMIT 1
-    """
-    result = st.session_state.db_client.fetch_one(query)
-    return result[0]
 
 def get_nft_transactions():
     query = """

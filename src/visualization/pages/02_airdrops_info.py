@@ -37,13 +37,13 @@ merged_airdrops_df = pd.merge(
     how='left'
 )[['date', 'value', 'close','address_count']]
 
-merged_airdrops_df['doll_base'] = merged_airdrops_df['close'] * merged_airdrops_df['value']
-merged_airdrops_df= merged_airdrops_df[['date','value','close','doll_base','address_count']]
+merged_airdrops_df['dollar_base'] = merged_airdrops_df['close'] * merged_airdrops_df['value']
+merged_airdrops_df= merged_airdrops_df[['date','value','close','dollar_base','address_count']]
 merged_airdrops_df['value'] = merged_airdrops_df['value'].round(0)
-merged_airdrops_df['doll_base'] = merged_airdrops_df['doll_base'].round(0)
+merged_airdrops_df['dollar_base'] = merged_airdrops_df['dollar_base'].round(0)
 merged_airdrops_df['date'] = pd.to_datetime(merged_airdrops_df['date']).dt.strftime('%Y-%m-%d')
 
-merged_airdrops_df.rename(columns={'date':'日付','value':'エアドロップ枚数','address_count':'ユニークアドレス数','close':'終値','doll_base':'ドル換算'}, inplace=True)
+merged_airdrops_df.rename(columns={'date':'日付','value':'エアドロップ枚数','address_count':'ユニークアドレス数','close':'終値','dollar_base':'ドル換算'}, inplace=True)
 
 gb = GridOptionsBuilder.from_dataframe(merged_airdrops_df)
 gb.configure_grid_options(rowSelection='multiple',enableRangeSelection=True)
@@ -63,15 +63,14 @@ grid_response = AgGrid(
 
 
 total_airdrops = merged_airdrops_df['エアドロップ枚数'].sum()
-total_doll_base = merged_airdrops_df['ドル換算'].sum()
-st.markdown(f"総エアドロップ枚数: {total_airdrops:,.0f} ドル換算: {total_doll_base:,.0f}")
+total_dollar_base = merged_airdrops_df['ドル換算'].sum()
+st.markdown(f"総エアドロップ枚数: {total_airdrops:,.0f} ドル換算: {total_dollar_base:,.0f}")
 
 
 
 
 display_chart(
-    merged_airdrops_df[['日付','ドル換算']],
+    [merged_airdrops_df[['日付','ドル換算']],'ドル換算','blue','y'],
+    [merged_airdrops_df[['日付','エアドロップ枚数']],'枚数','red','y2'],
     title='エアドロップのドル換算推移',
-    chart_type='line',
-    legend_name='エアドロップ',
 )
