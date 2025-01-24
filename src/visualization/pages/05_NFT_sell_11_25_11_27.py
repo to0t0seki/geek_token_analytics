@@ -3,7 +3,7 @@ from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode
 from src.visualization.components.chart import display_nft_sell_chart
 import streamlit as st
 from src.visualization.components.sidebar import show_sidebar
-from src.data_access.client import DatabaseClient
+from src.data_access.database_client import DatabaseClient
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
@@ -21,7 +21,7 @@ if 'db_client' not in st.session_state:
 show_sidebar()
 
 with st.spinner('データを取得中...'):
-    df = get_nft_sell_transactions("0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62")
+    df = get_nft_sell_transactions(st.session_state.db_client, "0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62")
 df['value'] = df['value'].round(0).astype(int)
 groupby_address_df = df.groupby('from_address')['value'].sum()
 groupby_value_df = groupby_address_df.value_counts().sort_index().reset_index()

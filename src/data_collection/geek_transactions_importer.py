@@ -1,272 +1,117 @@
 import requests
 import time
-import sys
-from typing import Dict, Any
-from datetime import datetime
-from src.data_access.client import DatabaseClient
+from src.logger import setup_logger
+from src.database.geek_transactions_repository import (
+    insert_geek_transactions as insert_geek_transactions_db,
+    fetch_letest_transaction as fetch_letest_transaction_db
+)
+from src.database.geek_transactions_repository import DatabaseClient
 
+logger = setup_logger(__name__)
 
-def create_normalized_tables(db_client: DatabaseClient) -> None:
-    """正規化されたテーブルを作成する"""
-    create_transactions_table = """
-    CREATE TABLE IF NOT EXISTS geek_transactions (
-        block_number INTEGER NOT NULL,
-        log_index INTEGER NOT NULL,
-        tx_hash VARCHAR(66),
-        timestamp TIMESTAMP(6),
-        from_address VARCHAR(42),
-        to_address VARCHAR(42),
-        value NUMERIC(65,0),
-        method VARCHAR(20),
-        type VARCHAR(20),
-        PRIMARY KEY (block_number, log_index)
-    );
-    """
-    db_client.execute(create_transactions_table)
+def _fetch_geek_transactions(params: dict={}) -> tuple[list, dict]:
+    url = "https://explorer.geekout-pte.com/api/v2/tokens/0x3741FcB5792673eF220cCc0b95B5B8C38c5f2723/transfers"
+    response = requests.get(url, params=params, timeout=10)
+    response.raise_for_status()
+    result = response.json()
+    transactions = result['items']
+    next_page_params = result['next_page_params']
+    return transactions, next_page_params
 
- 
-
-    create_index_timestamp = """
-    CREATE INDEX IF NOT EXISTS idx_gt_timestamp ON geek_transactions(timestamp);
-    """
-    result = db_client.execute(create_index_timestamp)
-    if result > 0:
-        print("timestampインデックスが作成されました")
-        
-
-    
-    create_index_from_address = """
-    CREATE INDEX IF NOT EXISTS idx_gt_from_address ON geek_transactions(from_address);
-    """
-    result = db_client.execute(create_index_from_address)
-    if result > 0:
-        print("from_addressインデックスが作成されました")
-
-    
-    create_index_to_address = """
-    CREATE INDEX IF NOT EXISTS idx_gt_to_address ON geek_transactions(to_address);
-    """
-    result = db_client.execute(create_index_to_address)
-    if result > 0:
-        print("to_addressインデックスが作成されました")
-
-def insert_normalized_data(db_client: DatabaseClient, data: Dict[str, Any]) -> None:
-    try:
-        """正規化されたデータを挿入する"""
-
-        params = {
-            'block_number': data['block_number'],
-            'log_index': data['log_index'],
-            'tx_hash': data['tx_hash'],
-            'timestamp': data['timestamp'],
-            'from_address': data['from_address'],
-            'to_address': data['to_address'],
-            'value': data['value'],
-            'method': data['method'],
-            'type': data['type']
-        }
-
-        insert_transfer_detail_query = """
-        INSERT INTO geek_transactions (block_number, log_index, tx_hash, timestamp, from_address, to_address, value, method, type)
-        VALUES (%(block_number)s, %(log_index)s, %(tx_hash)s, %(timestamp)s, %(from_address)s, %(to_address)s, %(value)s, %(method)s, %(type)s)
-        ON CONFLICT (block_number, log_index) DO NOTHING
-        """
-        result = db_client.execute(insert_transfer_detail_query, params)
-        if result > 0:
-            # print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} データを挿入しました: {params}")
-            pass
-        elif result == 0:
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} データは既に存在します: {params}")
-        else:
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} データを挿入できませんでした: {result}")
-    except Exception as e:
-        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} insert_normalized_data中にエラーが発生しました: {e}")
-
-def get_letest_transaction():
-    try:
-        db_client = DatabaseClient()
-        query = """
-        SELECT block_number, log_index
-        FROM geek_transactions
-        ORDER BY block_number DESC, log_index DESC
-        limit 1
-        """
-        return db_client.fetch_one(query)
-    except Exception as e:
-        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} get_letest_transaction中にエラーが発生しました: {e}")
-
-
-def get_geek_data(params: dict = {}):
-    requests_count = 0
-    url = f"https://explorer.geekout-pte.com/api/v2/tokens/0x3741FcB5792673eF220cCc0b95B5B8C38c5f2723/transfers"
-    db_client = DatabaseClient()
-    create_normalized_tables(db_client)
-    latest_block_number, latest_log_index = get_letest_transaction() if get_letest_transaction() else (0, 0)
-    record_count = 0
-    
-    try:
-        while True: 
-            data = requests.get(url, params=params, timeout=10).json()
-            requests_count += 1
-
-            print(f"APIリクエスト {requests_count} 回目: {len(data['items'])} 件のデータを取得")
-            for item in data['items']:
-                # 既存のデータに到達した場合は終了
-                if item['block_number'] < latest_block_number or \
-                   (item['block_number'] == latest_block_number and item['log_index'] < latest_log_index):
-                    print("既存のデータに到達しました")
-                    return
-                
-
-                transaction = {
-                    'block_number': item['block_number'],
-                    'log_index': item['log_index'],
-                    'tx_hash': item['tx_hash'],
-                    'timestamp': item['timestamp'].replace('T', ' ').replace('Z', ''),
-                    'from_address': item['from']['hash'],
-                    'to_address': item['to']['hash'],
-                    'value': item['total']['value'],
-                    'method': item['method'],
-                    'type': item['type']
-                }
-                insert_normalized_data(db_client, transaction)
-                record_count += 1
-
-            if data['next_page_params'] is not None:
-                params.update(data['next_page_params'])
-                print(f"次のページのデータを取得します: {params}")
-                # time.sleep(1)  # APIレート制限を考慮
-            else:
-                print("すべてのデータを取得しました")
-                break
-
-    except Exception as e:
-        print(f"APIリクエスト中にエラーが発生しました: {e}")
-    finally:
-        print(f"合計 {requests_count} 回のAPIリクエストを送信しました")
-        print(f"合計 {record_count} 件のデータを挿入しました")
-
-
-def resume_geek_data(block_number, log_index):
-    requests_count = 0
-    url = f"https://explorer.geekout-pte.com/api/v2/tokens/0x3741FcB5792673eF220cCc0b95B5B8C38c5f2723/transfers"
-    db_client = DatabaseClient()
-    create_normalized_tables(db_client)
-    record_count = 0
-    params = {
-        'block_number': block_number,
-        'index': log_index
+def _transform_transaction(raw_transaction: dict) -> dict:
+    """APIレスポンスをDB形式に変換する"""
+    return {
+        'block_number': raw_transaction['block_number'],
+        'log_index': raw_transaction['log_index'],
+        'tx_hash': raw_transaction['tx_hash'],
+        'timestamp': raw_transaction['timestamp'].replace('T', ' ').replace('Z', ''),
+        'from_address': raw_transaction['from']['hash'],
+        'to_address': raw_transaction['to']['hash'],
+        'value': raw_transaction['total']['value'],
+        'method': raw_transaction['method'],
+        'type': raw_transaction['type']
     }
+
+
+def fetch_geek_transactions(start_block_number: int = None, start_index: int = None,  end_block_number: int = 0, end_index: int = 0) -> list:
+    logger.info(f"fetch_geek_transactions: start_block_number: {start_block_number}, start_index: {start_index}, end_block_number: {end_block_number}, end_index: {end_index}")
+    geek_transactions = []
+
+    if (start_block_number is None) != (start_index is None):
+        raise ValueError("start_block_numberとstart_indexは両方とも指定するか、両方とも指定しないでください")
+   
+    
+    params = {
+        "block_number": start_block_number,
+        "index": start_index,
+    }
+
+    while True:
+        new_transactions = []
+        raw_transactions, next_page_params = _fetch_geek_transactions(params)
         
-    try:
-        while True: 
-            data = requests.get(url, params=params, timeout=10).json()
-            requests_count += 1
 
-            print(f"APIリクエスト {requests_count} 回目: {len(data['items'])} 件のデータを取得")
-            for item in data['items']:
-                transaction = {
-                    'block_number': item['block_number'],
-                    'log_index': item['log_index'],
-                    'tx_hash': item['tx_hash'],
-                    'timestamp': item['timestamp'].replace('T', ' ').replace('Z', ''),
-                    'from_address': item['from']['hash'],
-                    'to_address': item['to']['hash'],
-                    'value': item['total']['value'],
-                    'method': item['method'],
-                    'type': item['type']
-                }
-                insert_normalized_data(db_client, transaction)
-                record_count += 1
+        for raw_transaction in raw_transactions:
+            new_transaction = _transform_transaction(raw_transaction)
+            new_transactions.append(new_transaction)
 
-            if data['next_page_params'] is not None:
-                params.update(data['next_page_params'])
-                print(f"次のページのデータを取得します: {params}")
-                # time.sleep(1)  # APIレート制限を考慮
-            else:
-                print("すべてのデータを取得しました")
-                break
+        if next_page_params is None:
+            break
 
-    except Exception as e:
-        print(f"APIリクエスト中にエラーが発生しました: {e}")
-    finally:
-        print(f"合計 {requests_count} 回のAPIリクエストを送信しました")
-        print(f"合計 {record_count} 件のデータを挿入しました")
+        next_page_block_number = next_page_params['block_number']
+        next_page_index = next_page_params['index']
 
+        # 以下の場合にループを終了:
+        # 1. 目標のブロック番号を下回った
+        # 2. 同じブロック番号で目標のインデックス以下になった
+        should_stop = (next_page_block_number < end_block_number or
+                    (next_page_block_number == end_block_number and next_page_index <= end_index))
+        if should_stop:
+            for transaction in new_transactions:
+                current_block_number = transaction['block_number']
+                current_index = transaction['log_index']
 
-def create_trigger() -> None:
-    print("create_triggerを実行します")
-    try:
-        query = """
-        DROP TRIGGER IF EXISTS trg_insert_geek_transactions ON geek_transactions;
+                if (current_block_number > end_block_number or
+                    (current_block_number == end_block_number and current_index > end_index)):
+                    geek_transactions.append(transaction)
+            break
+
+        geek_transactions.extend(new_transactions)
+
+        params = next_page_params
+        time.sleep(1)
+    total_transactions = len(geek_transactions)
+    latest_block_number = geek_transactions[0]['block_number']
+    latest_index = geek_transactions[0]['log_index']
+    oldest_block_number = geek_transactions[total_transactions - 1]['block_number']
+    oldest_index = geek_transactions[total_transactions - 1]['log_index']
+
+    logger.info(f"fetch_geek_transactions: total_transactions: {total_transactions}, latest_block_number: {latest_block_number}, latest_index: {latest_index}, oldest_block_number: {oldest_block_number}, oldest_index: {oldest_index}")
+    return geek_transactions
 
 
-        CREATE OR REPLACE FUNCTION insert_daily_changes() RETURNS TRIGGER AS $$
-        BEGIN
-            BEGIN   
-                RAISE NOTICE 'トリガーが発火しました: block_number=%, log_index=%', 
-                NEW.block_number, 
-                NEW.log_index;
-           
-                -- from_addressの処理（マイナス値）
-                INSERT INTO daily_changes (date, address, change)
-                VALUES (
-                    (NEW.timestamp + interval '5 hours')::date,  -- timestampを+5時間してdate型に変換
-                    NEW.from_address,
-                    -NEW.value  -- マイナス値として設定
-                )
-                ON CONFLICT (date, address) 
-                DO UPDATE SET change = daily_changes.change + EXCLUDED.change;
+def insert_geek_transactions(db_client: DatabaseClient, transactions: list) -> int:
+    logger.info(f" insert_geek_transactions: insert_count: {len(transactions)}")
+    inserted_count = insert_geek_transactions_db(db_client, transactions)
+    logger.info(f" insert_geek_transactions: inserted_count: {inserted_count}")
+    return inserted_count
 
-                -- to_addressの処理（プラス値）
-                INSERT INTO daily_changes (date, address, change)
-                VALUES (
-                    (NEW.timestamp + interval '5 hours')::date,  -- timestampを+5時間してdate型に変換
-                    NEW.to_address,
-                    NEW.value  -- プラス値として設定
-                )
-                ON CONFLICT (date, address) 
-                DO UPDATE SET change = daily_changes.change + EXCLUDED.change;
-
-                RETURN NEW;
-
-            EXCEPTION WHEN OTHERS THEN
-                RAISE EXCEPTION 'トリガー内でエラーが発生しました: block_number=%, log_index=%, error: %', 
-                    NEW.block_number, 
-                    NEW.log_index,
-                    SQLERRM;
-            END;
-        END;
-        $$
-        LANGUAGE plpgsql;
-
-        CREATE TRIGGER trg_insert_geek_transactions
-        AFTER INSERT ON geek_transactions
-        FOR EACH ROW
-        EXECUTE FUNCTION insert_daily_changes();
-        """
-        client = DatabaseClient()
-        client.execute(query)
-    except Exception as e:
-        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_trigger中にエラーが発生しました: {e}")
-    else:
-        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} create_triggerが正常に実行されました")
-
-
-if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        get_geek_data()
-    elif len(sys.argv) >= 2:
-        if sys.argv[1] == "resume":
-            resume_geek_data(sys.argv[2], sys.argv[3])
-        elif sys.argv[1] == "create_trigger":
-            create_trigger()
-    else:
-        print("引数が不正です")
-    # response = get_geek_data({'block_number': 1433326, 'index': 1})
-    # print(generate_url_with_params(params={'block_number': 1433326, 'log_index': 1}))
-    # resume_geek_data(2180939, 2)
-    # calculate_today_balances()
-
+def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
+    latest_block_number, latest_log_index = fetch_letest_transaction_db(db_client)
+    logger.info(f"fetch_letest_transaction: latest_block_number: {latest_block_number}, latest_log_index: {latest_log_index}")
+    return latest_block_number, latest_log_index
+    
+   
+def update_geek_transactions(db_client: DatabaseClient):
+    latest_block_number, latest_log_index = fetch_letest_transaction(db_client)
+    geek_transactions = fetch_geek_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
+    insert_geek_transactions(db_client, geek_transactions)
+    fetch_letest_transaction(db_client)
 
     
+    
+
+
+
+
+

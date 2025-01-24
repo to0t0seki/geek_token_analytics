@@ -1,13 +1,13 @@
 import streamlit as st
 from datetime import timedelta
 from src.data_access.query import get_latest_timestamp
-from src.data_access.client import DatabaseClient
+from src.data_access.database_client import DatabaseClient
 
 def show_sidebar():
     if 'db_client' not in st.session_state:
         st.session_state.db_client = DatabaseClient()
 
-    latest_timestamp = get_latest_timestamp()
+    latest_timestamp = get_latest_timestamp(st.session_state.db_client)
     latest_timestamp = (latest_timestamp + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
     st.sidebar.image("img/logo2.jpg", width=200)
 

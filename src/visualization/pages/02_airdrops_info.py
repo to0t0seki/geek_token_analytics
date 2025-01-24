@@ -3,7 +3,7 @@ from src.visualization.components.chart import display_chart
 from src.data_access.query import get_daily_airdrops, get_jst_4am_close_price
 from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-from src.data_access.client import DatabaseClient
+from src.data_access.database_client import DatabaseClient
 import pandas as pd
 
 
@@ -22,12 +22,12 @@ if 'db_client' not in st.session_state:
 show_sidebar()
 
 with st.spinner('データを取得中...'):
-    airdrops_df = get_daily_airdrops()
+    airdrops_df = get_daily_airdrops(st.session_state.db_client)
 
 
 
 st.write("日次エアドロップ")
-ohlcv_df = get_jst_4am_close_price()
+ohlcv_df = get_jst_4am_close_price(st.session_state.db_client)
 
 merged_airdrops_df = pd.merge(
     airdrops_df[['date', 'value', 'address_count']],

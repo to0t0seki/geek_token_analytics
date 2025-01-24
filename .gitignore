@@ -5,9 +5,10 @@
 /venv/
 __pycache__/
 *.pyc
-cron.log
+/logs/
 *.db
 /.devcontainer/
 /.vscode/
 .streamlit/config.toml
 .env
+

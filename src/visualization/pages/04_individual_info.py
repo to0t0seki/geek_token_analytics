@@ -5,7 +5,7 @@ from src.visualization.components.sidebar import show_sidebar
 from src.data_access.query import get_latest_balances_from_all_addresses, get_latest_balances_from_airdrop_recipient, get_latest_balances_from_exchange, get_latest_balances_from_operator, get_address_info, get_jst_4am_close_price
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.visualization.components.chart import display_chart
-from src.data_access.client import DatabaseClient
+from src.data_access.database_client import DatabaseClient
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
@@ -22,13 +22,13 @@ show_sidebar()
 
 # データソースの選択
 data_sources = {
-    "全てのアドレス": lambda: get_latest_balances_from_all_addresses(),
-    "ユーザーアドレス": lambda: get_latest_balances_from_airdrop_recipient(),
-    "取引所": lambda: get_latest_balances_from_exchange(),
-    "運営": lambda: get_latest_balances_from_operator(),
+    "全てのアドレス": lambda: get_latest_balances_from_all_addresses(st.session_state.db_client),
+    "ユーザーアドレス": lambda: get_latest_balances_from_airdrop_recipient(st.session_state.db_client),
+    "取引所": lambda: get_latest_balances_from_exchange(st.session_state.db_client),
+    "運営": lambda: get_latest_balances_from_operator(st.session_state.db_client),
 }
 
-geek_price_df = get_jst_4am_close_price()
+geek_price_df = get_jst_4am_close_price(st.session_state.db_client)
 geek_price = float(geek_price_df.iloc[0]['close'])
 
 selected_source = st.selectbox("アドレスのカテゴリーを選択してください:", list(data_sources.keys()))
@@ -43,7 +43,7 @@ df['balance'] = df['balance'].round(0)
 df['dollar_base'] = df['balance'] * geek_price
 df['Note'] = None
 
-with open("config/address_notes.json", 'r',encoding='utf-8') as f:
+with open("address_notes.json", 'r',encoding='utf-8') as f:
        address_notes = json.load(f)
 df['Note'] = df['address'].map(address_notes)
 df.rename(columns={'address':'アドレス','balance':'残高(geek)','dollar_base':'残高(dollar)'}, inplace=True)
@@ -79,7 +79,7 @@ if isinstance(selected_row, pd.DataFrame):
 
     
     st.write(f"選択されたアドレス: {selected_row.iloc[0]['アドレス']}, 備考: {selected_row.iloc[0]['Note']}")
-    address_info_df = get_address_info(selected_row.iloc[0]['アドレス'])
+    address_info_df = get_address_info(st.session_state.db_client, selected_row.iloc[0]['アドレス'])
     merged_df = pd.merge(
         address_info_df,
         geek_price_df,

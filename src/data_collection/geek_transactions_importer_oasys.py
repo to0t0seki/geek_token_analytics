@@ -3,7 +3,7 @@ import time
 import sys
 from typing import Dict, Any
 from datetime import datetime
-from src.data_access.client import DatabaseClient
+from src.data_access.database_client import DatabaseClient
 
 
 def create_normalized_tables(db_client: DatabaseClient) -> None:

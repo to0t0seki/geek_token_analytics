@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 from src.data_access.query import get_latest_balances_from_game_ops_wallet, get_latest_balances_from_airdrop_wallet, get_latest_balances_from_withdrawal_wallet, get_latest_balances_from_exchange, get_latest_balances_from_others, get_latest_balances_from_airdrop_recipient
 from src.visualization.components.sidebar import show_sidebar
-from src.data_access.client import DatabaseClient
+from src.data_access.database_client import DatabaseClient
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
@@ -19,12 +19,12 @@ if 'db_client' not in st.session_state:
 show_sidebar()
 
 with st.spinner('データを取得中...'):
-    operators_balances = get_latest_balances_from_game_ops_wallet()
-    airdrop_wallet_balances = get_latest_balances_from_airdrop_wallet()
-    withdrawal_wallet_balances = get_latest_balances_from_withdrawal_wallet()
-    airdrop_recipients_balances = get_latest_balances_from_airdrop_recipient()
-    exchanges_balances = get_latest_balances_from_exchange()
-    other_holders_balances = get_latest_balances_from_others()
+    operators_balances = get_latest_balances_from_game_ops_wallet(st.session_state.db_client)
+    airdrop_wallet_balances = get_latest_balances_from_airdrop_wallet(st.session_state.db_client)
+    withdrawal_wallet_balances = get_latest_balances_from_withdrawal_wallet(st.session_state.db_client)
+    airdrop_recipients_balances = get_latest_balances_from_airdrop_recipient(st.session_state.db_client)
+    exchanges_balances = get_latest_balances_from_exchange(st.session_state.db_client)
+    other_holders_balances = get_latest_balances_from_others(st.session_state.db_client)
 
 
 

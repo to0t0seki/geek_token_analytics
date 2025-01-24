@@ -3,7 +3,7 @@ from src.visualization.components.chart import display_chart
 from src.data_access.query import get_daily_deposits, get_daily_withdrawals, get_jst_4am_close_price
 from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-from src.data_access.client import DatabaseClient
+from src.data_access.database_client import DatabaseClient
 import pandas as pd
 
 
@@ -21,14 +21,14 @@ if 'db_client' not in st.session_state:
 show_sidebar()
 
 with st.spinner('データを取得中...'):
-    deposits_df = get_daily_deposits()
-    withdrawals_df = get_daily_withdrawals()
+    deposits_df = get_daily_deposits(st.session_state.db_client)
+    withdrawals_df = get_daily_withdrawals(st.session_state.db_client)
 
 
 
 st.write("### 入金")
 
-ohlcv_df = get_jst_4am_close_price()
+ohlcv_df = get_jst_4am_close_price(st.session_state.db_client)
 merged_deposits_df = pd.merge(
     deposits_df[['date', 'value', 'address_count']],
     ohlcv_df[['date','close']],

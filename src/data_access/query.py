@@ -1,7 +1,6 @@
-import streamlit as st
+from src.data_access.database_client import DatabaseClient
 
-
-def get_airdrop_recipient_balances():
+def get_airdrop_recipient_balances(db_client: DatabaseClient):
     """
     airdropsテーブルにあるアドレスの全ての日付の残高を取得
     """
@@ -13,12 +12,12 @@ def get_airdrop_recipient_balances():
     group by db.date
     order by db.date desc
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
  
     return df
 
 
-def get_daily_airdrops():   
+def get_daily_airdrops(db_client: DatabaseClient):   
     query = """
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
@@ -33,11 +32,11 @@ def get_daily_airdrops():
     ORDER BY 
         date desc
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
 
-def get_daily_deposits():
+def get_daily_deposits(db_client: DatabaseClient):
     query = """
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
@@ -52,13 +51,13 @@ def get_daily_deposits():
     ORDER BY 
         date desc
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
 
     return df
 
 
 
-def get_daily_withdrawals():
+def get_daily_withdrawals(db_client: DatabaseClient):
     query = """
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
@@ -75,12 +74,12 @@ def get_daily_withdrawals():
         date desc
     """
     
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     
     return df
 
 
-def get_latest_timestamp() -> str:
+def get_latest_timestamp(db_client: DatabaseClient) -> str:
     """
     geek_transactionsテーブルから最新のタイムスタンプを取得する
     
@@ -94,13 +93,13 @@ def get_latest_timestamp() -> str:
     FROM geek_transactions
     """
     
-    result = st.session_state.db_client.fetch_one(query)
+    result = db_client.fetch_one(query)
     
     return result[0]
 
 
 
-def get_latest_balances_from_all_addresses():
+def get_latest_balances_from_all_addresses(db_client: DatabaseClient):
     """
     全てのアドレスの最新の残高を取得
     """
@@ -113,10 +112,10 @@ def get_latest_balances_from_all_addresses():
     WHERE address != '0x0000000000000000000000000000000000000000'
     ORDER BY balance DESC
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_airdrop_recipient():
+def get_latest_balances_from_airdrop_recipient(db_client: DatabaseClient):
     """
     エアドロップを一度でも受け取ったことがあるアドレスの最新の残高を取得
     """
@@ -125,12 +124,12 @@ def get_latest_balances_from_airdrop_recipient():
     FROM latest_balances as lb
     INNER JOIN airdrop_recipients as apd ON lb.address = apd.address
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
 
 
-def get_latest_balances_from_exchange():
+def get_latest_balances_from_exchange(db_client: DatabaseClient):
     """
     エクスチェンジアドレスの最新の残高を取得
     """
@@ -148,10 +147,10 @@ def get_latest_balances_from_exchange():
     ) as exd ON lb.address = exd.address
     """
     params = {'address1':addresses[0], 'address2':addresses[1]}
-    df = st.session_state.db_client.query_to_df(query, params=params)
+    df = db_client.query_to_df(query, params=params)
     return df
 
-def get_latest_balances_from_operator():
+def get_latest_balances_from_operator(db_client: DatabaseClient):
     """
     運営アドレスの最新の残高を取得
     """
@@ -172,37 +171,37 @@ def get_latest_balances_from_operator():
     ) as op ON lb.address = op.address
     """
     params = {'address1':addresses[0], 'address2':addresses[1], 'address3':addresses[2]}
-    df = st.session_state.db_client.query_to_df(query, params=params)
+    df = db_client.query_to_df(query, params=params)
     return df
 
-def get_latest_balances_from_game_ops_wallet():
+def get_latest_balances_from_game_ops_wallet(db_client: DatabaseClient):
     query = """
     SELECT lb.balance / 1e18 as balance
     FROM latest_balances as lb
     where lb.address = '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_withdrawal_wallet():
+def get_latest_balances_from_withdrawal_wallet(db_client: DatabaseClient):
     query = """
     SELECT lb.balance / 1e18 as balance
     FROM latest_balances as lb
     where lb.address = '0x687F3413C7f0e089786546BedF809b8F8885B051'
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_airdrop_wallet():
+def get_latest_balances_from_airdrop_wallet(db_client: DatabaseClient):
     query = """
     SELECT lb.balance / 1e18 as balance
     FROM latest_balances as lb
     where lb.address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_others():
+def get_latest_balances_from_others(db_client: DatabaseClient):
     """
     運営、取引所、エアドロップ受領者以外のアドレスの最新残高を取得
     
@@ -240,10 +239,10 @@ def get_latest_balances_from_others():
     WHERE ea.address IS NULL
     """
     params = {'address1':operator_addresses[0], 'address2':operator_addresses[1], 'address3':operator_addresses[2], 'address4':exchange_addresses[0], 'address5':exchange_addresses[1]}
-    df = st.session_state.db_client.query_to_df(query, params=params)
+    df = db_client.query_to_df(query, params=params)
     return df
 
-def get_address_info(address: str):
+def get_address_info(db_client: DatabaseClient, address: str):
     """
     指定されたアドレスの情報を取得
     """
@@ -296,12 +295,12 @@ def get_address_info(address: str):
     ORDER BY b.date DESC    
     """
     params = {'address':address}
-    df = st.session_state.db_client.query_to_df(query, params=params)
+    df = db_client.query_to_df(query, params=params)
     return df
 
 
 
-def get_nft_sell_transactions(address:str):
+def get_nft_sell_transactions(db_client: DatabaseClient, address:str):
     query = f"""
     SELECT from_address, value / 1e18 as value
     FROM geek_transactions
@@ -309,10 +308,10 @@ def get_nft_sell_transactions(address:str):
     timestamp between '2024-11-25T10:00:00.000000Z' and '2024-11-27T15:00:00.000000Z' and 
     method = 'transfer'
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
-def get_jst_4am_close_price():
+def get_jst_4am_close_price(db_client: DatabaseClient):
     query = """
     (SELECT date(timestamp + INTERVAL '5 hours') as date, close
     FROM ohlcv_1h
@@ -324,11 +323,11 @@ def get_jst_4am_close_price():
     limit 1))
     order by date desc
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
 
-def get_nft_transactions():
+def get_nft_transactions(db_client: DatabaseClient):
     query = """
     with combined_results as (
         SELECT to_address, count(to_address) as count
@@ -351,7 +350,7 @@ def get_nft_transactions():
     group by to_address
     order by sum(count) desc
     """
-    df = st.session_state.db_client.query_to_df(query)
+    df = db_client.query_to_df(query)
     return df
 
 

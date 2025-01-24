@@ -3,7 +3,7 @@ from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode
 from src.visualization.components.chart import display_nft_sell_chart
 from src.data_access.query import get_nft_transactions
-from src.data_access.client import DatabaseClient
+from src.data_access.database_client import DatabaseClient
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
@@ -17,7 +17,7 @@ if 'db_client' not in st.session_state:
 show_sidebar()
 
 with st.spinner('データを取得中...'):
-    df = get_nft_transactions()
+    df = get_nft_transactions(st.session_state.db_client)
 tmp = df.groupby('count').count().reset_index()
 tmp.rename(columns={'count':'購入個数','to_address':'ユニークアドレス数'}, inplace=True)
 
