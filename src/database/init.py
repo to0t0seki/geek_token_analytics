@@ -1,0 +1,9 @@
+from src.database.daily_balances_repository import create_daily_balances
+from src.database.latest_balances_repository import create_latest_balances
+from src.database.airdrop_recipients_repository import create_airdrop_recipients
+
+
+create_daily_balances()
+create_latest_balances()
+create_airdrop_recipients()
+
