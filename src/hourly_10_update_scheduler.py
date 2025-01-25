@@ -2,15 +2,15 @@ import traceback
 import sys
 sys.path.append("/home/ubuntu/geek_analytics_test")
 
-from src.data_collection.geek_transactions_importer import update_geek_transactions
-from src.database.daily_balances_repository import refresh_daily_balances
-from src.database.latest_balances_repository import refresh_latest_balances
-from src.database.airdrop_recipients_repository import refresh_airdrop_recipients
-from src.data_collection.market_data_importer import refresh_ohlcv_1h
+from src.database.data_collection.geek_transactions_importer import update_geek_transactions
+from src.database.repositorys.daily_balances_repository import refresh_daily_balances
+from src.database.repositorys.latest_balances_repository import refresh_latest_balances
+from src.database.repositorys.airdrop_recipients_repository import refresh_airdrop_recipients
+from src.database.data_collection.market_data_importer import refresh_ohlcv_1h
 
 
 
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 from src.logger import setup_logger
 
 

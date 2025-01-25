@@ -1,9 +1,9 @@
 import streamlit as st
 from src.visualization.components.chart import display_chart
-from src.data_access.query import get_daily_deposits, get_daily_withdrawals, get_jst_4am_close_price
+from src.database.data_access.queries import get_daily_deposits, get_daily_withdrawals, get_jst_4am_close_price
 from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 import pandas as pd
 
 

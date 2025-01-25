@@ -2,8 +2,8 @@ import streamlit as st
 from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode
 from src.visualization.components.chart import display_nft_sell_chart
-from src.data_access.query import get_nft_transactions
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.queries import get_nft_transactions
+from src.database.data_access.database_client import DatabaseClient
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",

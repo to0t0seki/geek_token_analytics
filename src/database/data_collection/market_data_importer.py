@@ -1,8 +1,8 @@
 import requests
 from src.logger import setup_logger
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 from datetime import datetime, timedelta
-from src.database.ohlcv_1h_repository import insert_ohlcv_1h_db
+from src.database.repositorys.ohlcv_1h_repository import insert_ohlcv_1h_db
 import pytz
 
 logger = setup_logger(__name__)

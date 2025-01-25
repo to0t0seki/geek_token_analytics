@@ -1,4 +1,4 @@
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 
 
 def create_airdrop_recipients(db_client: DatabaseClient) -> None:

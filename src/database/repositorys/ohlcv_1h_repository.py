@@ -1,4 +1,4 @@
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 
 def create_ohlcv_1h(db_client: DatabaseClient) -> None:
     create_ohlcv_1h_table = """

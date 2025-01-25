@@ -1,4 +1,4 @@
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 
 def create_airdrops_view() -> None:
     """airdropsビューを作成する"""

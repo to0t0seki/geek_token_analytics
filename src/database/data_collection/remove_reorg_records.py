@@ -1,6 +1,6 @@
 import requests
 import time
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 
 def get_reorg_blocks_from_api(params: dict = {}):
     reorg_blocks = []

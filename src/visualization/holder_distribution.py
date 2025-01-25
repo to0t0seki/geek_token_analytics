@@ -1,9 +1,9 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from src.data_access.query import get_latest_balances_from_game_ops_wallet, get_latest_balances_from_airdrop_wallet, get_latest_balances_from_withdrawal_wallet, get_latest_balances_from_exchange, get_latest_balances_from_others, get_latest_balances_from_airdrop_recipient
+from src.database.data_access.queries import get_latest_balances_from_game_ops_wallet, get_latest_balances_from_airdrop_wallet, get_latest_balances_from_withdrawal_wallet, get_latest_balances_from_exchange, get_latest_balances_from_others, get_latest_balances_from_airdrop_recipient
 from src.visualization.components.sidebar import show_sidebar
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",

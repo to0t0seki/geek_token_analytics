@@ -1,0 +1,11 @@
+from src.database.repositorys.daily_balances_repository import create_daily_balances
+from src.database.repositorys.latest_balances_repository import create_latest_balances
+from src.database.repositorys.airdrop_recipients_repository import create_airdrop_recipients
+from src.database.data_access.database_client import DatabaseClient
+
+
+db_client = DatabaseClient()
+create_daily_balances(db_client)
+create_latest_balances(db_client)
+create_airdrop_recipients(db_client)
+

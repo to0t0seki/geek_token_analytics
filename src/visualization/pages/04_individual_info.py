@@ -2,10 +2,10 @@ import streamlit as st
 import json
 import pandas as pd
 from src.visualization.components.sidebar import show_sidebar
-from src.data_access.query import get_latest_balances_from_all_addresses, get_latest_balances_from_airdrop_recipient, get_latest_balances_from_exchange, get_latest_balances_from_operator, get_address_info, get_jst_4am_close_price
+from src.database.data_access.queries import get_latest_balances_from_all_addresses, get_latest_balances_from_airdrop_recipient, get_latest_balances_from_exchange, get_latest_balances_from_operator, get_address_info, get_jst_4am_close_price
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.visualization.components.chart import display_chart
-from src.data_access.database_client import DatabaseClient
+from src.database.data_access.database_client import DatabaseClient
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
