@@ -39,6 +39,8 @@ with st.spinner('データを取得中...'):
 
 
 df = df[['address', 'balance']]
+df.sort_values(by='balance', ascending=False, inplace=True)
+df.insert(0, 'No', range(1, len(df) + 1))
 df['balance'] = df['balance'].round(0)
 df['dollar_base'] = df['balance'] * geek_price
 df['Note'] = None
