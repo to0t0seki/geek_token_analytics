@@ -11,4 +11,5 @@ __pycache__/
 /.vscode/
 .streamlit/config.toml
 .env
+/trace/
 

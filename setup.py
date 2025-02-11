@@ -10,7 +10,8 @@ setup(
         "pandas",
         "streamlit-aggrid",
         "python-dotenv",
-        "psycopg2-binary"
+        "psycopg2-binary",
+        "streamlit-javascript"
     ],
     python_requires=">=3.8",
 )

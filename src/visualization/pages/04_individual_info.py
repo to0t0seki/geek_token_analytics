@@ -6,6 +6,9 @@ from src.database.data_access.queries import get_latest_balances_from_all_addres
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.visualization.components.chart import display_chart
 from src.database.data_access.database_client import DatabaseClient
+from streamlit_local_storage import LocalStorage
+
+
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
@@ -14,19 +17,32 @@ st.set_page_config(page_title="GEEK Token アナリティクス",
 
 
 st.title("個別アドレス情報")
+local_storage = LocalStorage()
 
 if 'db_client' not in st.session_state:
     st.session_state.db_client = DatabaseClient()
 
+
+
+
 show_sidebar()
 
 # データソースの選択
+
 data_sources = {
     "全てのアドレス": lambda: get_latest_balances_from_all_addresses(st.session_state.db_client),
     "ユーザーアドレス": lambda: get_latest_balances_from_airdrop_recipient(st.session_state.db_client),
     "取引所": lambda: get_latest_balances_from_exchange(st.session_state.db_client),
     "運営": lambda: get_latest_balances_from_operator(st.session_state.db_client),
 }
+
+source_key_map = {
+    "全てのアドレス": "all",
+    "ユーザーアドレス": "airdrop",
+    "取引所": "exchange",
+    "運営": "operator",
+}
+
 
 geek_price_df = get_jst_4am_close_price(st.session_state.db_client)
 geek_price = float(geek_price_df.iloc[0]['close'])
@@ -36,27 +52,45 @@ selected_source = st.selectbox("アドレスのカテゴリーを選択してく
 with st.spinner('データを取得中...'):
     df = data_sources[selected_source]()
 
+safe_source_key = source_key_map[selected_source]
+
+    
+
 
 
 df = df[['address', 'balance']]
 df.sort_values(by='balance', ascending=False, inplace=True)
 df.insert(0, 'No', range(1, len(df) + 1))
-df['balance'] = df['balance'].round(0)
+df['balance'] = df['balance'].astype(int)
 df['dollar_base'] = df['balance'] * geek_price
+df['dollar_base'] = df['dollar_base'].astype(int)
 df['Note'] = None
+
+
+
 
 with open("address_notes.json", 'r',encoding='utf-8') as f:
        address_notes = json.load(f)
+
+if local_storage.getItem("Note") is not None:
+    local_storage_dict = local_storage.getItem("Note")
+    address_notes = address_notes | local_storage_dict
+
+
+
+
+
 df['Note'] = df['address'].map(address_notes)
 df.rename(columns={'address':'アドレス','balance':'残高(geek)','dollar_base':'残高(dollar)'}, inplace=True)
 
+
+
 gb = GridOptionsBuilder.from_dataframe(df)
+gb.configure_column('Note', editable=True)
 gb.configure_selection('single')
 gb.configure_column('アドレス', filter=True)
 gb.configure_columns(["残高(geek)", "残高(dollar)"],valueFormatter="Math.floor(value).toLocaleString()")
 
-
-st.write(f"現在のgeek価格: {geek_price}ドル")
 
 
 grid_response = AgGrid(
@@ -65,21 +99,49 @@ grid_response = AgGrid(
     height=300,
     width='100%',
     theme='streamlit' ,
-    update_mode=GridUpdateMode.SELECTION_CHANGED,
-    key='address_grid'
+    update_mode=GridUpdateMode.MANUAL,
+    key=safe_source_key
 )
 
-st.write("行を選択すると残高推移が表示されます。")
+
+
+#|GridUpdateMode.VALUE_CHANGED
+# grid_df_indexed = grid_response['data'].set_index('アドレス')
+# df_indexed = df.set_index('アドレス')
+# changed_df = df_indexed.compare(grid_df_indexed)
+
+
+# if not changed_df.empty:
+#     st.write(changed_df)
+#     other_df = changed_df.xs('other',axis=1,level=1)
+#     changed_dict = other_df.to_dict(orient='index')
+#     converted_data = {key: value.get("Note", "") for key, value in changed_dict.items()}
+#     local_storage.setItem("Note", converted_data)
+
+filtered_df = grid_response['data'].loc[grid_response['data']['Note'].notna() & (grid_response['data']['Note'] != '')]
+note_dict = filtered_df.set_index('アドレス').to_dict(orient='index')
+converted_data = {key: value.get("Note", "") for key, value in note_dict.items()}
+merged_converted_note = address_notes | converted_data
+local_storage.setItem("Note", merged_converted_note)
+
+st.write(f"現在のgeek価格: {geek_price}ドル")
+
+st.write("ウォレットの詳細を見る際は、アドレス選択後UPDATEボタンを押してください。")
+st.write("Noteを編集したい場合は、Noteを編集後UPDATEボタンを押してください。")
+
 st.write("行のフィルタリングやソートも可能です。")
 
+if st.button("Noteを削除"):
+    local_storage.deleteItem("Note")
+    st.rerun()
+
+
 st.write("")
 st.write("")
 
+if grid_response['selected_rows'] is not None:
+    selected_row = grid_response['selected_rows']
 
-selected_row = grid_response['selected_rows']
-if isinstance(selected_row, pd.DataFrame):
-
-    
     st.write(f"選択されたアドレス: {selected_row.iloc[0]['アドレス']}, 備考: {selected_row.iloc[0]['Note']}")
     address_info_df = get_address_info(st.session_state.db_client, selected_row.iloc[0]['アドレス'])
     merged_df = pd.merge(
@@ -118,10 +180,13 @@ if isinstance(selected_row, pd.DataFrame):
         height=300,
         width='100%',
         theme='streamlit' ,
-        update_mode=GridUpdateMode.NO_UPDATE
+        update_mode=GridUpdateMode.NO_UPDATE,
+        key=f"{safe_source_key}_info"
     )
     display_chart(
         [merged_df[['日付','残高(dollar)']], 'dollar', 'blue', 'y'],
+
+
         [merged_df[['日付','残高(geek)']], 'geek', 'red', 'y2'],
         title="残高推移",
     )

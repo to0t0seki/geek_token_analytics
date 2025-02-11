@@ -1,17 +1,20 @@
 import requests
 import time
 from src.logger import setup_logger
-from src.database.repositorys.geek_transactions_repository import (
-    insert_geek_transactions as insert_geek_transactions_db,
+from src.database.repositorys.doll_nft_transctions_repository import (
+    insert_doll_nft_transactions as insert_doll_nft_transactions_db,
     fetch_letest_transaction as fetch_letest_transaction_db
 )
+
 from src.database.data_access.database_client import DatabaseClient
 
 logger = setup_logger(__name__)
 
-def _fetch_geek_transactions(params: dict={}) -> tuple[list, dict]:
-    url = "https://explorer.geekout-pte.com/api/v2/tokens/0x3741FcB5792673eF220cCc0b95B5B8C38c5f2723/transfers"
+def _fetch_doll_nft_transactions(params: dict={}) -> tuple[list, dict]:
+
+    url = "https://explorer.geekout-pte.com/api/v2/tokens/0x22f8208AB7AC444A76a93547C7800411dB8Ec0F1/transfers"
     response = requests.get(url, params=params, timeout=10)
+
     response.raise_for_status()
     result = response.json()
     transactions = result['items']
@@ -27,18 +30,21 @@ def _transform_transaction(raw_transaction: dict) -> dict:
         'timestamp': raw_transaction['timestamp'].replace('T', ' ').replace('Z', ''),
         'from_address': raw_transaction['from']['hash'],
         'to_address': raw_transaction['to']['hash'],
-        'value': raw_transaction['total']['value'],
+        'token_id': raw_transaction['total']['token_id'],
         'method': raw_transaction['method'],
         'type': raw_transaction['type']
+
     }
 
 
-def fetch_geek_transactions(start_block_number: int = None, start_index: int = None,  end_block_number: int = 0, end_index: int = 0) -> list:
-    logger.info(f"fetch_geek_transactions: start_block_number: {start_block_number}, start_index: {start_index}, end_block_number: {end_block_number}, end_index: {end_index}")
-    geek_transactions = []
+def fetch_doll_nft_transactions(start_block_number: int = None, start_index: int = None,  end_block_number: int = 0, end_index: int = 0) -> list:
+    logger.info(f"fetch_doll_nft_transactions: start_block_number: {start_block_number}, start_index: {start_index}, end_block_number: {end_block_number}, end_index: {end_index}")
+
+    doll_nft_transactions = []
 
     if (start_block_number is None) != (start_index is None):
         raise ValueError("start_block_numberとstart_indexは両方とも指定するか、両方とも指定しないでください")
+
    
     
     params = {
@@ -48,8 +54,9 @@ def fetch_geek_transactions(start_block_number: int = None, start_index: int = N
 
     while True:
         new_transactions = []
-        raw_transactions, next_page_params = _fetch_geek_transactions(params)
+        raw_transactions, next_page_params = _fetch_doll_nft_transactions(params)
         
+
 
         for raw_transaction in raw_transactions:
             new_transaction = _transform_transaction(raw_transaction)
@@ -73,28 +80,34 @@ def fetch_geek_transactions(start_block_number: int = None, start_index: int = N
 
                 if (current_block_number > end_block_number or
                     (current_block_number == end_block_number and current_index > end_index)):
-                    geek_transactions.append(transaction)
+                    doll_nft_transactions.append(transaction)
             break
 
-        geek_transactions.extend(new_transactions)
+        
+        doll_nft_transactions.extend(new_transactions)
 
         params = next_page_params
+
         time.sleep(1)
-    total_transactions = len(geek_transactions)
-    latest_block_number = geek_transactions[0]['block_number']
-    latest_index = geek_transactions[0]['log_index']
-    oldest_block_number = geek_transactions[total_transactions - 1]['block_number']
-    oldest_index = geek_transactions[total_transactions - 1]['log_index']
-
-    logger.info(f"fetch_geek_transactions: total_transactions: {total_transactions}, latest_block_number: {latest_block_number}, latest_index: {latest_index}, oldest_block_number: {oldest_block_number}, oldest_index: {oldest_index}")
-    return geek_transactions
+    total_transactions = len(doll_nft_transactions)
+    latest_block_number = doll_nft_transactions[0]['block_number']
+    latest_index = doll_nft_transactions[0]['log_index']
+    oldest_block_number = doll_nft_transactions[total_transactions - 1]['block_number']
+    oldest_index = doll_nft_transactions[total_transactions - 1]['log_index']
 
 
-def insert_geek_transactions(db_client: DatabaseClient, transactions: list) -> int:
-    logger.info(f" insert_geek_transactions: insert_count: {len(transactions)}")
-    inserted_count = insert_geek_transactions_db(db_client, transactions)
-    logger.info(f" insert_geek_transactions: inserted_count: {inserted_count}")
+    logger.info(f"fetch_doll_nft_transactions: total_transactions: {total_transactions}, latest_block_number: {latest_block_number}, latest_index: {latest_index}, oldest_block_number: {oldest_block_number}, oldest_index: {oldest_index}")
+    return doll_nft_transactions
+
+
+
+def insert_doll_nft_transactions(db_client: DatabaseClient, transactions: list) -> int:
+    logger.info(f" insert_doll_nft_transactions: insert_count: {len(transactions)}")
+    inserted_count = insert_doll_nft_transactions_db(db_client, transactions)
+    logger.info(f" insert_doll_nft_transactions: inserted_count: {inserted_count}")
     return inserted_count
+
+
 
 def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
     latest_block_number, latest_log_index = fetch_letest_transaction_db(db_client)
@@ -102,11 +115,15 @@ def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
     return latest_block_number, latest_log_index
     
    
-def update_geek_transactions(db_client: DatabaseClient):
+def update_doll_nft_transactions(db_client: DatabaseClient):
     latest_block_number, latest_log_index = fetch_letest_transaction(db_client)
-    geek_transactions = fetch_geek_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
-    insert_geek_transactions(db_client, geek_transactions)
+    doll_nft_transactions = fetch_doll_nft_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
+    insert_doll_nft_transactions(db_client, doll_nft_transactions)
+
     fetch_letest_transaction(db_client)
+
+
+
 
     #0x5F4C74F0fe967654D38F61918a6130cAA9023c9B 装備
     #0x22f8208AB7AC444A76a93547C7800411dB8Ec0F1 ドール

@@ -42,10 +42,13 @@ class DatabaseClient:
                     return cursor.fetchone()
 
         
-    def fetch_all(self, query: str) -> list:
+    def fetch_all(self, query: str, params = None) -> list:
             with self.get_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(query)
+                    if params is None:
+                        cursor.execute(query)
+                    else:
+                        cursor.execute(query, params)
                     return cursor.fetchall()
                 
     def executemany(self, query: str, params_list: list) -> int:
