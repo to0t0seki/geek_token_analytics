@@ -140,6 +140,7 @@ local_storage.setItem("Note", merged_converted_note)
 
 st.write(f"現在のgeek価格: {geek_price}ドル")
 st.markdown('''
+##### 使い方が変わりました。
 アドレスの詳細を見る際は、アドレス選択後「UPDATE」ボタン。
             
 ##### メモ機能を実装しました。  
