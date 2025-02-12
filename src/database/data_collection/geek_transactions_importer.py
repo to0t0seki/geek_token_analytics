@@ -81,6 +81,8 @@ def fetch_geek_transactions(start_block_number: int = None, start_index: int = N
         params = next_page_params
         time.sleep(1)
     total_transactions = len(geek_transactions)
+    if total_transactions == 0:
+        return []
     latest_block_number = geek_transactions[0]['block_number']
     latest_index = geek_transactions[0]['log_index']
     oldest_block_number = geek_transactions[total_transactions - 1]['block_number']
@@ -105,6 +107,9 @@ def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
 def update_geek_transactions(db_client: DatabaseClient):
     latest_block_number, latest_log_index = fetch_letest_transaction(db_client)
     geek_transactions = fetch_geek_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
+    if len(geek_transactions) == 0:
+        logger.info("geek_transactions: 新しいトランザクションがありません")
+        return
     insert_geek_transactions(db_client, geek_transactions)
     fetch_letest_transaction(db_client)
 
