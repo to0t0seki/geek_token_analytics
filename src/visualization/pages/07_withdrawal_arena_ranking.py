@@ -27,7 +27,7 @@ st.markdown(style, unsafe_allow_html=True)
 
 
 
-st.title("出金アリーナランキング(1/11 04:00:00JST～)")
+st.title("出金アリーナランキング\n1/11 04:00:00JST～")
 
 if 'db_client' not in st.session_state:
     st.session_state.db_client = DatabaseClient()
