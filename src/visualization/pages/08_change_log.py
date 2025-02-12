@@ -6,6 +6,8 @@ st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
 
+
+
 show_sidebar()
 st.title("更新履歴")
 
@@ -13,7 +15,7 @@ st.markdown("""
 ### 2025-02-11             
 更新内容    
 ・出金アリーナランキングページを追加しました。  
-・individual_infoページの備考タブにメモを保存できるようにしました。
+・individual_infoページにメモを保存できるようにしました。
             
 ### 2025-02-01            
 更新内容    
