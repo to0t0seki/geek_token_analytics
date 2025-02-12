@@ -21,7 +21,7 @@ style = '''
     background-repeat: no-repeat;
 }
 .stCustomComponentV1 {
-       max-width: 70% !important;
+       max-width: 90% !important;
     }
 
 </style>

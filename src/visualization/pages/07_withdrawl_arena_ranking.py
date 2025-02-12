@@ -101,8 +101,10 @@ max_withdrawal = int(withdrawal_transactions_df['value'].max())
 min_withdrawal = int(withdrawal_transactions_df['value'].min())
 
 st.markdown(f'''
-***総出金枚数: {total_withdrawal}***  
-***総出金回数: {total_count}***  
-***平均出金枚数: {average_withdrawal}***  
-***中央値出金枚数: {middle_withdrawal}***
+<div style="background-color: white; width: 200px;">
+総出金枚数: {total_withdrawal}<br>
+総出金回数: {total_count}<br>
+平均出金枚数: {average_withdrawal}<br>
+中央値出金枚数: {middle_withdrawal}<br>
+</div>
 ''', unsafe_allow_html=True)

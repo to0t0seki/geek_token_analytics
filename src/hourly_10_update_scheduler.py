@@ -30,7 +30,7 @@ def hourly_10_update_scheduler():
     refresh_daily_balances(db_client)
     refresh_latest_balances(db_client)
     refresh_airdrop_recipients(db_client)
-    refresh_exchange_wallets(db_client)
+    # refresh_exchange_wallets(db_client)
     refresh_ohlcv_1h(db_client)
 
     logger.info("end: hourly_10_update_scheduler")

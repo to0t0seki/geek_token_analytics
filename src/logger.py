@@ -39,6 +39,20 @@ def setup_logger(name: str, log_dir: str = "logs") -> logging.Logger:
         # ハンドラーの追加
         logger.addHandler(file_handler)
 
+         # ---------- エラーログ (ERROR以上) 用のファイルハンドラー ----------
+        error_log_file = os.path.join(
+            log_dir, 
+            f"{datetime.now().strftime('%Y%m%d')}_{name}_error.log"
+        )
+        error_file_handler = RotatingFileHandler(
+            error_log_file,
+            maxBytes=1024 * 1024,  # 1MB
+            backupCount=5
+        )
+        error_file_handler.setLevel(logging.ERROR)
+        error_file_handler.setFormatter(formatter)
+        logger.addHandler(error_file_handler)
+
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.INFO)
         console_handler.setFormatter(formatter)
