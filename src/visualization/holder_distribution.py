@@ -10,6 +10,21 @@ st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
 
+style = '''
+<style>
+.stApp {
+    background-image: url('https://lastmemories.io/special/assets/fankit-assets/PC/01_5_komari.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;}
+.stCustomComponentV1 {
+       max-width: 70% !important;
+    }
+.main-svg {
+  background: transparent !important;
+}
+</style>
+'''
+st.markdown(style, unsafe_allow_html=True)
 
 st.title(f"ホルダー分布")
 

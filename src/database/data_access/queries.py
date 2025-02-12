@@ -354,6 +354,42 @@ def get_nft_transactions(db_client: DatabaseClient):
     return df
 
 
+def get_withdrawal_ranking(db_client: DatabaseClient):
+    query = """
+        select to_address, 
+        count(distinct tx_hash),
+        round(sum(value/1e18)) as value 
+        from geek_transactions 
+        where method='exportToken' 
+        and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+        and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+        or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+        or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+        and timestamp + interval'9hour' > '2025-01-11 04:00:00' 
+        group by to_address
+    """
+    df = db_client.query_to_df(query)
+    return df
+
+def get_withdrawal_transactions(db_client: DatabaseClient):
+    query = """
+        select 
+        tx_hash,
+        to_address as address,
+        timestamp + interval'9hour' as timestamp,
+        count(tx_hash),
+        round(sum(value/1e18)) as value 
+        from geek_transactions 
+        where method='exportToken' 
+        and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+        and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+        or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+        or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+        and timestamp + interval'9hour' > '2025-01-11 04:00:00' 
+        group by tx_hash,to_address,timestamp
+    """
+    df = db_client.query_to_df(query)
+    return df
 
 
 #    count(date(datetime(timestamp))) date(datetime(timestamp))
@@ -373,3 +409,52 @@ def get_nft_transactions(db_client: DatabaseClient):
 # df = get_latest_balances_from_others()
 # print(df['balance'].sum())
 
+
+#出金アリーナ全ての時間のランキング
+# query = """
+#  select to_address, 
+#  count(to_address),
+#  round(sum(value/1e18)) as value 
+#  from geek_transactions 
+#  where method='exportToken' 
+#  and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+#  and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+#  or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+#  or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+#  and timestamp + interval'9hour' > '2025-01-11 04:00:00' 
+#  group by to_address 
+#  order by round(sum(value/1e18)) desc;
+# """
+
+
+
+
+
+#出金アリーナ全ての時間の履歴
+# query = """
+# select timestamp + interval '9hour' as timestamp,
+# from_address,
+# to_address ,
+# round(value/1e18) as value
+# from geek_transactions 
+# where method='exportToken' 
+# and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
+# and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+# or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+# or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+# and timestamp + interval'9hour' > '2025-01-11 04:00:00' 
+# order by timestamp desc;
+# """
+
+#出金アリーナ4時の時間帯のトータル出金額
+# query = """
+# select (timestamp + interval '9hour')::date as timestamp, 
+# round(sum(value/1e18)) as value 
+# from geek_transactions 
+# where method='exportToken' and 
+# to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+# and (timestamp + interval'9hour')::time between '04:04:00' and '04:04:19' 
+# and timestamp + interval'9hour' > '2025-01-11 04:00:00' 
+# group by (timestamp + interval'9hour')::date 
+# order by timestamp desc;
+# """

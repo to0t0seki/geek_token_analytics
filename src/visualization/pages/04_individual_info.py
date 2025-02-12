@@ -13,6 +13,20 @@ from streamlit_local_storage import LocalStorage
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
+style = '''
+<style>
+.stApp {
+    background-image: url('https://lastmemories.io/special/assets/fankit-assets/PC/05_1_sana.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+.stCustomComponentV1 {
+       max-width: 70% !important;
+    }
+
+</style>
+'''
+st.markdown(style, unsafe_allow_html=True)
 
 
 
@@ -64,7 +78,7 @@ df.insert(0, 'No', range(1, len(df) + 1))
 df['balance'] = df['balance'].astype(int)
 df['dollar_base'] = df['balance'] * geek_price
 df['dollar_base'] = df['dollar_base'].astype(int)
-df['Note'] = None
+df['メモ'] = None
 
 
 
@@ -80,13 +94,13 @@ if local_storage.getItem("Note") is not None:
 
 
 
-df['Note'] = df['address'].map(address_notes)
+df['メモ'] = df['address'].map(address_notes)
 df.rename(columns={'address':'アドレス','balance':'残高(geek)','dollar_base':'残高(dollar)'}, inplace=True)
 
 
 
 gb = GridOptionsBuilder.from_dataframe(df)
-gb.configure_column('Note', editable=True)
+gb.configure_column('メモ', editable=True)
 gb.configure_selection('single')
 gb.configure_column('アドレス', filter=True)
 gb.configure_columns(["残高(geek)", "残高(dollar)"],valueFormatter="Math.floor(value).toLocaleString()")
@@ -118,20 +132,28 @@ grid_response = AgGrid(
 #     converted_data = {key: value.get("Note", "") for key, value in changed_dict.items()}
 #     local_storage.setItem("Note", converted_data)
 
-filtered_df = grid_response['data'].loc[grid_response['data']['Note'].notna() & (grid_response['data']['Note'] != '')]
+filtered_df = grid_response['data'].loc[grid_response['data']['メモ'].notna() & (grid_response['data']['メモ'] != '')]
 note_dict = filtered_df.set_index('アドレス').to_dict(orient='index')
-converted_data = {key: value.get("Note", "") for key, value in note_dict.items()}
+converted_data = {key: value.get("メモ", "") for key, value in note_dict.items()}
 merged_converted_note = address_notes | converted_data
 local_storage.setItem("Note", merged_converted_note)
 
 st.write(f"現在のgeek価格: {geek_price}ドル")
+st.markdown('''
+アドレスの詳細を見る際は、アドレス選択後「UPDATE」ボタン。
+            
+##### メモ機能を実装しました。  
+メモを書き込めます。気になるアドレスのメモにご利用下さい。  
+上手く保存できない場合があるのでご容赦ください。  
+##### 使い方  
+メモを編集後「UPDATE」ボタンで保存。  
+メモ入力後、入力が確定されていないと保存されないので注意（他の行を選択してUPDATEの方がいいかも）。  
+ブラウザのローカルストレージに保存されますので、「ブラウザのキャッシュ削除」でメモも削除されます。
 
-st.write("ウォレットの詳細を見る際は、アドレス選択後UPDATEボタンを押してください。")
-st.write("Noteを編集したい場合は、Noteを編集後UPDATEボタンを押してください。")
+''')
 
-st.write("行のフィルタリングやソートも可能です。")
 
-if st.button("Noteを削除"):
+if st.button("メモを全削除"):
     local_storage.deleteItem("Note")
     st.rerun()
 
@@ -142,7 +164,7 @@ st.write("")
 if grid_response['selected_rows'] is not None:
     selected_row = grid_response['selected_rows']
 
-    st.write(f"選択されたアドレス: {selected_row.iloc[0]['アドレス']}, 備考: {selected_row.iloc[0]['Note']}")
+    st.write(f"選択されたアドレス: {selected_row.iloc[0]['アドレス']}, メモ: {selected_row.iloc[0]['メモ']}")
     address_info_df = get_address_info(st.session_state.db_client, selected_row.iloc[0]['アドレス'])
     merged_df = pd.merge(
         address_info_df,
