@@ -1,9 +1,8 @@
 import streamlit as st
-from src.database.data_access.queries import get_withdrawal_ranking, get_withdrawal_transactions
+from src.database.data_access.queries import get_withdrawal_ranking_1, get_withdrawal_transactions_1
 from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridUpdateMode
 from src.database.data_access.database_client import DatabaseClient
-import base64
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
@@ -27,7 +26,7 @@ st.markdown(style, unsafe_allow_html=True)
 
 
 
-st.title("出金アリーナランキング\n1/11 04:00:00JST～")
+st.title("出金アリーナランキング\n1/11 04:00:00JST～2/15 04:00:00JST")
 
 if 'db_client' not in st.session_state:
     st.session_state.db_client = DatabaseClient()
@@ -35,8 +34,8 @@ if 'db_client' not in st.session_state:
 show_sidebar()
 
 with st.spinner('データを取得中...'):
-    withdrawal_df = get_withdrawal_ranking(st.session_state.db_client)
-    withdrawal_transactions_df = get_withdrawal_transactions(st.session_state.db_client)
+    withdrawal_df = get_withdrawal_ranking_1(st.session_state.db_client)
+    withdrawal_transactions_df = get_withdrawal_transactions_1(st.session_state.db_client)
 
 
 st.subheader('クリア回数(成功回数)ランキング')

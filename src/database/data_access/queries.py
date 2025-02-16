@@ -354,7 +354,7 @@ def get_nft_transactions(db_client: DatabaseClient):
     return df
 
 
-def get_withdrawal_ranking(db_client: DatabaseClient):
+def get_withdrawal_ranking_1(db_client: DatabaseClient):
     query = """
         select to_address, 
         count(distinct tx_hash),
@@ -365,13 +365,13 @@ def get_withdrawal_ranking(db_client: DatabaseClient):
         and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
         or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
         or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
-        and timestamp + interval'9hour' > '2025-01-11 04:00:00' 
+        and timestamp + interval'9hour' between '2025-01-11 04:00:00' and '2025-02-15 04:00:00'
         group by to_address
     """
     df = db_client.query_to_df(query)
     return df
 
-def get_withdrawal_transactions(db_client: DatabaseClient):
+def get_withdrawal_transactions_1(db_client: DatabaseClient):
     query = """
         select 
         tx_hash,
@@ -385,12 +385,48 @@ def get_withdrawal_transactions(db_client: DatabaseClient):
         and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
         or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
         or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
-        and timestamp + interval'9hour' > '2025-01-11 04:00:00' 
+        and timestamp + interval'9hour' between '2025-01-11 04:00:00' and '2025-02-15 04:00:00'
         group by tx_hash,to_address,timestamp
     """
     df = db_client.query_to_df(query)
     return df
 
+def get_withdrawal_ranking_2(db_client: DatabaseClient):
+    query = """
+        select to_address, 
+        count(distinct tx_hash),
+        round(sum(value/1e18)) as value 
+        from geek_transactions 
+        where method='exportToken' 
+        and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+        and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+        or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+        or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+        and timestamp + interval'9hour' > '2025-02-15 04:00:00'
+        group by to_address
+    """
+    df = db_client.query_to_df(query)
+    return df
+
+def get_withdrawal_transactions_2(db_client: DatabaseClient):
+    query = """
+        select 
+        tx_hash,
+        to_address as address,
+        timestamp + interval'9hour' as timestamp,
+        count(tx_hash),
+        round(sum(value/1e18)) as value 
+        from geek_transactions 
+        where method='exportToken' 
+        and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+        and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+        or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+        or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+        and timestamp + interval'9hour' > '2025-02-15 04:00:00'
+        group by tx_hash,to_address,timestamp
+    """
+    df = db_client.query_to_df(query)
+    return df
 
 #    count(date(datetime(timestamp))) date(datetime(timestamp))
 # 0                                33                2024-11-08
