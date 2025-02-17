@@ -391,6 +391,59 @@ def get_withdrawal_transactions_1(db_client: DatabaseClient):
     df = db_client.query_to_df(query)
     return df
 
+def get_withdrawal_ranking_in_usdt_1(db_client: DatabaseClient):
+    query = """
+        with withdrawal_transactions as (
+        select to_address, 
+        tx_hash,
+        timestamp,
+        round(value/1e18) as value 
+        from geek_transactions 
+        where method='exportToken' 
+        and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+        and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+        or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+        or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+        and timestamp + interval'9hour' between '2025-01-11 04:00:00' and '2025-02-15 04:00:00'
+        ),
+        withdrawal_transactions_with_close as (
+        select withdrawal_transactions.*, ohlcv_1h.close, round(withdrawal_transactions.value * ohlcv_1h.close,2) as value_usd
+        from withdrawal_transactions
+        left join ohlcv_1h on date_trunc('hour', withdrawal_transactions.timestamp) = date_trunc('hour', ohlcv_1h.timestamp + interval'1hour')
+        )
+        select to_address, count(distinct tx_hash), round(sum(value_usd),1) as value_usd
+        from withdrawal_transactions_with_close
+        group by to_address
+    """
+    df = db_client.query_to_df(query)
+    return df
+
+def get_withdrawal_transactions_in_usdt_1(db_client: DatabaseClient):
+    query = """
+        with withdrawal_transactions as (
+        select 
+        tx_hash,
+        to_address as address,
+        timestamp + interval'9hour' as timestamp,
+        count(tx_hash),
+        round(sum(value/1e18)) as value 
+        from geek_transactions 
+        where method='exportToken' 
+        and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+        and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+        or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+        or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+        and timestamp + interval'9hour' between '2025-01-11 04:00:00' and '2025-02-15 04:00:00'
+        group by tx_hash,to_address,timestamp
+    )
+    select withdrawal_transactions.*, ohlcv_1h.close, round(withdrawal_transactions.value * ohlcv_1h.close,1) as value_usd
+    from withdrawal_transactions
+    left join ohlcv_1h on date_trunc('hour', withdrawal_transactions.timestamp) = date_trunc('hour', ohlcv_1h.timestamp + interval'10hour')
+    """
+    df = db_client.query_to_df(query)
+    return df
+
+
 def get_withdrawal_ranking_2(db_client: DatabaseClient):
     query = """
         select to_address, 
@@ -424,6 +477,58 @@ def get_withdrawal_transactions_2(db_client: DatabaseClient):
         or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
         and timestamp + interval'9hour' > '2025-02-15 04:00:00'
         group by tx_hash,to_address,timestamp
+    """
+    df = db_client.query_to_df(query)
+    return df
+
+def get_withdrawal_ranking_in_usdt_2(db_client: DatabaseClient):
+    query = """
+        with withdrawal_transactions as (
+        select to_address, 
+        tx_hash,
+        timestamp,
+        round(value/1e18) as value 
+        from geek_transactions 
+        where method='exportToken' 
+        and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+        and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+        or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+        or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+        and timestamp + interval'9hour' > '2025-02-15 04:00:00'
+        ),
+        withdrawal_transactions_with_close as (
+        select withdrawal_transactions.*, ohlcv_1h.close, round(withdrawal_transactions.value * ohlcv_1h.close,1) as value_usd
+        from withdrawal_transactions
+        left join ohlcv_1h on date_trunc('hour', withdrawal_transactions.timestamp) = date_trunc('hour', ohlcv_1h.timestamp + interval'1hour')
+        )
+        select to_address, count(distinct tx_hash), round(sum(value_usd),2) as value_usd
+        from withdrawal_transactions_with_close
+        group by to_address
+    """
+    df = db_client.query_to_df(query)
+    return df
+
+def get_withdrawal_transactions_in_usdt_2(db_client: DatabaseClient):
+    query = """
+        with withdrawal_transactions as (
+        select 
+        tx_hash,
+        to_address as address,
+        timestamp + interval'9hour' as timestamp,
+        count(tx_hash),
+        round(sum(value/1e18)) as value 
+        from geek_transactions 
+        where method='exportToken' 
+        and to_address!='0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' 
+        and ((timestamp + interval'9hour')::time between '04:04:00' and '04:04:20' 
+        or (timestamp + interval'9hour')::time between '12:00:00' and '12:00:20' 
+        or (timestamp + interval'9hour')::time between '20:00:00' and '20:00:20') 
+        and timestamp + interval'9hour' > '2025-02-15 04:00:00'
+        group by tx_hash,to_address,timestamp
+    )
+    select withdrawal_transactions.*, ohlcv_1h.close, round(withdrawal_transactions.value * ohlcv_1h.close,1) as value_usd
+    from withdrawal_transactions
+    left join ohlcv_1h on date_trunc('hour', withdrawal_transactions.timestamp) = date_trunc('hour', ohlcv_1h.timestamp + interval'10hour')
     """
     df = db_client.query_to_df(query)
     return df
