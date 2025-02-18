@@ -16,6 +16,20 @@ def get_airdrop_recipient_balances(db_client: DatabaseClient):
  
     return df
 
+def get_other_wallets_balances(db_client: DatabaseClient):
+    """
+    運営、取引所、ユーザー以外のアドレスの全ての日付の残高を取得
+    """
+    query = """
+    SELECT date, sum(balance / 1e18) as balance
+    FROM others_balances
+    where date > '2024-09-26'
+    group by date
+    order by date desc
+    """
+    df = db_client.query_to_df(query)
+ 
+    return df
 
 def get_daily_airdrops(db_client: DatabaseClient):   
     query = """
