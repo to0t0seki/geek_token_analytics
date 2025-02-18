@@ -1,22 +1,19 @@
 import requests
 import time
 from src.logger import setup_logger
-from src.database.repositorys.equipment_nft_transctions_repository import (
-    insert_equipment_nft_transactions as insert_equipment_nft_transactions_db,
+from src.database.repositorys.doll_transctions_repository import (
+    insert_doll_transactions as insert_doll_transactions_db,
     fetch_letest_transaction as fetch_letest_transaction_db
 )
-
 
 from src.database.data_access.database_client import DatabaseClient
 
 logger = setup_logger(__name__)
 
-def _fetch_equipment_nft_transactions(params: dict={}) -> tuple[list, dict]:
+def _fetch_doll_transactions(params: dict={}) -> tuple[list, dict]:
 
-
-    url = "https://explorer.geekout-pte.com/api/v2/tokens/0x5F4C74F0fe967654D38F61918a6130cAA9023c9B/transfers"
+    url = "https://explorer.geekout-pte.com/api/v2/tokens/0x22f8208AB7AC444A76a93547C7800411dB8Ec0F1/transfers"
     response = requests.get(url, params=params, timeout=10)
-
 
     response.raise_for_status()
     result = response.json()
@@ -40,14 +37,12 @@ def _transform_transaction(raw_transaction: dict) -> dict:
     }
 
 
-def fetch_equipment_nft_transactions(start_block_number: int = None, start_index: int = None,  end_block_number: int = 0, end_index: int = 0) -> list:
-    logger.info(f"fetch_equipment_nft_transactions: start_block_number: {start_block_number}, start_index: {start_index}, end_block_number: {end_block_number}, end_index: {end_index}")
+def fetch_doll_transactions(start_block_number: int = None, start_index: int = None,  end_block_number: int = 0, end_index: int = 0) -> list:
+    logger.info(f"fetch_doll_transactions: start_block_number: {start_block_number}, start_index: {start_index}, end_block_number: {end_block_number}, end_index: {end_index}")
 
-
-    equipment_nft_transactions = []
+    doll_transactions = []
 
     if (start_block_number is None) != (start_index is None):
-
         raise ValueError("start_block_numberとstart_indexは両方とも指定するか、両方とも指定しないでください")
 
    
@@ -59,9 +54,8 @@ def fetch_equipment_nft_transactions(start_block_number: int = None, start_index
 
     while True:
         new_transactions = []
-        raw_transactions, next_page_params = _fetch_equipment_nft_transactions(params)
+        raw_transactions, next_page_params = _fetch_doll_transactions(params)
         
-
 
 
         for raw_transaction in raw_transactions:
@@ -86,38 +80,33 @@ def fetch_equipment_nft_transactions(start_block_number: int = None, start_index
 
                 if (current_block_number > end_block_number or
                     (current_block_number == end_block_number and current_index > end_index)):
-                    equipment_nft_transactions.append(transaction)
+                    doll_transactions.append(transaction)
             break
 
         
-
-        equipment_nft_transactions.extend(new_transactions)
-
+        doll_transactions.extend(new_transactions)
 
         params = next_page_params
 
         time.sleep(1)
-    total_transactions = len(equipment_nft_transactions)
+    total_transactions = len(doll_transactions)
     if total_transactions == 0:
         return []
-    latest_block_number = equipment_nft_transactions[0]['block_number']
-    latest_index = equipment_nft_transactions[0]['log_index']
-    oldest_block_number = equipment_nft_transactions[total_transactions - 1]['block_number']
-    oldest_index = equipment_nft_transactions[total_transactions - 1]['log_index']
+    latest_block_number = doll_transactions[0]['block_number']
+    latest_index = doll_transactions[0]['log_index']
+    oldest_block_number = doll_transactions[total_transactions - 1]['block_number']
+    oldest_index = doll_transactions[total_transactions - 1]['log_index']
+
+
+    logger.info(f"fetch_doll_transactions: total_transactions: {total_transactions}, latest_block_number: {latest_block_number}, latest_index: {latest_index}, oldest_block_number: {oldest_block_number}, oldest_index: {oldest_index}")
+    return doll_transactions
 
 
 
-    logger.info(f"fetch_equipment_nft_transactions: total_transactions: {total_transactions}, latest_block_number: {latest_block_number}, latest_index: {latest_index}, oldest_block_number: {oldest_block_number}, oldest_index: {oldest_index}")
-    return equipment_nft_transactions
-
-
-
-
-def insert_equipment_nft_transactions(db_client: DatabaseClient, transactions: list) -> int:
-    logger.info(f" insert_equipment_nft_transactions: insert_count: {len(transactions)}")
-    inserted_count = insert_equipment_nft_transactions_db(db_client, transactions)
-    logger.info(f" insert_equipment_nft_transactions: inserted_count: {inserted_count}")
-
+def insert_doll_transactions(db_client: DatabaseClient, transactions: list) -> int:
+    logger.info(f" insert_doll_transactions: insert_count: {len(transactions)}")
+    inserted_count = insert_doll_transactions_db(db_client, transactions)
+    logger.info(f" insert_doll_transactions: inserted_count: {inserted_count}")
     return inserted_count
 
 
@@ -128,14 +117,16 @@ def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
     return latest_block_number, latest_log_index
     
    
-def update_equipment_nft_transactions(db_client: DatabaseClient):
+def update_doll_transactions(db_client: DatabaseClient):
     latest_block_number, latest_log_index = fetch_letest_transaction(db_client)
-    equipment_nft_transactions = fetch_equipment_nft_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
-    if len(equipment_nft_transactions) == 0:
-        logger.info("equipment_nft_transactions: 新しいトランザクションがありません")
+    doll_transactions = fetch_doll_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
+    if len(doll_transactions) == 0:
+        logger.info("doll_transactions: 新しいトランザクションがありません")
         return
-    insert_equipment_nft_transactions(db_client, equipment_nft_transactions)
+    insert_doll_transactions(db_client, doll_transactions)
+
     fetch_letest_transaction(db_client)
+
 
 
 

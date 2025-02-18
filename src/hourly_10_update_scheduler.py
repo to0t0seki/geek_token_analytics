@@ -3,8 +3,8 @@ import sys
 sys.path.append("/home/ubuntu/geek_analytics_test")
 
 from src.database.data_collection.geek_transactions_importer import update_geek_transactions
-from src.database.data_collection.equipment_nft_transactions_importer import update_equipment_nft_transactions
-from src.database.data_collection.doll_nft_transactions_importer import update_doll_nft_transactions
+from src.database.data_collection.equipment_transactions_importer import update_equipment_transactions
+from src.database.data_collection.doll_transactions_importer import update_doll_transactions
 from src.database.repositorys.daily_balances_repository import refresh_daily_balances
 from src.database.repositorys.latest_balances_repository import refresh_latest_balances
 from src.database.repositorys.airdrop_recipients_repository import refresh_airdrop_recipients
@@ -25,8 +25,8 @@ def hourly_10_update_scheduler():
     logger.info("start: hourly_10_update_scheduler")
 
     update_geek_transactions(db_client)
-    update_equipment_nft_transactions(db_client)
-    update_doll_nft_transactions(db_client)
+    update_equipment_transactions(db_client)
+    update_doll_transactions(db_client)
     refresh_daily_balances(db_client)
     refresh_latest_balances(db_client)
     refresh_airdrop_recipients(db_client)

@@ -89,7 +89,7 @@ def migrate_equipment_transactions_from_nft(db_client: DatabaseClient) -> int:
 
     return db_client.execute(insert_transactions_query)
 
-create_equipment_transactions(DatabaseClient())
-migrate_equipment_transactions_from_nft(DatabaseClient())
+# create_equipment_transactions(DatabaseClient())
+# migrate_equipment_transactions_from_nft(DatabaseClient())
 
 

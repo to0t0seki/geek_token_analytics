@@ -7,7 +7,7 @@ def create_gw_to_gw_equipment_transactions_view() -> None:
     create_view = """
     CREATE VIEW gw_to_gw_equipment_transactions AS
     SELECT gt.*
-    FROM equipment_nft_transactions gt
+    FROM equipment_transactions gt
     INNER JOIN airdrop_recipients ar ON gt.from_address = ar.address
     INNER JOIN airdrop_recipients ar2 ON gt.to_address = ar2.address;
     """
