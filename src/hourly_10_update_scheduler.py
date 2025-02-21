@@ -2,14 +2,18 @@ import traceback
 import sys
 sys.path.append("/home/ubuntu/geek_analytics_test")
 
-from src.database.data_collection.geek_transactions_importer import update_geek_transactions
-from src.database.data_collection.equipment_transactions_importer import update_equipment_transactions
-from src.database.data_collection.doll_transactions_importer import update_doll_transactions
-from src.database.repositorys.daily_balances_repository import refresh_daily_balances
-from src.database.repositorys.latest_balances_repository import refresh_latest_balances
-from src.database.repositorys.airdrop_recipients_repository import refresh_airdrop_recipients
-from src.database.repositorys.exchange_wallets_repository import refresh_exchange_wallets
-from src.database.data_collection.market_data_importer import refresh_ohlcv_1h
+from src.database.importer.geek_transactions_importer import update_geek_transactions
+from src.database.importer.equipment_transactions_importer import update_equipment_transactions
+from src.database.importer.doll_transactions_importer import update_doll_transactions
+from src.database.importer.market_data_importer import update_ohlcv_1h
+
+from src.database.materialized_views.daily_balances import refresh_daily_balances
+from src.database.materialized_views.latest_balances import refresh_latest_balances
+
+from src.database.materialized_views.users_addresses import refresh_users_addresses
+from src.database.materialized_views.others_addresses import refresh_others_addresses
+from src.database.materialized_views.exchange_addresses import refresh_exchange_addresses
+
 
 
 
@@ -27,11 +31,14 @@ def hourly_10_update_scheduler():
     update_geek_transactions(db_client)
     update_equipment_transactions(db_client)
     update_doll_transactions(db_client)
+    update_ohlcv_1h(db_client)
+
     refresh_daily_balances(db_client)
     refresh_latest_balances(db_client)
-    refresh_airdrop_recipients(db_client)
-    refresh_exchange_wallets(db_client)
-    refresh_ohlcv_1h(db_client)
+
+    refresh_users_addresses(db_client)
+    refresh_others_addresses(db_client)
+    refresh_exchange_addresses(db_client)
 
     logger.info("end: hourly_10_update_scheduler")
   

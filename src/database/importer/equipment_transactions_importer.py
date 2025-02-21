@@ -1,7 +1,7 @@
 import requests
 import time
 from src.logger import setup_logger
-from src.database.repositorys.equipment_transctions_repository import (
+from src.database.tables.equipment_transctions import (
     insert_equipment_transactions as insert_equipment_transactions_db,
     fetch_letest_transaction as fetch_letest_transaction_db
 )

@@ -1,6 +1,6 @@
 from src.database.data_access.database_client import DatabaseClient
 
-def create_others_transactions_view(client: DatabaseClient) -> None:
+def create_vw_others_transactions(client: DatabaseClient) -> None:
     
     params = {
         'address1': '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
@@ -12,7 +12,7 @@ def create_others_transactions_view(client: DatabaseClient) -> None:
 
           
     create_view = """
-    CREATE OR REPLACE VIEW others_transactions AS
+    CREATE OR REPLACE VIEW vw_others_transactions AS
     WITH excluded_addresses AS (
         SELECT %(address1)s as address
         UNION ALL SELECT %(address2)s as address
@@ -22,7 +22,7 @@ def create_others_transactions_view(client: DatabaseClient) -> None:
         UNION ALL SELECT '0x0000000000000000000000000000000000000000' as address
         UNION ALL
         SELECT address
-        FROM airdrop_recipients
+        FROM users_addresses
     )
     select gt.* from geek_transactions gt
     left join excluded_addresses ea on gt.from_address = ea.address
@@ -30,9 +30,9 @@ def create_others_transactions_view(client: DatabaseClient) -> None:
     where ea.address is null or eb.address is null
     """
     client.execute(create_view, params)
-    print("others_transactionsビューを作成しました。")
+    print("vw_others_transactionsを作成しました。")
         
 
 
 if __name__ == "__main__":
-    create_others_transactions_view(DatabaseClient())
+    create_vw_others_transactions(DatabaseClient())

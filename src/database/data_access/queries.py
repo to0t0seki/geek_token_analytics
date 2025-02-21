@@ -1,28 +1,27 @@
 from src.database.data_access.database_client import DatabaseClient
 
-def get_airdrop_recipient_balances(db_client: DatabaseClient):
+def get_users_addresses_balances(db_client: DatabaseClient):
     """
-    airdropsテーブルにあるアドレスの全ての日付の残高を取得
+    ユーザーゲームウォレットの全ての日付の残高を取得
     """
     query = """
-    SELECT db.date, sum(db.balance / 1e18) as balance
-    FROM daily_balances db
-    INNER JOIN airdrop_recipients ar ON db.address = ar.address
-    where db.date > '2024-09-26'
-    group by db.date
-    order by db.date desc
+    SELECT date, sum(balance / 1e18) as balance
+    FROM vw_users_balances
+    where date > '2024-09-26'
+    group by date
+    order by date desc
     """
     df = db_client.query_to_df(query)
  
     return df
 
-def get_other_wallets_balances(db_client: DatabaseClient):
+def get_others_addresses_balances(db_client: DatabaseClient):
     """
     運営、取引所、ユーザー以外のアドレスの全ての日付の残高を取得
     """
     query = """
     SELECT date, sum(balance / 1e18) as balance
-    FROM others_balances
+    FROM vw_others_balances
     where date > '2024-09-26'
     group by date
     order by date desc
@@ -38,7 +37,7 @@ def get_daily_airdrops(db_client: DatabaseClient):
         SUM(value / 1e18) as value,
         COUNT(DISTINCT to_address) as address_count
     FROM 
-        airdrops
+        vw_airdrops
     WHERE
         DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
     GROUP BY 
@@ -57,7 +56,7 @@ def get_daily_deposits(db_client: DatabaseClient):
         SUM(value / 1e18) as value,
         COUNT(DISTINCT from_address) as address_count
     FROM 
-        deposits
+        vw_deposits
     WHERE
         DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
     GROUP BY 
@@ -78,7 +77,7 @@ def get_daily_withdrawals(db_client: DatabaseClient):
         SUM(value / 1e18) as value,
         COUNT(DISTINCT to_address) as address_count
     FROM 
-        withdrawals
+        vw_withdrawals
     WHERE
         to_address != '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' and
         DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
@@ -129,14 +128,14 @@ def get_latest_balances_from_all_addresses(db_client: DatabaseClient):
     df = db_client.query_to_df(query)
     return df
 
-def get_latest_balances_from_airdrop_recipient(db_client: DatabaseClient):
+def get_latest_balances_from_users(db_client: DatabaseClient):
     """
     エアドロップを一度でも受け取ったことがあるアドレスの最新の残高を取得
     """
     query = """
     SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances as lb
-    INNER JOIN airdrop_recipients as apd ON lb.address = apd.address
+    INNER JOIN users_addresses as ua ON lb.address = ua.address
     """
     df = db_client.query_to_df(query)
     return df
@@ -245,7 +244,7 @@ def get_latest_balances_from_others(db_client: DatabaseClient):
         UNION ALL SELECT '0x0000000000000000000000000000000000000000' as address
         UNION ALL
         SELECT address
-        FROM airdrop_recipients
+        FROM users_addresses
     )
     SELECT lb.address, lb.date, lb.balance / 1e18 as balance
     FROM latest_balances as lb
@@ -270,7 +269,7 @@ def get_address_info(db_client: DatabaseClient, address: str):
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1e18) as airdrop
-        FROM airdrops
+        FROM vw_airdrops
         WHERE 
             to_address = %(address)s and 
             DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
@@ -280,7 +279,7 @@ def get_address_info(db_client: DatabaseClient, address: str):
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1e18) as withdraw
-        FROM withdrawals
+        FROM vw_withdrawals
         WHERE 
             to_address = %(address)s and
             DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
@@ -290,7 +289,7 @@ def get_address_info(db_client: DatabaseClient, address: str):
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1e18) as deposit
-        FROM deposits
+        FROM vw_deposits
         WHERE 
             from_address = %(address)s and 
             DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
@@ -557,7 +556,7 @@ def get_withdrawal_transactions_in_usdt_2(db_client: DatabaseClient):
 
 # df = get_least_balances_from_all_addresses()
 # print(df['balance'].sum())
-# df = get_latest_balances_from_airdrop_recipient()
+# df = get_latest_balances_from_users()
 # print(df['balance'].sum())
 # df = get_latest_balances_from_exchange()
 # print(df['balance'].sum())

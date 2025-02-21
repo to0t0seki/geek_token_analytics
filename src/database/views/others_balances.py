@@ -1,7 +1,7 @@
 from src.database.data_access.database_client import DatabaseClient
 
+def create_vw_others_balances(client: DatabaseClient) -> None:
 
-def create_other_wallets(db_client: DatabaseClient) -> None:
     params = {
         'address1': '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
         'address2': '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
@@ -10,8 +10,10 @@ def create_other_wallets(db_client: DatabaseClient) -> None:
         'address5': '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'
     }
 
-    create_query = """
-    CREATE MATERIALIZED VIEW IF NOT EXISTS other_wallets AS
+          
+
+    create_view = """
+    CREATE OR REPLACE VIEW vw_others_balances AS
     WITH excluded_addresses AS (
         SELECT %(address1)s as address
         UNION ALL SELECT %(address2)s as address
@@ -21,31 +23,18 @@ def create_other_wallets(db_client: DatabaseClient) -> None:
         UNION ALL SELECT '0x0000000000000000000000000000000000000000' as address
         UNION ALL
         SELECT address
-        FROM airdrop_recipients
+        FROM users_addresses
     )
-    SELECT lb.address
-    FROM latest_balances as lb
-    LEFT JOIN excluded_addresses ea ON lb.address = ea.address
+    SELECT db.*
+    FROM daily_balances as db
+    LEFT JOIN excluded_addresses ea ON db.address = ea.address
     WHERE ea.address IS NULL
     """
-    db_client.execute(create_query, params)
+    client.execute(create_view, params)
+
+    print("vw_others_balancesを作成しました。")
+        
 
 
-    create_index_query = """
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_other_wallets_address 
-    ON other_wallets(address);
-    """
-    db_client.execute(create_index_query)
-
-
-def refresh_other_wallets(db_client: DatabaseClient) -> None:
-    refresh_query = """
-    REFRESH MATERIALIZED VIEW CONCURRENTLY other_wallets;
-    """
-    db_client.execute(refresh_query)
-
-client = DatabaseClient()
-create_other_wallets(client)
-
-
-
+if __name__ == "__main__":
+    create_vw_others_balances(DatabaseClient())

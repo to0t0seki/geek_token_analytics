@@ -2,7 +2,7 @@ import requests
 from src.logger import setup_logger
 from src.database.data_access.database_client import DatabaseClient
 from datetime import datetime, timedelta
-from src.database.repositorys.ohlcv_1h_repository import insert_ohlcv_1h_db
+from src.database.tables.ohlcv_1h import insert_ohlcv_1h_db
 import pytz
 
 logger = setup_logger(__name__)
@@ -101,7 +101,7 @@ def insert_ohlcv_1h(db_client: DatabaseClient, ohlcv_data: list) -> int:
     return inserted_count
 
 
-def refresh_ohlcv_1h(db_client: DatabaseClient):
+def update_ohlcv_1h(db_client: DatabaseClient):
     ohlcv = fetch_ohlcv_1h_from_bitget()
     converted_ohlcv = convert_ohlcv(ohlcv)
     insert_ohlcv_1h(db_client, converted_ohlcv)

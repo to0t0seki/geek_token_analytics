@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from src.visualization.components.chart import display_chart
-from src.database.data_access.queries import get_airdrop_recipient_balances, get_jst_4am_close_price
+from src.database.data_access.queries import get_users_addresses_balances, get_jst_4am_close_price
 from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.database.data_access.database_client import DatabaseClient
@@ -37,7 +37,7 @@ if 'db_client' not in st.session_state:
 show_sidebar()
 
 with st.spinner('データを取得中...'):
-    daily_total_balances_df = get_airdrop_recipient_balances(st.session_state.db_client)
+    daily_total_balances_df = get_users_addresses_balances(st.session_state.db_client)
 
 
 

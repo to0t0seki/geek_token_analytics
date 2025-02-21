@@ -1,7 +1,7 @@
 import requests
 import time
 from src.logger import setup_logger
-from src.database.repositorys.geek_transactions_repository import (
+from src.database.tables.geek_transactions import (
     insert_geek_transactions as insert_geek_transactions_db,
     fetch_letest_transaction as fetch_letest_transaction_db
 )

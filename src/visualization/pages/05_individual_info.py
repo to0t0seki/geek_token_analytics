@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import pandas as pd
 from src.visualization.components.sidebar import show_sidebar
-from src.database.data_access.queries import get_latest_balances_from_all_addresses, get_latest_balances_from_airdrop_recipient, get_latest_balances_from_exchange, get_latest_balances_from_operator, get_address_info, get_jst_4am_close_price
+from src.database.data_access.queries import get_latest_balances_from_all_addresses, get_latest_balances_from_users, get_latest_balances_from_exchange, get_latest_balances_from_operator, get_address_info, get_jst_4am_close_price
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.visualization.components.chart import display_chart
 from src.database.data_access.database_client import DatabaseClient
@@ -45,7 +45,7 @@ show_sidebar()
 
 data_sources = {
     "全てのアドレス": lambda: get_latest_balances_from_all_addresses(st.session_state.db_client),
-    "ユーザーアドレス": lambda: get_latest_balances_from_airdrop_recipient(st.session_state.db_client),
+    "ユーザーアドレス": lambda: get_latest_balances_from_users(st.session_state.db_client),
     "取引所": lambda: get_latest_balances_from_exchange(st.session_state.db_client),
     "運営": lambda: get_latest_balances_from_operator(st.session_state.db_client),
 }
@@ -83,7 +83,7 @@ df['メモ'] = None
 
 
 
-with open("address_notes.json", 'r',encoding='utf-8') as f:
+with open("addresses.json", 'r',encoding='utf-8') as f:
        address_notes = json.load(f)
 
 if local_storage.getItem("Note") is not None:

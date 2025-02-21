@@ -1,7 +1,7 @@
 import requests
 import time
 from src.logger import setup_logger
-from src.database.repositorys.doll_transctions_repository import (
+from src.database.tables.doll_transctions import (
     insert_doll_transactions as insert_doll_transactions_db,
     fetch_letest_transaction as fetch_letest_transaction_db
 )

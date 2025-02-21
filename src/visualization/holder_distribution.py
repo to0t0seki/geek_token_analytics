@@ -1,7 +1,7 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from src.database.data_access.queries import get_latest_balances_from_game_ops_wallet, get_latest_balances_from_airdrop_wallet, get_latest_balances_from_withdrawal_wallet, get_latest_balances_from_exchange, get_latest_balances_from_others, get_latest_balances_from_airdrop_recipient
+from src.database.data_access.queries import get_latest_balances_from_game_ops_wallet, get_latest_balances_from_airdrop_wallet, get_latest_balances_from_withdrawal_wallet, get_latest_balances_from_exchange, get_latest_balances_from_others, get_latest_balances_from_users
 from src.visualization.components.sidebar import show_sidebar
 from src.database.data_access.database_client import DatabaseClient
 
@@ -37,7 +37,7 @@ with st.spinner('データを取得中...'):
     operators_balances = get_latest_balances_from_game_ops_wallet(st.session_state.db_client)
     airdrop_wallet_balances = get_latest_balances_from_airdrop_wallet(st.session_state.db_client)
     withdrawal_wallet_balances = get_latest_balances_from_withdrawal_wallet(st.session_state.db_client)
-    airdrop_recipients_balances = get_latest_balances_from_airdrop_recipient(st.session_state.db_client)
+    users_addresses_balances = get_latest_balances_from_users(st.session_state.db_client)
     exchanges_balances = get_latest_balances_from_exchange(st.session_state.db_client)
     other_holders_balances = get_latest_balances_from_others(st.session_state.db_client)
 
@@ -60,7 +60,7 @@ category_totals = pd.DataFrame([
     },
     {
         '名前': 'ユーザー',
-        '枚数': airdrop_recipients_balances['balance'].sum().round(0)
+        '枚数': users_addresses_balances['balance'].sum().round(0)
     },
     {
         '名前': '取引所',

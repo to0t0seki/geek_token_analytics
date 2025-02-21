@@ -1,9 +1,9 @@
 from src.database.data_access.database_client import DatabaseClient
 
 
-def create_exchange_wallets(db_client: DatabaseClient) -> None:
+def create_exchange_addresses(db_client: DatabaseClient) -> None:
     create_query = """
-    CREATE MATERIALIZED VIEW IF NOT EXISTS exchange_wallets AS
+    CREATE MATERIALIZED VIEW IF NOT EXISTS exchange_addresses AS
     SELECT DISTINCT
         from_address AS address,
         CASE 
@@ -19,17 +19,22 @@ def create_exchange_wallets(db_client: DatabaseClient) -> None:
 
 
     create_index_query = """
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_wallets_address 
-    ON exchange_wallets(address);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_addresses_address 
+    ON exchange_addresses(address);
     """
     db_client.execute(create_index_query)
+    print("exchange_addressesを作成しました。")
 
 
-def refresh_exchange_wallets(db_client: DatabaseClient) -> None:
+def refresh_exchange_addresses(db_client: DatabaseClient) -> None:
     refresh_query = """
-    REFRESH MATERIALIZED VIEW CONCURRENTLY exchange_wallets;
+    REFRESH MATERIALIZED VIEW CONCURRENTLY exchange_addresses;
     """
     db_client.execute(refresh_query)
+
+if __name__ == "__main__":
+    client = DatabaseClient()
+    create_exchange_addresses(client)
 
 
 
