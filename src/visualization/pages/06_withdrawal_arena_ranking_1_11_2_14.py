@@ -25,8 +25,24 @@ style = '''
 st.markdown(style, unsafe_allow_html=True)
 
 
-
-st.title("出金アリーナランキング\n1/11 04:00:00JST～2/15 04:00:00JST")
+st.markdown(
+    """
+    <h1>
+        出金アリーナランキング
+    </h1>
+    <h5>
+        1/11 04:00:00JST～2/15 04:00:00JST
+    </h5>
+    <span>
+       4:04:00～4:04:20<br>
+       12:00:00～12:00:20<br>
+       20:00:00～20:00:20<br>  
+       の間のexportTokenメソッドのトランザクション(出金トランザクション)を<br>
+       取得し集計＆表示しています。<br>
+    </span>
+    """,
+    unsafe_allow_html=True
+)
 
 if 'db_client' not in st.session_state:
     st.session_state.db_client = DatabaseClient()

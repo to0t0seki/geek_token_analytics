@@ -3,7 +3,7 @@ from src.database.data_access.queries import get_withdrawal_ranking_2, get_withd
 from src.visualization.components.sidebar import show_sidebar
 from st_aggrid import AgGrid, GridUpdateMode
 from src.database.data_access.database_client import DatabaseClient
-
+from st_aggrid.grid_options_builder import GridOptionsBuilder
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
@@ -26,7 +26,24 @@ st.markdown(style, unsafe_allow_html=True)
 
 
 
-st.title("出金アリーナランキング\n2/15 04:00:00JST～")
+st.markdown(
+    """
+    <h1>
+        出金アリーナランキング
+    </h1>
+    <h5>
+        2/15 04:00:00JST～
+    </h5>
+    <span>
+       4:04:00～4:04:20<br>
+       12:00:00～12:00:20<br>
+       20:00:00～20:00:20<br>  
+       の間のexportTokenメソッドのトランザクション(出金トランザクション)を<br>
+       取得し集計＆表示しています。<br>
+    </span>
+    """,
+    unsafe_allow_html=True
+)
 
 if 'db_client' not in st.session_state:
     st.session_state.db_client = DatabaseClient()
@@ -44,9 +61,12 @@ withdrawal_df_count_sorted['rank'] = range(1, len(withdrawal_df_count_sorted) + 
 withdrawal_df_count_sorted = withdrawal_df_count_sorted[['rank','to_address','count','value']]
 withdrawal_df_count_sorted.rename(columns={'rank':'ランク','to_address':'アドレス','count':'回数','value':'総枚数'}, inplace=True)
 
+gb = GridOptionsBuilder.from_dataframe(withdrawal_df_count_sorted)
+gb.configure_column('アドレス', filter=True)
 
 count_ranking_response = AgGrid(
     withdrawal_df_count_sorted,
+    gridOptions=gb.build(),
     height=300,
     width='100%',
     theme='streamlit' ,
@@ -64,10 +84,12 @@ withdrawal_transactions_df_sorted['rank'] = range(1, len(withdrawal_transactions
 withdrawal_transactions_df_sorted = withdrawal_transactions_df_sorted[['rank','address','timestamp','value']]
 withdrawal_transactions_df_sorted.rename(columns={'rank':'ランク','address':'アドレス','timestamp':'達成日時','value':'出金枚数'}, inplace=True)
 
-
+gb = GridOptionsBuilder.from_dataframe(withdrawal_transactions_df_sorted)
+gb.configure_column('アドレス', filter=True)
 
 max_ranking_response = AgGrid(
     withdrawal_transactions_df_sorted,
+    gridOptions=gb.build(),
     height=300,
     width='80%',
     theme='streamlit' ,
@@ -82,9 +104,12 @@ withdrawal_df_total_sorted['rank'] = range(1, len(withdrawal_df_total_sorted) + 
 withdrawal_df_total_sorted = withdrawal_df_total_sorted[['rank','to_address','value','count']]
 withdrawal_df_total_sorted.rename(columns={'rank':'ランク','to_address':'アドレス','count':'回数','value':'総枚数'}, inplace=True)
 
+gb = GridOptionsBuilder.from_dataframe(withdrawal_df_total_sorted)
+gb.configure_column('アドレス', filter=True)
 
 total_ranking_response = AgGrid(
     withdrawal_df_total_sorted,
+    gridOptions=gb.build(),
     height=300,
     width='80%',
     theme='streamlit' ,

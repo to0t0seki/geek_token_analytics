@@ -29,13 +29,17 @@ st.markdown(style, unsafe_allow_html=True)
 st.markdown(
     """
     <h1>
-        出金アリーナランキング(<span style="color:red;">ドル建て</span>)<br>
+        出金アリーナランキング(<span style="color:red;">ドル建て</span>
     </h1>
     <h5>
-        1/11 04:00:00JST～2/15 04:00:00JST<br>
+        1/11 04:00:00JST～2/15 04:00:00JST
     </h5>
     <span>
-        あまりテストをしていないので、バグあるかも・・
+       4:04:00～4:04:20<br>
+       12:00:00～12:00:20<br>
+       20:00:00～20:00:20<br>  
+       の間のexportTokenメソッドのトランザクション(出金トランザクション)を<br>
+       取得し集計＆表示しています。<br>
     </span>
     """,
     unsafe_allow_html=True
