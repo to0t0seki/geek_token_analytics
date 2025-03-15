@@ -2,13 +2,15 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 from src.database.data_access.queries import get_latest_balances_from_game_ops_wallet, get_latest_balances_from_airdrop_wallet, get_latest_balances_from_withdrawal_wallet, get_latest_balances_from_exchange, get_latest_balances_from_others, get_latest_balances_from_users
-from src.visualization.components.sidebar import show_sidebar
-from src.database.data_access.database_client import DatabaseClient
+from src.visualization.components.layout import initialize_page
+
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
+
+initialize_page()
 
 style = '''
 <style>
@@ -28,10 +30,6 @@ st.markdown(style, unsafe_allow_html=True)
 
 st.title(f"ホルダー分布")
 
-if 'db_client' not in st.session_state:
-    st.session_state.db_client = DatabaseClient()
-
-show_sidebar()
 
 with st.spinner('データを取得中...'):
     operators_balances = get_latest_balances_from_game_ops_wallet(st.session_state.db_client)

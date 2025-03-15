@@ -3,10 +3,25 @@ from datetime import timedelta
 from src.database.data_access.queries import get_latest_timestamp
 from src.database.data_access.database_client import DatabaseClient
 
-def show_sidebar():
+def initialize_page():
+    """
+    ページの初期化を行う。
+    - データベースクライアントの設定
+    - サイドバーの表示
+    - ヘッダーの表示
+    - その他の初期設定
+    """
+    # DBクライアントの初期化
     if 'db_client' not in st.session_state:
         st.session_state.db_client = DatabaseClient()
 
+       # サイドバーの設定
+    _setup_sidebar()
+    
+    # ヘッダーの設定
+    _setup_header()
+
+def _setup_sidebar():
     latest_timestamp = get_latest_timestamp(st.session_state.db_client)
     latest_timestamp = (latest_timestamp + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
     st.sidebar.image("img/logo2.jpg", width=200)
@@ -31,3 +46,7 @@ def show_sidebar():
     st.sidebar.markdown(f"""
     データに不正確な部分、不適切な表現、その他ご意見、ご要望等あれば[X](https://x.com/oegowbh)までお願いします。
     """)
+
+
+def _setup_header():
+    st.subheader('最近サイト管理が十分に行えていないため、もし不正確と思われる部分があれば[X](https://x.com/oegowbh)までお願いします。', divider="red")

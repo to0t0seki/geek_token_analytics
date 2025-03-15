@@ -2,15 +2,17 @@ import streamlit as st
 import pandas as pd
 from src.visualization.components.chart import display_chart
 from src.database.data_access.queries import get_users_addresses_balances, get_jst_4am_close_price
-from src.visualization.components.sidebar import show_sidebar
+from src.visualization.components.layout import initialize_page
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-from src.database.data_access.database_client import DatabaseClient
 import pandas as pd
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
+
+initialize_page()
+
 style = '''
 <style>
 .stApp {
@@ -31,10 +33,6 @@ st.write("・一度でもエアドロップを受け取った履歴のあるア�
 st.write("・終値はBITGETのJST3時終値の値。")
 
 
-if 'db_client' not in st.session_state:
-    st.session_state.db_client = DatabaseClient()
-
-show_sidebar()
 
 with st.spinner('データを取得中...'):
     daily_total_balances_df = get_users_addresses_balances(st.session_state.db_client)

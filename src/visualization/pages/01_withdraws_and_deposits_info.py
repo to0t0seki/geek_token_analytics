@@ -1,9 +1,8 @@
 import streamlit as st
 from src.visualization.components.chart import display_chart
 from src.database.data_access.queries import get_daily_deposits, get_daily_withdrawals, get_jst_4am_close_price
-from src.visualization.components.sidebar import show_sidebar
+from src.visualization.components.layout import initialize_page
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-from src.database.data_access.database_client import DatabaseClient
 import pandas as pd
 
 
@@ -11,6 +10,8 @@ import pandas as pd
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
+
+initialize_page()
 
 style = '''
 <style>
@@ -29,10 +30,6 @@ st.markdown(style, unsafe_allow_html=True)
 
 st.title("入出金")
 
-if 'db_client' not in st.session_state:
-    st.session_state.db_client = DatabaseClient()
-
-show_sidebar()
 
 with st.spinner('データを取得中...'):
     deposits_df = get_daily_deposits(st.session_state.db_client)

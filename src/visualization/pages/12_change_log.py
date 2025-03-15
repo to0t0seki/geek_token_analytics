@@ -1,14 +1,14 @@
 import streamlit as st
-from src.visualization.components.sidebar import show_sidebar
+from src.visualization.components.layout import initialize_page
 
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
 
+initialize_page()
 
 
-show_sidebar()
 st.title("更新履歴")
 
 st.markdown("""

@@ -1,13 +1,14 @@
 import streamlit as st
 from src.database.data_access.queries import get_withdrawal_ranking_2, get_withdrawal_transactions_2
-from src.visualization.components.sidebar import show_sidebar
+from src.visualization.components.layout import initialize_page
 from st_aggrid import AgGrid, GridUpdateMode
-from src.database.data_access.database_client import DatabaseClient
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
+
+initialize_page()
 
 style = '''
 <style>
@@ -45,10 +46,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-if 'db_client' not in st.session_state:
-    st.session_state.db_client = DatabaseClient()
 
-show_sidebar()
 
 with st.spinner('データを取得中...'):
     withdrawal_df = get_withdrawal_ranking_2(st.session_state.db_client)

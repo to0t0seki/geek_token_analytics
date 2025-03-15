@@ -1,11 +1,10 @@
 import streamlit as st
 import json
 import pandas as pd
-from src.visualization.components.sidebar import show_sidebar
+from src.visualization.components.layout import initialize_page
 from src.database.data_access.queries import get_latest_balances_from_all_addresses, get_latest_balances_from_users, get_latest_balances_from_exchange, get_latest_balances_from_operator, get_address_info, get_jst_4am_close_price
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from src.visualization.components.chart import display_chart
-from src.database.data_access.database_client import DatabaseClient
 from streamlit_local_storage import LocalStorage
 
 
@@ -13,6 +12,9 @@ from streamlit_local_storage import LocalStorage
 st.set_page_config(page_title="GEEK Token アナリティクス",
                     page_icon="📊",
                     layout="wide")
+
+initialize_page()
+
 style = '''
 <style>
 .stApp {
@@ -33,13 +35,6 @@ st.markdown(style, unsafe_allow_html=True)
 st.title("個別アドレス情報")
 local_storage = LocalStorage()
 
-if 'db_client' not in st.session_state:
-    st.session_state.db_client = DatabaseClient()
-
-
-
-
-show_sidebar()
 
 # データソースの選択
 
