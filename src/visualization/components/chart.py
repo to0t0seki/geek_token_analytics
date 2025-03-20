@@ -45,7 +45,7 @@ def display_chart(*args:tuple[pd.DataFrame,str,str,str],title:str):
             # メインのY軸
             layout_dict['yaxis'] = dict(
                 title=df.columns[1],
-                titlefont=dict(color=color),
+                title_font=dict(color=color),
                 tickfont=dict(color=color),
                 side='left'
             )
@@ -53,7 +53,7 @@ def display_chart(*args:tuple[pd.DataFrame,str,str,str],title:str):
             # 追加のY軸
             layout_dict[f'yaxis{i}'] = dict(
                 title=df.columns[1],
-                titlefont=dict(color=color),
+                title_font=dict(color=color),
                 tickfont=dict(color=color),
                 overlaying='y',
                 side='right',
