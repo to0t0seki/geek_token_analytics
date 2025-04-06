@@ -1,6 +1,6 @@
 [{"chain":"Geek_Verse","addresses":[{"address":"0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7", "name":"エアドロップ請求ウォレット","description":"エアドロップ用のGeekをpoolしておくアドレス"},
     {"address":"0x687F3413C7f0e089786546BedF809b8F8885B051", "name":"出金用ウォレット","description":"出金用Geekをpoolしておくアドレス"},
-    {"address":"0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62", "name":"運営ウォレット","description":"運営ウォレット"},
+    {"address":"0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62", "name":"運営","description":"運営使用のアドレス"},
     {"address":"0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23", "name":"取引所Bitget","description":"取引所BitgetのGeekをpoolしておくアドレス"},
     {"address":"0x0D0707963952f2fBA59dD06f2b425ace40b492Fe", "name":"取引所Gate.io","description":"取引所Gate.ioのGeekをpoolしておくアドレス"},
     {"address":"0x4200000000000000000000000000000000000010", "name":"proxy","description":"Ossys_Verseへのブリッジする際使われるコントラクト"},
@@ -26,13 +26,20 @@
     {"address":"0xE12885B4Eef94c8b77D818fcF209029d585c09a4", "name":"UniswapV3Pool","description":"Geek/WOASの流動性プール"},
     {"address":"0x62Ec33Ea441d654008d5E631D11B6A3cb7034e31", "name":"proxy","description":"Oasys_Verseのブリッジに使用するコントラクト"},
     {"address":"0xEE3A0F4598A641dDD855374c40736cABfB9a0A4d", "name":"SwapRouter02","description":"Teal_swap(dex)のswap_router"},
-    {"address":"0x0000000000000000000000000000000000000000", "name":"proxy","description":"Geek_Verseのブリッジに使用するアドレス"},
+    {"address":"0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7", "name":"運営","description":"運営使用のアドレス"},
+    {"address":"0x687F3413C7f0e089786546BedF809b8F8885B051", "name":"運営","description":"運営使用のアドレス"},
+    {"address":"0x0d2E196a2f893F67829224d810E91CD1470A81F2", "name":"運営","description":"運営使用のアドレス"},
+    {"address":"0x923EffFe3d6a321C85fc44785F81FeB3d5d7b919", "name":"運営","description":"運営使用のアドレス"},
+    {"address":"0x7002df26b7Cbbe6239F2497C38d4a0bcCA5E5370", "name":"運営","description":"運営使用のアドレス"},
+    {"address":"0xb303931ED160C8FA9f10E6a05F7325C03093eD0B", "name":"運営","description":"運営使用のアドレス"},
+    {"address":"0x5170228aEeDE06ab6701A255E82eC25c0fd81A50", "name":"運営","description":"運営使用のアドレス"},
+    {"address":"0x65ce783941A3aaBA68217639258F120A8A778121", "name":"運営","description":"運営使用のアドレス"}
 ],"methods":[{"name":"transfer","description":"転送メソッド"},
-    {"name":"exactInput","description":"不明"},
-    {"name":"exactOutput","description":"不明"},
+    {"name":"exactInput","description":"Teal_swap(dex)にてGeekをERC20へswapするメソッド(入力トークン指定）)"},
+    {"name":"exactOutput","description":"Teal_swap(dex)にてGeekをERC20へswapするメソッド(出力トークン指定)"},
     {"name":"0x057bbee1","description":"他のChainからOasys_Verseへブリッジされてきた際に使用するメソッド"},
     {"name":"0x58a997f6","description":"Oasys_Verseから他のChainへブリッジする際に使用するメソッド"},
-    {"name":"multicall","description":"Teal_swap(dex)にてswapする際のメソッド"},
+    {"name":"multicall","description":"Teal_swap(dex)にてGeekをWOASへswapするメソッド"},
     {"name":"mint","description":"Geekをmintするメソッド"}
 ]}
 ]

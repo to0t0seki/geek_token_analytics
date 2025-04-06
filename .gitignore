@@ -12,4 +12,5 @@ __pycache__/
 .streamlit/config.toml
 .env
 /trace/
+/data/raw_html_pages/
 
