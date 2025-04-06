@@ -3,7 +3,8 @@ import time
 from src.logger import setup_logger
 from src.database.tables.geek_transactions import (
     insert_geek_transactions as insert_geek_transactions_db,
-    fetch_letest_transaction as fetch_letest_transaction_db
+    fetch_letest_transaction as fetch_letest_transaction_db,
+    create_geek_transactions as create_geek_transactions_db
 )
 from src.database.data_access.database_client import DatabaseClient
 
@@ -56,6 +57,7 @@ def fetch_geek_transactions(start_block_number: int = None, start_index: int = N
             new_transactions.append(new_transaction)
 
         if next_page_params is None:
+            geek_transactions.extend(new_transactions)
             break
 
         next_page_block_number = next_page_params['block_number']
@@ -105,6 +107,7 @@ def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
     
    
 def update_geek_transactions(db_client: DatabaseClient):
+    create_geek_transactions_db(db_client)
     latest_block_number, latest_log_index = fetch_letest_transaction(db_client)
     geek_transactions = fetch_geek_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
     if len(geek_transactions) == 0:

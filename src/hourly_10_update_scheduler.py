@@ -1,8 +1,13 @@
-import traceback
 import sys
-sys.path.append("/home/ubuntu/geek_analytics_test")
+import os
+# sys.path.append(sys.path.append(os.getcwd()))
 
+# for path in sys.path:
+#     print(path)
+
+import traceback
 from src.database.importer.geek_transactions_importer import update_geek_transactions
+from src.database.importer.geek_transactions_oas_importer import update_geek_transactions as update_geek_transactions_oas
 from src.database.importer.equipment_transactions_importer import update_equipment_transactions
 from src.database.importer.doll_transactions_importer import update_doll_transactions
 from src.database.importer.market_data_importer import update_ohlcv_1h
@@ -29,6 +34,7 @@ def hourly_10_update_scheduler():
     logger.info("start: hourly_10_update_scheduler")
 
     update_geek_transactions(db_client)
+    update_geek_transactions_oas(db_client)
     update_equipment_transactions(db_client)
     update_doll_transactions(db_client)
     update_ohlcv_1h(db_client)

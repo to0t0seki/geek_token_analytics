@@ -1,0 +1,6 @@
+2025-04-06 07:36:18,236 - src.database.importer.doll_transactions_importer - INFO - fetch_letest_transaction: latest_block_number: 5494099, latest_log_index: 0
+2025-04-06 07:36:18,238 - src.database.importer.doll_transactions_importer - INFO - fetch_doll_transactions: start_block_number: None, start_index: None, end_block_number: 5494099, end_index: 0
+2025-04-06 07:36:19,454 - src.database.importer.doll_transactions_importer - INFO - fetch_doll_transactions: total_transactions: 51, latest_block_number: 5500569, latest_index: 0, oldest_block_number: 5494145, oldest_index: 0
+2025-04-06 07:36:19,456 - src.database.importer.doll_transactions_importer - INFO -  insert_doll_transactions: insert_count: 51
+2025-04-06 07:36:19,546 - src.database.importer.doll_transactions_importer - INFO -  insert_doll_transactions: inserted_count: 51
+2025-04-06 07:36:19,705 - src.database.importer.doll_transactions_importer - INFO - fetch_letest_transaction: latest_block_number: 5500569, latest_log_index: 0

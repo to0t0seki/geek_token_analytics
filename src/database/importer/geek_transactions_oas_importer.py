@@ -1,24 +1,18 @@
 import requests
 import time
 from src.logger import setup_logger
-from src.database.tables.equipment_transctions import (
-    insert_equipment_transactions as insert_equipment_transactions_db,
+from src.database.tables.geek_transactions_oas import (
+    insert_geek_transactions as insert_geek_transactions_db,
     fetch_letest_transaction as fetch_letest_transaction_db,
-    create_equipment_transactions as create_equipment_transactions_db
+    create_geek_transactions as create_geek_transactions_db
 )
-
-
 from src.database.data_access.database_client import DatabaseClient
 
 logger = setup_logger(__name__)
 
-def _fetch_equipment_transactions(params: dict={}) -> tuple[list, dict]:
-
-
-    url = "https://explorer.geekout-pte.com/api/v2/tokens/0x5F4C74F0fe967654D38F61918a6130cAA9023c9B/transfers"
+def _fetch_geek_transactions(params: dict={}) -> tuple[list, dict]:
+    url = "https://explorer.oasys.games/api/v2/tokens/0x7CF763C9Ff650BF9e2EEbEE43bBC539c799d4566/transfers"
     response = requests.get(url, params=params, timeout=10)
-
-
     response.raise_for_status()
     result = response.json()
     transactions = result['items']
@@ -34,23 +28,18 @@ def _transform_transaction(raw_transaction: dict) -> dict:
         'timestamp': raw_transaction['timestamp'].replace('T', ' ').replace('Z', ''),
         'from_address': raw_transaction['from']['hash'],
         'to_address': raw_transaction['to']['hash'],
-        'token_id': raw_transaction['total']['token_id'],
+        'value': raw_transaction['total']['value'],
         'method': raw_transaction['method'],
         'type': raw_transaction['type']
-
     }
 
 
-def fetch_equipment_transactions(start_block_number: int = None, start_index: int = None,  end_block_number: int = 0, end_index: int = 0) -> list:
-    logger.info(f"fetch_equipment_transactions: start_block_number: {start_block_number}, start_index: {start_index}, end_block_number: {end_block_number}, end_index: {end_index}")
-
-
-    equipment_transactions = []
+def fetch_geek_transactions(start_block_number: int = None, start_index: int = None,  end_block_number: int = 0, end_index: int = 0) -> list:
+    logger.info(f"fetch_geek_transactions: start_block_number: {start_block_number}, start_index: {start_index}, end_block_number: {end_block_number}, end_index: {end_index}")
+    geek_transactions = []
 
     if (start_block_number is None) != (start_index is None):
-
         raise ValueError("start_block_numberとstart_indexは両方とも指定するか、両方とも指定しないでください")
-
    
     
     params = {
@@ -60,17 +49,15 @@ def fetch_equipment_transactions(start_block_number: int = None, start_index: in
 
     while True:
         new_transactions = []
-        raw_transactions, next_page_params = _fetch_equipment_transactions(params)
+        raw_transactions, next_page_params = _fetch_geek_transactions(params)
         
-
-
 
         for raw_transaction in raw_transactions:
             new_transaction = _transform_transaction(raw_transaction)
             new_transactions.append(new_transaction)
 
         if next_page_params is None:
-            equipment_transactions.extend(new_transactions)
+            geek_transactions.extend(new_transactions)
             break
 
         next_page_block_number = next_page_params['block_number']
@@ -88,41 +75,30 @@ def fetch_equipment_transactions(start_block_number: int = None, start_index: in
 
                 if (current_block_number > end_block_number or
                     (current_block_number == end_block_number and current_index > end_index)):
-                    equipment_transactions.append(transaction)
+                    geek_transactions.append(transaction)
             break
 
-        
-
-        equipment_transactions.extend(new_transactions)
-
+        geek_transactions.extend(new_transactions)
 
         params = next_page_params
-
         time.sleep(1)
-    total_transactions = len(equipment_transactions)
+    total_transactions = len(geek_transactions)
     if total_transactions == 0:
         return []
-    latest_block_number = equipment_transactions[0]['block_number']
-    latest_index = equipment_transactions[0]['log_index']
-    oldest_block_number = equipment_transactions[total_transactions - 1]['block_number']
-    oldest_index = equipment_transactions[total_transactions - 1]['log_index']
+    latest_block_number = geek_transactions[0]['block_number']
+    latest_index = geek_transactions[0]['log_index']
+    oldest_block_number = geek_transactions[total_transactions - 1]['block_number']
+    oldest_index = geek_transactions[total_transactions - 1]['log_index']
+
+    logger.info(f"fetch_geek_transactions: total_transactions: {total_transactions}, latest_block_number: {latest_block_number}, latest_index: {latest_index}, oldest_block_number: {oldest_block_number}, oldest_index: {oldest_index}")
+    return geek_transactions
 
 
-
-    logger.info(f"fetch_equipment_transactions: total_transactions: {total_transactions}, latest_block_number: {latest_block_number}, latest_index: {latest_index}, oldest_block_number: {oldest_block_number}, oldest_index: {oldest_index}")
-    return equipment_transactions
-
-
-
-
-def insert_equipment_transactions(db_client: DatabaseClient, transactions: list) -> int:
-    logger.info(f" insert_equipment_transactions: insert_count: {len(transactions)}")
-    inserted_count = insert_equipment_transactions_db(db_client, transactions)
-    logger.info(f" insert_equipment_transactions: inserted_count: {inserted_count}")
-
+def insert_geek_transactions(db_client: DatabaseClient, transactions: list) -> int:
+    logger.info(f" insert_geek_transactions: insert_count: {len(transactions)}")
+    inserted_count = insert_geek_transactions_db(db_client, transactions)
+    logger.info(f" insert_geek_transactions: inserted_count: {inserted_count}")
     return inserted_count
-
-
 
 def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
     latest_block_number, latest_log_index = fetch_letest_transaction_db(db_client)
@@ -130,20 +106,21 @@ def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
     return latest_block_number, latest_log_index
     
    
-def update_equipment_transactions(db_client: DatabaseClient):
-    create_equipment_transactions_db(db_client)
+def update_geek_transactions(db_client: DatabaseClient):
+    create_geek_transactions_db(db_client)
     latest_block_number, latest_log_index = fetch_letest_transaction(db_client)
-    equipment_transactions = fetch_equipment_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
-    if len(equipment_transactions) == 0:
-        logger.info("equipment_transactions: 新しいトランザクションがありません")
+    geek_transactions = fetch_geek_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
+    if len(geek_transactions) == 0:
+        logger.info("geek_transactions: 新しいトランザクションがありません")
         return
-    insert_equipment_transactions(db_client, equipment_transactions)
+    insert_geek_transactions(db_client, geek_transactions)
     fetch_letest_transaction(db_client)
 
+if __name__ == "__main__":
+    db_client = DatabaseClient()
+    update_geek_transactions(db_client)
 
-
-    #0x5F4C74F0fe967654D38F61918a6130cAA9023c9B 装備
-    #0x22f8208AB7AC444A76a93547C7800411dB8Ec0F1 ドール
+   
     
 
 
