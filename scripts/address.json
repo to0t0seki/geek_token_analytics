@@ -1,0 +1,38 @@
+[{"chain":"Geek_Verse","addresses":[{"address":"0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7", "name":"エアドロップ請求ウォレット","description":"エアドロップ用のGeekをpoolしておくアドレス"},
+    {"address":"0x687F3413C7f0e089786546BedF809b8F8885B051", "name":"出金用ウォレット","description":"出金用Geekをpoolしておくアドレス"},
+    {"address":"0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62", "name":"運営ウォレット","description":"運営ウォレット"},
+    {"address":"0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23", "name":"取引所Bitget","description":"取引所BitgetのGeekをpoolしておくアドレス"},
+    {"address":"0x0D0707963952f2fBA59dD06f2b425ace40b492Fe", "name":"取引所Gate.io","description":"取引所Gate.ioのGeekをpoolしておくアドレス"},
+    {"address":"0x4200000000000000000000000000000000000010", "name":"proxy","description":"Ossys_Verseへのブリッジする際使われるコントラクト"},
+    {"address":"0x188b3678a4E706D17D060E6FCFbfec359e4bb69a", "name":"ゲームアイテム用","description":"ゲームアイテムをGeekにて購入する際その送金先になるアドレス"}
+],"methods":[{"name":"transfer","description":"転送メソッド"},
+    {"name":"0x10df9523","description":"不明"},
+    {"name":"0x86d1a69f","description":"不明"},
+    {"name":"0x9865667e","description":"不明"},
+    {"name":"0xc2fb6146","description":"不明"},
+    {"name":"0x4bd09c2a","description":"第1回NFTセールの返金対応に使用したメソッド"},
+    {"name":"0xd764ad0b","description":"他のchainからGeek_Verseへブリッジされてきた際に使用するメソッド"},
+    {"name":"0x32b7006d","description":"Geek_Verseから他のChainへブリッジする際に使用するメソッド"},
+    {"name":"transferFrom","description":"NFTセールの際に使用したメソッド"},
+    {"name":"exportToken","description":"ゲーム内通貨(xGeek)をGeekに変換する際(出金)のメソッド"},
+    {"name":"exportAdp","description":"エアドロップGeekをclaimする際に使用するメソッド"},
+    {"name":"release","description":"不明"},
+    {"name":"transferForBuy","description":"Geekにてゲーム内アイテムを購入する際に使用するメソッド"},
+    {"name":"xgeekToGeek","description":"Geekからゲーム内通貨(xGeek)を購入する際に使用するメソッド"}
+]},
+{"chain":"Oasys_Verse","addresses":[
+    {"address":"0xe472F92Fa7b6A0680d8A41F48C856bba307657A8", "name":"初期mintアドレス","description":"一番最初にGeekがmintされたアドレス(運営)"},
+    {"address":"0x923EffFe3d6a321C85fc44785F81FeB3d5d7b919", "name":"mintアドレス","description":"最初以外にGeekがmintされたアドレス(運営)"},
+    {"address":"0xE12885B4Eef94c8b77D818fcF209029d585c09a4", "name":"UniswapV3Pool","description":"Geek/WOASの流動性プール"},
+    {"address":"0x62Ec33Ea441d654008d5E631D11B6A3cb7034e31", "name":"proxy","description":"Oasys_Verseのブリッジに使用するコントラクト"},
+    {"address":"0xEE3A0F4598A641dDD855374c40736cABfB9a0A4d", "name":"SwapRouter02","description":"Teal_swap(dex)のswap_router"},
+    {"address":"0x0000000000000000000000000000000000000000", "name":"proxy","description":"Geek_Verseのブリッジに使用するアドレス"},
+],"methods":[{"name":"transfer","description":"転送メソッド"},
+    {"name":"exactInput","description":"不明"},
+    {"name":"exactOutput","description":"不明"},
+    {"name":"0x057bbee1","description":"他のChainからOasys_Verseへブリッジされてきた際に使用するメソッド"},
+    {"name":"0x58a997f6","description":"Oasys_Verseから他のChainへブリッジする際に使用するメソッド"},
+    {"name":"multicall","description":"Teal_swap(dex)にてswapする際のメソッド"},
+    {"name":"mint","description":"Geekをmintするメソッド"}
+]}
+]

@@ -1,5 +1,5 @@
 /scripts/*
-!/scripts/setup_config.py
+!/scripts/address.json
 *.egg-info/
 /tests/
 /venv/
