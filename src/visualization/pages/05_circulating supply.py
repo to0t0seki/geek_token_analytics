@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from src.visualization.components.chart import display_chart
-from src.database.data_access.queries import get_users_addresses_balances, get_jst_4am_close_price
+from src.database.data_access.queries import get_circulating_supply, get_jst_4am_close_price
 from src.visualization.components.layout import initialize_page
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import pandas as pd
@@ -16,7 +16,7 @@ initialize_page()
 style = '''
 <style>
 .stApp {
-    background-image: url('https://lastmemories.io/special/assets/fankit-assets/PC/04_2_otoha.jpg');
+    background-image: url('https://lastmemories.io/special/assets/fankit-assets/PC/05_6_rinoa.jpg');
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -28,13 +28,20 @@ style = '''
 '''
 st.markdown(style, unsafe_allow_html=True)
 
-st.title("循環供給量")
-st.write("運営が保有していると思われるgeek以外の供給量")
+st.title("循環供給")
+
+st.markdown("""
+出金用ウォレット、エアドロップ用ウォレット、運営ウォレット、アイテム用ウォレットを除いた供給量   
+            
+            
+循環供給の定義はこちら  
+[循環供給の定義](https://www.coingecko.com/en/glossary/circulating-supply)
+""")
 
 
 
 with st.spinner('データを取得中...'):
-    daily_total_balances_df = get_users_addresses_balances(st.session_state.db_client)
+    circulating_supply_df = get_circulating_supply(st.session_state.db_client)
 
 
 
@@ -42,7 +49,7 @@ ohlcv_df = get_jst_4am_close_price(st.session_state.db_client)
 
 
 merged_df = pd.merge(
-    daily_total_balances_df,
+    circulating_supply_df,
     ohlcv_df[['date','close']],
     left_on='date',
     right_on='date',

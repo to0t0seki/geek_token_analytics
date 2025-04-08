@@ -30,6 +30,21 @@ def get_others_addresses_balances(db_client: DatabaseClient):
  
     return df
 
+def get_circulating_supply(db_client: DatabaseClient):
+    """
+    循環供給を取得
+    """
+    query = """
+    SELECT date, sum(balance / 1e18) as balance
+    FROM vw_circulating_supply_balances
+    where date > '2024-09-26'
+    group by date
+    order by date desc
+    """
+    df = db_client.query_to_df(query)
+
+    return df
+
 def get_daily_airdrops(db_client: DatabaseClient):   
     query = """
     SELECT 
@@ -210,6 +225,15 @@ def get_latest_balances_from_airdrop_wallet(db_client: DatabaseClient):
     SELECT lb.balance / 1e18 as balance
     FROM latest_balances as lb
     where lb.address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
+    """
+    df = db_client.query_to_df(query)
+    return df
+
+def get_latest_balances_from_item_wallet(db_client: DatabaseClient):
+    query = """
+    SELECT lb.balance / 1e18 as balance
+    FROM latest_balances as lb
+    where lb.address = '0x188b3678a4E706D17D060E6FCFbfec359e4bb69a'
     """
     df = db_client.query_to_df(query)
     return df

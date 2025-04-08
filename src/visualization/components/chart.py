@@ -1,6 +1,5 @@
 import pandas as pd
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import streamlit as st
 
 
@@ -37,8 +36,56 @@ def display_chart(*args:tuple[pd.DataFrame,str,str,str],title:str):
                 ])
             ),
             fixedrange=True
-        )
+        ),
+        # 対数表示切り替えボタンの追加
+        'updatemenus': [
+            dict(
+                type="buttons",
+                direction="right",
+                x=0.7,
+                y=1.2,
+                showactive=True,
+                buttons=[
+                    dict(
+                        args=[{"yaxis.type": "linear"}],
+                        label="Linear Scale",
+                        method="relayout"
+                    ),
+                    dict(
+                        args=[{"yaxis.type": "log"}],
+                        label="Log Scale",
+                        method="relayout"
+                    )
+                ]
+            )
+        ]
     }
+
+        # 複数軸対応の対数表示切り替えボタン設定
+    buttons_args_linear = {f"yaxis{i}.type" if i > 1 else "yaxis.type": "linear" for i in range(1, len(args) + 1)}
+    buttons_args_log = {f"yaxis{i}.type" if i > 1 else "yaxis.type": "log" for i in range(1, len(args) + 1)}
+
+    layout_dict['updatemenus'] = [
+        dict(
+            type="buttons",
+            direction="right",
+            x=0.7,
+            y=1.2,
+            showactive=True,
+            buttons=[
+                dict(
+                    args=[buttons_args_linear],
+                    label="Linear Scale",
+                    method="relayout"
+                ),
+                dict(
+                    args=[buttons_args_log],
+                    label="Log Scale",
+                    method="relayout"
+                )
+            ]
+        )
+    ]
     
     for i, (df, name, color, yaxis) in enumerate(args, 1):
         if i == 1:

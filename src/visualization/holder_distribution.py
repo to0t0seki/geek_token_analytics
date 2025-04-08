@@ -1,7 +1,13 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from src.database.data_access.queries import get_latest_balances_from_game_ops_wallet, get_latest_balances_from_airdrop_wallet, get_latest_balances_from_withdrawal_wallet, get_latest_balances_from_exchange, get_latest_balances_from_others, get_latest_balances_from_users
+from src.database.data_access.queries import (get_latest_balances_from_game_ops_wallet,
+                                                get_latest_balances_from_airdrop_wallet,
+                                                 get_latest_balances_from_withdrawal_wallet,
+                                                   get_latest_balances_from_exchange,
+                                                     get_latest_balances_from_others,
+                                                       get_latest_balances_from_users,
+                                                         get_latest_balances_from_item_wallet)
 from src.visualization.components.layout import initialize_page
 
 
@@ -38,6 +44,7 @@ with st.spinner('データを取得中...'):
     users_addresses_balances = get_latest_balances_from_users(st.session_state.db_client)
     exchanges_balances = get_latest_balances_from_exchange(st.session_state.db_client)
     other_holders_balances = get_latest_balances_from_others(st.session_state.db_client)
+    item_wallet_balances = get_latest_balances_from_item_wallet(st.session_state.db_client)
 
 
 
@@ -67,6 +74,10 @@ category_totals = pd.DataFrame([
     {
         '名前': 'その他',
         '枚数': other_holders_balances['balance'].sum().round(0)
+    },
+    {
+        '名前': 'アイテム用ウォレット',
+        '枚数': item_wallet_balances['balance'].sum().round(0)
     }
 ])
 # 円グラフの作成
@@ -92,6 +103,7 @@ st.markdown("""
 - 運営:0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62
 - エアドロップウォレット:0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7
 - 出金ウォレット:0x687F3413C7f0e089786546BedF809b8F8885B051
+- アイテム用ウォレット:0x188b3678a4E706D17D060E6FCFbfec359e4bb69a
 - ユーザー:エアドロップを一度でも受け取った事のあるアドレス
 - 取引所
     - Bitget:0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23
