@@ -63,6 +63,26 @@ def get_daily_airdrops(db_client: DatabaseClient):
     df = db_client.query_to_df(query)
     return df
 
+def get_daily_item_purchases(db_client: DatabaseClient):
+    query = """
+    SELECT 
+        DATE(timestamp + INTERVAL '5 hours') as date,
+        SUM(value / 1e18) as value,
+        COUNT(DISTINCT from_address) as address_count
+    FROM 
+        geek_transactions
+    WHERE
+        method = 'transferForBuy'
+        and timestamp >= '2024-09-26'
+    GROUP BY 
+        DATE(timestamp + INTERVAL '5 hours')
+    ORDER BY 
+        date desc
+    """
+    df = db_client.query_to_df(query)
+    return df
+
+
 
 def get_daily_deposits(db_client: DatabaseClient):
     query = """
@@ -185,7 +205,8 @@ def get_latest_balances_from_operator(db_client: DatabaseClient):
     addresses = [
         '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
         '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
-        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'   # Game_Ops_Wallet
+        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62',   # Game_Ops_Wallet
+        '0x188b3678a4E706D17D060E6FCFbfec359e4bb69a'   # Item_Wallet
     ]
     query = """
     SELECT lb.address, lb.date, lb.balance / 1e18 as balance
@@ -196,9 +217,11 @@ def get_latest_balances_from_operator(db_client: DatabaseClient):
         SELECT %(address2)s
         UNION ALL
         SELECT %(address3)s
+        UNION ALL
+        SELECT %(address4)s
     ) as op ON lb.address = op.address
     """
-    params = {'address1':addresses[0], 'address2':addresses[1], 'address3':addresses[2]}
+    params = {'address1':addresses[0], 'address2':addresses[1], 'address3':addresses[2], 'address4':addresses[3]}
     df = db_client.query_to_df(query, params=params)
     return df
 

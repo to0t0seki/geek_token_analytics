@@ -76,7 +76,7 @@ category_totals = pd.DataFrame([
         '枚数': other_holders_balances['balance'].sum().round(0)
     },
     {
-        '名前': 'アイテム用ウォレット',
+        '名前': 'Geekショップ用ウォレット',
         '枚数': item_wallet_balances['balance'].sum().round(0)
     }
 ])
@@ -103,7 +103,7 @@ st.markdown("""
 - 運営:0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62
 - エアドロップウォレット:0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7
 - 出金ウォレット:0x687F3413C7f0e089786546BedF809b8F8885B051
-- アイテム用ウォレット:0x188b3678a4E706D17D060E6FCFbfec359e4bb69a
+- Geekショップ用ウォレット:0x188b3678a4E706D17D060E6FCFbfec359e4bb69a
 - ユーザー:エアドロップを一度でも受け取った事のあるアドレス
 - 取引所
     - Bitget:0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23
