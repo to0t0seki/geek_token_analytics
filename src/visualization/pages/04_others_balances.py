@@ -30,7 +30,9 @@ st.markdown(style, unsafe_allow_html=True)
 
 st.title("その他のアドレス残高")
 st.markdown("""
-<span style="color:black;font-size:16px;font-weight:bold;">その他：ユーザーゲームウォレット、取引所、運営、出金ウォレット、エアドロップウォレットを除いたウォレット</span>
+<span style="color:black;font-size:16px;font-weight:bold;">
+    その他：ユーザーゲームウォレット、取引所、運営、出金ウォレット、エアドロップウォレット、geekショップウォレットを除いたウォレット
+</span>
 """, unsafe_allow_html=True)
 
 

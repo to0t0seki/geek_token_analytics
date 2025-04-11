@@ -206,7 +206,7 @@ def get_latest_balances_from_operator(db_client: DatabaseClient):
         '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
         '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
         '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62',   # Game_Ops_Wallet
-        '0x188b3678a4E706D17D060E6FCFbfec359e4bb69a'   # Item_Wallet
+        '0x188b3678a4E706D17D060E6FCFbfec359e4bb69a'   # geek_shop
     ]
     query = """
     SELECT lb.address, lb.date, lb.balance / 1e18 as balance
@@ -272,13 +272,14 @@ def get_latest_balances_from_others(db_client: DatabaseClient):
     """
     operator_addresses = [
         '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
-        '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
-        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'   # Game_Ops_Wallet
+        '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Withdrawal_Wallet
+        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62',   # Game_Ops_Wallet
+        '0x188b3678a4E706D17D060E6FCFbfec359e4bb69a'   # geek_shop
     ]
     
     exchange_addresses = [
-        '0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23',
-        '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'
+        '0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23',   #bitget
+        '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',   #gate
     ]
     
     query = """
@@ -288,6 +289,7 @@ def get_latest_balances_from_others(db_client: DatabaseClient):
         UNION ALL SELECT %(address3)s as address
         UNION ALL SELECT %(address4)s as address
         UNION ALL SELECT %(address5)s as address
+        UNION ALL SELECT %(address6)s as address
         UNION ALL SELECT '0x0000000000000000000000000000000000000000' as address
         UNION ALL
         SELECT address
@@ -298,7 +300,7 @@ def get_latest_balances_from_others(db_client: DatabaseClient):
     LEFT JOIN excluded_addresses ea ON lb.address = ea.address
     WHERE ea.address IS NULL
     """
-    params = {'address1':operator_addresses[0], 'address2':operator_addresses[1], 'address3':operator_addresses[2], 'address4':exchange_addresses[0], 'address5':exchange_addresses[1]}
+    params = {'address1':operator_addresses[0], 'address2':operator_addresses[1], 'address3':operator_addresses[2], 'address4':exchange_addresses[0], 'address5':exchange_addresses[1], 'address6':operator_addresses[3]}
     df = db_client.query_to_df(query, params=params)
     return df
 

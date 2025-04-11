@@ -12,6 +12,10 @@ initialize_page()
 st.title("更新履歴")
 
 st.markdown(""" 
+### 2025-04-11             
+更新内容    
+・others_balancesのページにGeek_shop_walletが含まれていたので、含まれない様に修正。
+            
 ### 2025-04-09             
 更新内容    
 ・入出金ページにGeekショップでの購入データを追加しました。  
