@@ -113,6 +113,7 @@ def _setup_sidebar():
 
     with st.sidebar:
         st.image("img/logo2.jpg", width=200)
+        st.page_link("holder_distribution.py", label="ホルダー分布")
         st.page_link("pages/01_transactions_summary.py", label="各種トランザクション情報")
         st.page_link("pages/05_total_max_supply.py", label="総供給量")
         st.page_link("pages/06_circulating_supply.py", label="循環供給量")
