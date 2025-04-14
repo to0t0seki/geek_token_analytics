@@ -39,7 +39,8 @@ def _transform_transaction(raw_transaction: dict) -> dict:
 
 
 def fetch_doll_transactions(start_block_number: int = None, start_index: int = None,  end_block_number: int = 0, end_index: int = 0) -> list:
-    logger.info(f"fetch_doll_transactions: start_block_number: {start_block_number}, start_index: {start_index}, end_block_number: {end_block_number}, end_index: {end_index}")
+    logger.debug(f"APIからトランザクションを取得します:終了予定ブロック番号: {end_block_number}, 終了予定インデックス: {end_index}")
+    logger.debug(f"取得開始ブロック番号: {start_block_number}, 取得開始インデックス: {start_index}")
 
     doll_transactions = []
 
@@ -93,6 +94,7 @@ def fetch_doll_transactions(start_block_number: int = None, start_index: int = N
         time.sleep(1)
     total_transactions = len(doll_transactions)
     if total_transactions == 0:
+        logger.info("APIからトランザクションを取得しました: 0件")
         return []
     latest_block_number = doll_transactions[0]['block_number']
     latest_index = doll_transactions[0]['log_index']
@@ -100,35 +102,38 @@ def fetch_doll_transactions(start_block_number: int = None, start_index: int = N
     oldest_index = doll_transactions[total_transactions - 1]['log_index']
 
 
-    logger.info(f"fetch_doll_transactions: total_transactions: {total_transactions}, latest_block_number: {latest_block_number}, latest_index: {latest_index}, oldest_block_number: {oldest_block_number}, oldest_index: {oldest_index}")
+    logger.debug(f"APIからトランザクションを取得しました: {total_transactions}件, 取得した最新のブロック番号: {latest_block_number}, 取得した最新のインデックス: {latest_index}, 取得した最古のブロック番号: {oldest_block_number}, 取得した最古のインデックス: {oldest_index}")
     return doll_transactions
 
 
 
 def insert_doll_transactions(db_client: DatabaseClient, transactions: list) -> int:
-    logger.info(f" insert_doll_transactions: insert_count: {len(transactions)}")
+    logger.debug(f" トランザクションを挿入します")
     inserted_count = insert_doll_transactions_db(db_client, transactions)
-    logger.info(f" insert_doll_transactions: inserted_count: {inserted_count}")
+    logger.info(f" トランザクションを挿入しました: {inserted_count}件")
     return inserted_count
 
 
 
 def fetch_letest_transaction(db_client: DatabaseClient) -> tuple[int, int]:
+    logger.debug("データベースから最新のトランザクションを取得します")
     latest_block_number, latest_log_index = fetch_letest_transaction_db(db_client)
-    logger.info(f"fetch_letest_transaction: latest_block_number: {latest_block_number}, latest_log_index: {latest_log_index}")
+    logger.debug(f"データベースから最新のトランザクションを取得しました: 最新のブロック番号: {latest_block_number}, 最新のインデックス: {latest_log_index}")
     return latest_block_number, latest_log_index
     
    
 def update_doll_transactions(db_client: DatabaseClient):
+    logger.info("doll_transactionsを開始します")
     create_doll_transactions_db(db_client)
     latest_block_number, latest_log_index = fetch_letest_transaction(db_client)
     doll_transactions = fetch_doll_transactions(end_block_number=latest_block_number,end_index=latest_log_index)
     if len(doll_transactions) == 0:
-        logger.info("doll_transactions: 新しいトランザクションがありません")
+        logger.info("新しいトランザクションがありません")
         return
     insert_doll_transactions(db_client, doll_transactions)
 
     fetch_letest_transaction(db_client)
+    logger.info("doll_transactionsを終了します")
 
 
 

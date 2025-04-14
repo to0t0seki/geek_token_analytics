@@ -1,36 +1,18 @@
 import streamlit as st
-from src.database.data_access.queries import get_withdrawal_ranking_in_usdt_2, get_withdrawal_transactions_in_usdt_2
-from src.visualization.components.layout import initialize_page
+from src.database.data_access.queries.queries import get_withdrawal_ranking_in_usdt_2, get_withdrawal_transactions_in_usdt_2
+from src.visualization.components.content import initialize_page
 from st_aggrid import AgGrid, GridUpdateMode
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 
-st.set_page_config(page_title="GEEK Token アナリティクス",
-                    page_icon="📊",
-                    layout="wide")
 
 initialize_page()
-
-style = '''
-<style>
-.stApp {
-    background-image: url('https://lastmemories.io/special/assets/fankit-assets/PC/06_1_miko.jpg');
-    background-size: cover;
-    background-repeat: no-repeat;
-    }
-.stCustomComponentV1 {
-       max-width: 90% !important;
-    }
-
-</style>
-'''
-st.markdown(style, unsafe_allow_html=True)
 
 
 
 st.markdown(
     """
     <h1>
-        出金アリーナランキング(<span style="color:red;">ドル建て</span>)
+        出金アリーナランキングUSDT
     </h1>
     <h5>
         2/15 04:00:00JST～
@@ -39,8 +21,7 @@ st.markdown(
        4:04:00～4:04:20<br>
        12:00:00～12:00:20<br>
        20:00:00～20:00:20<br>  
-       の間のexportTokenメソッドのトランザクション(出金トランザクション)を<br>
-       取得し集計＆表示しています。<br>
+       間の出金量を集計しています。<br>
     </span>
     """,
     unsafe_allow_html=True

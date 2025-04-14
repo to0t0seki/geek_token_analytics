@@ -43,7 +43,7 @@ def create_doll_transactions(db_client: DatabaseClient) -> None:
 def insert_doll_transactions(db_client: DatabaseClient, transactions: list) -> int:
     insert_transactions_query = """
     INSERT INTO doll_transactions (block_number, log_index, tx_hash, timestamp, from_address, to_address, token_id, method, type)
-    VALUES (%(block_number)s, %(log_index)s, %(tx_hash)s, %(timestamp)s, %(from_address)s, %(to_address)s, %(token_id)s, %(method)s, %(type)s)
+    VALUES (:block_number, :log_index, :tx_hash, :timestamp, :from_address, :to_address, :token_id, :method, :type)
     """
 
     return db_client.executemany(insert_transactions_query, transactions)

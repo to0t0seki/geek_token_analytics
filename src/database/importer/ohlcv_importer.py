@@ -50,11 +50,12 @@ def fetch_ohlcv_1h_from_bitget() -> list:
     """データベースから最新の日時から現在日時までのOHLCVデータを取得
     """
     latest_datetime_utc = _fetch_latest_ohlcv_1h(DatabaseClient())
-    logger.info(f"fetch_ohlcv_1h_from_bitget: latest_datetime_utc: {latest_datetime_utc.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    logger.debug(f"データベースから最新の日時を取得しました: {latest_datetime_utc.strftime('%Y-%m-%d %H:%M:%S UTC')}")
     # latest_datetime_utc = datetime(2025, 1, 1, 0, 0, 0, 0, pytz.UTC)
     current_datetime_utc = datetime.now(pytz.UTC)
     if current_datetime_utc - latest_datetime_utc < timedelta(seconds=7200):
-        raise Exception("No data available to insert")
+        logger.info("データが存在しません")
+        return []
     
     end_datetime = latest_datetime_utc + timedelta(seconds=60*60*201)
 
@@ -74,7 +75,7 @@ def fetch_ohlcv_1h_from_bitget() -> list:
             if timestamp > latest_timestamp:
                 filtered_ohlcv.append(ohlcv)
         ohlcv_data = _add_unique_ohlcv_data(ohlcv_data, filtered_ohlcv)
-        logger.info(f"fetch_ohlcv_1h_from_bitget: ohlcv_data_length: {len(ohlcv_data)}")
+        logger.debug(f"APIからOHLCVデータを取得しました: {len(ohlcv_data)}件")
         return ohlcv_data
 
 def convert_ohlcv(ohlcv_list: list)->list:
@@ -97,15 +98,20 @@ def insert_ohlcv_1h(db_client: DatabaseClient, ohlcv_data: list) -> int:
     """OHLCVデータをデータベースに保存
     """
     inserted_count = insert_ohlcv_1h_db(db_client, ohlcv_data)
-    logger.info(f"insert_ohlcv_1h: inserted_count: {inserted_count}")
+    logger.info(f" データを挿入しました: {inserted_count}件")
     return inserted_count
 
 
 def update_ohlcv_1h(db_client: DatabaseClient):
-    ohlcv = fetch_ohlcv_1h_from_bitget()
-    converted_ohlcv = convert_ohlcv(ohlcv)
-    insert_ohlcv_1h(db_client, converted_ohlcv)
-
+    try:
+        logger.info("ohlcv_1hをアップデートします")
+        ohlcv = fetch_ohlcv_1h_from_bitget()
+        if ohlcv:
+            converted_ohlcv = convert_ohlcv(ohlcv)
+            insert_ohlcv_1h(db_client, converted_ohlcv)
+            logger.info("ohlcv_1hをアップデートしました")
+    except Exception as e:
+        logger.error(f"ohlcv_1hのアップデートに失敗しました: {e}")
 
 
         

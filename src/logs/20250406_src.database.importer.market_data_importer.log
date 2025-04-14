@@ -1,3 +1,0 @@
-2025-04-06 07:36:19,782 - src.database.importer.market_data_importer - INFO - fetch_ohlcv_1h_from_bitget: latest_datetime_utc: 2025-04-05 11:00:00 UTC
-2025-04-06 07:36:19,902 - src.database.importer.market_data_importer - INFO - fetch_ohlcv_1h_from_bitget: ohlcv_data_length: 10
-2025-04-06 07:36:20,084 - src.database.importer.market_data_importer - INFO - insert_ohlcv_1h: inserted_count: 10

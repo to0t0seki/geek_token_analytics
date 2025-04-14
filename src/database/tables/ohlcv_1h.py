@@ -22,7 +22,7 @@ def create_ohlcv_1h(db_client: DatabaseClient) -> None:
 def insert_ohlcv_1h_db(db_client: DatabaseClient, params: dict) -> int:
     insert_ohlcv_1h_query = """
     INSERT INTO ohlcv_1h (timestamp, open, high, low, close, volume, usdt_volume) 
-    VALUES (timestamp 'epoch' + %(timestamp)s * interval '1 second', %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s, %(usdt_volume)s)
+    VALUES (timestamp 'epoch' + :timestamp * interval '1 second', :open, :high, :low, :close, :volume, :usdt_volume)
     ON CONFLICT (timestamp) DO NOTHING
     """
  

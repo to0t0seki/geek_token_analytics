@@ -1,6 +1,0 @@
-2025-04-06 07:36:17,419 - src.database.importer.equipment_transactions_importer - INFO - fetch_letest_transaction: latest_block_number: 5494083, latest_log_index: 0
-2025-04-06 07:36:17,419 - src.database.importer.equipment_transactions_importer - INFO - fetch_equipment_transactions: start_block_number: None, start_index: None, end_block_number: 5494083, end_index: 0
-2025-04-06 07:36:17,514 - src.database.importer.equipment_transactions_importer - INFO - fetch_equipment_transactions: total_transactions: 43, latest_block_number: 5499595, latest_index: 0, oldest_block_number: 5494103, oldest_index: 0
-2025-04-06 07:36:17,516 - src.database.importer.equipment_transactions_importer - INFO -  insert_equipment_transactions: insert_count: 43
-2025-04-06 07:36:17,684 - src.database.importer.equipment_transactions_importer - INFO -  insert_equipment_transactions: inserted_count: 43
-2025-04-06 07:36:17,750 - src.database.importer.equipment_transactions_importer - INFO - fetch_letest_transaction: latest_block_number: 5499595, latest_log_index: 0

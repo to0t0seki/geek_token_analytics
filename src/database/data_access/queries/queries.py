@@ -1,130 +1,27 @@
 from src.database.data_access.database_client import DatabaseClient
 
-def get_users_addresses_balances(db_client: DatabaseClient):
-    """
-    ユーザーゲームウォレットの全ての日付の残高を取得
-    """
-    query = """
-    SELECT date, sum(balance / 1e18) as balance
-    FROM vw_users_balances
-    where date > '2024-09-26'
-    group by date
-    order by date desc
-    """
-    df = db_client.query_to_df(query)
- 
-    return df
 
-def get_others_addresses_balances(db_client: DatabaseClient):
-    """
-    運営、取引所、ユーザー以外のアドレスの全ての日付の残高を取得
-    """
-    query = """
-    SELECT date, sum(balance / 1e18) as balance
-    FROM vw_others_balances
-    where date > '2024-09-26'
-    group by date
-    order by date desc
-    """
-    df = db_client.query_to_df(query)
- 
-    return df
-
-def get_circulating_supply(db_client: DatabaseClient):
-    """
-    循環供給を取得
-    """
-    query = """
-    SELECT date, sum(balance / 1e18) as balance
-    FROM vw_circulating_supply_balances
-    where date > '2024-09-26'
-    group by date
-    order by date desc
-    """
-    df = db_client.query_to_df(query)
-
-    return df
-
-def get_daily_airdrops(db_client: DatabaseClient):   
+def get_transaction_summary(db_client: DatabaseClient):   
     query = """
     SELECT 
         DATE(timestamp + INTERVAL '5 hours') as date,
-        SUM(value / 1e18) as value,
-        COUNT(DISTINCT to_address) as address_count
-    FROM 
-        vw_airdrops
-    WHERE
-        DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
-    GROUP BY 
-        DATE(timestamp + INTERVAL '5 hours')
-    ORDER BY 
-        date desc
-    """
-    df = db_client.query_to_df(query)
-    return df
-
-def get_daily_item_purchases(db_client: DatabaseClient):
-    query = """
-    SELECT 
-        DATE(timestamp + INTERVAL '5 hours') as date,
-        SUM(value / 1e18) as value,
-        COUNT(DISTINCT from_address) as address_count
+        round(SUM(value / 1e18)) as amount,
+        CASE
+            WHEN method = 'xgeekToGeek' THEN COUNT(DISTINCT from_address)
+            WHEN method = 'exportToken' THEN COUNT(DISTINCT to_address)
+            WHEN method = 'transferForBuy' THEN COUNT(DISTINCT from_address)
+            WHEN method = 'exportAdp' THEN COUNT(DISTINCT to_address)
+        END as address_count,
+        method
     FROM 
         geek_transactions
-    WHERE
-        method = 'transferForBuy'
-        and timestamp >= '2024-09-26'
-    GROUP BY 
-        DATE(timestamp + INTERVAL '5 hours')
-    ORDER BY 
-        date desc
+    WHERE timestamp >= '2024-09-26'
+    GROUP BY method, DATE(timestamp + INTERVAL '5 hours')
+    ORDER BY date desc
     """
     df = db_client.query_to_df(query)
     return df
 
-
-
-def get_daily_deposits(db_client: DatabaseClient):
-    query = """
-    SELECT 
-        DATE(timestamp + INTERVAL '5 hours') as date,
-        SUM(value / 1e18) as value,
-        COUNT(DISTINCT from_address) as address_count
-    FROM 
-        vw_deposits
-    WHERE
-        DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
-    GROUP BY 
-        DATE(timestamp + INTERVAL '5 hours')
-    ORDER BY 
-        date desc
-    """
-    df = db_client.query_to_df(query)
-
-    return df
-
-
-
-def get_daily_withdrawals(db_client: DatabaseClient):
-    query = """
-    SELECT 
-        DATE(timestamp + INTERVAL '5 hours') as date,
-        SUM(value / 1e18) as value,
-        COUNT(DISTINCT to_address) as address_count
-    FROM 
-        vw_withdrawals
-    WHERE
-        to_address != '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62' and
-        DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
-    GROUP BY 
-        DATE(timestamp + INTERVAL '5 hours')
-    ORDER BY 
-        date desc
-    """
-    
-    df = db_client.query_to_df(query)
-    
-    return df
 
 
 def get_latest_timestamp(db_client: DatabaseClient) -> str:
@@ -147,162 +44,19 @@ def get_latest_timestamp(db_client: DatabaseClient) -> str:
 
 
 
-def get_latest_balances_from_all_addresses(db_client: DatabaseClient):
+def get_latest_balances(db_client: DatabaseClient):
     """
-    全てのアドレスの最新の残高を取得
+    全てのアドレスの最新情報を取得
     """
+
     query = """
-    SELECT
-        date,
-        address,
-        balance / 1e18 as balance
+    SELECT *
     FROM latest_balances
-    WHERE address != '0x0000000000000000000000000000000000000000'
-    ORDER BY balance DESC
-    """
-    df = db_client.query_to_df(query)
-    return df
-
-def get_latest_balances_from_users(db_client: DatabaseClient):
-    """
-    エアドロップを一度でも受け取ったことがあるアドレスの最新の残高を取得
-    """
-    query = """
-    SELECT lb.address, lb.date, lb.balance / 1e18 as balance
-    FROM latest_balances as lb
-    INNER JOIN users_addresses as ua ON lb.address = ua.address
     """
     df = db_client.query_to_df(query)
     return df
 
 
-
-def get_latest_balances_from_exchange(db_client: DatabaseClient):
-    """
-    エクスチェンジアドレスの最新の残高を取得
-    """
-    addresses = [
-        '0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23',
-        '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'
-    ]
-    query = """
-    SELECT lb.address, lb.date, lb.balance / 1e18 as balance
-    FROM latest_balances as lb
-    INNER JOIN (
-        SELECT %(address1)s as address
-        UNION ALL
-        SELECT %(address2)s
-    ) as exd ON lb.address = exd.address
-    """
-    params = {'address1':addresses[0], 'address2':addresses[1]}
-    df = db_client.query_to_df(query, params=params)
-    return df
-
-def get_latest_balances_from_operator(db_client: DatabaseClient):
-    """
-    運営アドレスの最新の残高を取得
-    """
-    addresses = [
-        '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
-        '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Xgeek_Withdrawal_Wallet
-        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62',   # Game_Ops_Wallet
-        '0x188b3678a4E706D17D060E6FCFbfec359e4bb69a'   # geek_shop
-    ]
-    query = """
-    SELECT lb.address, lb.date, lb.balance / 1e18 as balance
-    FROM latest_balances as lb
-    INNER JOIN (
-        SELECT %(address1)s as address
-        UNION ALL
-        SELECT %(address2)s
-        UNION ALL
-        SELECT %(address3)s
-        UNION ALL
-        SELECT %(address4)s
-    ) as op ON lb.address = op.address
-    """
-    params = {'address1':addresses[0], 'address2':addresses[1], 'address3':addresses[2], 'address4':addresses[3]}
-    df = db_client.query_to_df(query, params=params)
-    return df
-
-def get_latest_balances_from_game_ops_wallet(db_client: DatabaseClient):
-    query = """
-    SELECT lb.balance / 1e18 as balance
-    FROM latest_balances as lb
-    where lb.address = '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62'
-    """
-    df = db_client.query_to_df(query)
-    return df
-
-def get_latest_balances_from_withdrawal_wallet(db_client: DatabaseClient):
-    query = """
-    SELECT lb.balance / 1e18 as balance
-    FROM latest_balances as lb
-    where lb.address = '0x687F3413C7f0e089786546BedF809b8F8885B051'
-    """
-    df = db_client.query_to_df(query)
-    return df
-
-def get_latest_balances_from_airdrop_wallet(db_client: DatabaseClient):
-    query = """
-    SELECT lb.balance / 1e18 as balance
-    FROM latest_balances as lb
-    where lb.address = '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7'
-    """
-    df = db_client.query_to_df(query)
-    return df
-
-def get_latest_balances_from_item_wallet(db_client: DatabaseClient):
-    query = """
-    SELECT lb.balance / 1e18 as balance
-    FROM latest_balances as lb
-    where lb.address = '0x188b3678a4E706D17D060E6FCFbfec359e4bb69a'
-    """
-    df = db_client.query_to_df(query)
-    return df
-
-def get_latest_balances_from_others(db_client: DatabaseClient):
-    """
-    運営、取引所、エアドロップ受領者以外のアドレスの最新残高を取得
-    
-    除外アドレス：
-    - 運営アドレス (Game_Ops_Wallet, Airdrop_Wallet, Xgeek_Withdrawal_Wallet)
-    - 取引所アドレス (0x1AB4973a..., 0x0D070796...)
-    - エアドロップ受領者
-    """
-    operator_addresses = [
-        '0xdA364EE05bC0E37b838ebf1ba8AB2051dc187Dd7',  # Airdrop_Wallet
-        '0x687F3413C7f0e089786546BedF809b8F8885B051',  # Withdrawal_Wallet
-        '0x8ACEA4FEBB072dE21C0bc24E6303D19CCEa5fB62',   # Game_Ops_Wallet
-        '0x188b3678a4E706D17D060E6FCFbfec359e4bb69a'   # geek_shop
-    ]
-    
-    exchange_addresses = [
-        '0x1AB4973a48dc892Cd9971ECE8e01DcC7688f8F23',   #bitget
-        '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe',   #gate
-    ]
-    
-    query = """
-    WITH excluded_addresses AS (
-        SELECT %(address1)s as address
-        UNION ALL SELECT %(address2)s as address
-        UNION ALL SELECT %(address3)s as address
-        UNION ALL SELECT %(address4)s as address
-        UNION ALL SELECT %(address5)s as address
-        UNION ALL SELECT %(address6)s as address
-        UNION ALL SELECT '0x0000000000000000000000000000000000000000' as address
-        UNION ALL
-        SELECT address
-        FROM users_addresses
-    )
-    SELECT lb.address, lb.date, lb.balance / 1e18 as balance
-    FROM latest_balances as lb
-    LEFT JOIN excluded_addresses ea ON lb.address = ea.address
-    WHERE ea.address IS NULL
-    """
-    params = {'address1':operator_addresses[0], 'address2':operator_addresses[1], 'address3':operator_addresses[2], 'address4':exchange_addresses[0], 'address5':exchange_addresses[1], 'address6':operator_addresses[3]}
-    df = db_client.query_to_df(query, params=params)
-    return df
 
 def get_address_info(db_client: DatabaseClient, address: str):
     """

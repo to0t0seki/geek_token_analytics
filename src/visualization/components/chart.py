@@ -104,7 +104,7 @@ def display_chart(*args:tuple[pd.DataFrame,str,str,str],title:str):
                 tickfont=dict(color=color),
                 overlaying='y',
                 side='right',
-                range=[df[df.columns[1]].min()*0.5, df[df.columns[1]].max() * 1.1],
+                range=[float(df[df.columns[1]].min())*0.5, float(df[df.columns[1]].max()) * 1.1],
                 # position=0.85 + (i-2)*0.15  # 3つ目以降の軸は少しずつ右にずらす
             )
 

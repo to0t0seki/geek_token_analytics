@@ -9,7 +9,6 @@ __pycache__/
 *.db
 /.devcontainer/
 /.vscode/
-.streamlit/config.toml
 .env
 /trace/
 /data/

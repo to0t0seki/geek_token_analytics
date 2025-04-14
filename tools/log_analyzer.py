@@ -1,85 +1,47 @@
-import re
-from datetime import datetime
+#!/usr/bin/env python3
+"""
+このスクリプトは、logsディレクトリ内にある全ての
+YYYYMMDD_main_error.log 形式のエラーログファイルをチェックし、
+ファイル内にエラー出力が存在する場合に標準出力へ出力します。
+"""
+
 import glob
 import os
 
-def analyze_log_file(file_path: str) -> dict:
-    """ログファイルを解析してエラーと実行時間を確認する
-    
-    Args:
-        file_path: ログファイルのパス
-    
-    Returns:
-        dict: 解析結果
+def check_all_error_logs(log_dir: str = "logs") -> None:
     """
-    errors = []
-    executions = []
-    start_time = None
-    
-    with open(file_path, 'r') as f:
-        for line in f:
-            # タイムスタンプとメッセージを抽出
-            match = re.match(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - .*? - (INFO|ERROR|WARNING) - (.*)', line)
-            if match:
-                timestamp_str, level, message = match.groups()
-                timestamp = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S,%f')
-                
-                # エラーを検出
-                if level == 'ERROR':
-                    errors.append({
-                        'timestamp': timestamp,
-                        'message': message
-                    })
-                
-                # 実行時間を計算
-                if 'start: hourly_10_update_scheduler' in message:
-                    start_time = timestamp
-                elif 'end: hourly_10_update_scheduler' in message and start_time:
-                    duration = (timestamp - start_time).total_seconds()
-                    executions.append({
-                        'start': start_time,
-                        'end': timestamp,
-                        'duration': duration
-                    })
-                    start_time = None
-    
-    # 異常な実行時間を検出（例：2分以上）
-    long_executions = [
-        exec for exec in executions 
-        if exec['duration'] > 120  # 2分以上を異常とみなす
-    ]
-    
-    return {
-        'errors': errors,
-        'long_executions': long_executions,
-        'total_executions': len(executions)
-    }
+    logsディレクトリ内の全てのYYYYMMDD_error.log形式のログファイルをチェックし、
+    エラー出力がある場合、その内容を標準出力に出力する関数。
 
-def check_logs(log_dir: str = 'logs') -> None:
-    """ログディレクトリ内の全ログファイルをチェック"""
-    log_files = glob.glob(os.path.join(log_dir, '*__main__.log'))
+    Parameters:
+        log_dir (str): ログディレクトリへのパス。
+    """
+    # ファイルパターン作成：ファイル名は8桁の日付 + "_" + logger_name + "_error.log"
+    # 例: 20231012_error.log
+    pattern = os.path.join(log_dir, "????????_error.log")
     
-    for log_file in log_files:
-        print(f"\nAnalyzing {log_file}...")
-        result = analyze_log_file(log_file)
-        
-        # 結果を表示
-        if result['errors']:
-            print("\nエラーが検出されました:")
-            for error in result['errors']:
-                print(f"- {error['timestamp']}: {error['message']}")
-        
-        if result['long_executions']:
-            print("\n実行時間が長い処理が検出されました:")
-            for exec in result['long_executions']:
-                print(f"- 開始: {exec['start']}")
-                print(f"  終了: {exec['end']}")
-                print(f"  所要時間: {exec['duration']:.1f}秒")
-        
-        if not (result['errors'] or result['long_executions']):
-            print("問題は検出されませんでした")
-        
-        print(f"\n総実行回数: {result['total_executions']}")
+    # パターンに一致するファイル一覧を取得
+    log_files = glob.glob(pattern)
+    
+    if not log_files:
+        print("指定されたパターンに一致するエラーログファイルは存在しません。")
+        return
+
+    # ファイル名を昇順（古い順）にソート
+    for log_file in sorted(log_files):
+        print(f"\n---- ログファイル: {log_file} ----")
+        try:
+            with open(log_file, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception as e:
+            print(f"ファイルの読み込み中にエラーが発生しました: {e}")
+            continue
+
+        # 空白や改行のみの場合はエラー出力なしと見なす
+        if content.strip():
+            print(content)
+        else:
+            print("このログファイルにはエラー出力はありません。")
 
 if __name__ == "__main__":
-    check_logs()
+    check_all_error_logs()

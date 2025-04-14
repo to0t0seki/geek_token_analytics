@@ -1,6 +1,0 @@
-2025-04-06 07:36:00,182 - src.database.importer.geek_transactions_importer - INFO - fetch_letest_transaction: latest_block_number: 5493781, latest_log_index: 0
-2025-04-06 07:36:00,183 - src.database.importer.geek_transactions_importer - INFO - fetch_geek_transactions: start_block_number: None, start_index: None, end_block_number: 5493781, end_index: 0
-2025-04-06 07:36:15,703 - src.database.importer.geek_transactions_importer - INFO - fetch_geek_transactions: total_transactions: 712, latest_block_number: 5501548, latest_index: 1, oldest_block_number: 5493806, oldest_index: 1
-2025-04-06 07:36:15,721 - src.database.importer.geek_transactions_importer - INFO -  insert_geek_transactions: insert_count: 712
-2025-04-06 07:36:16,179 - src.database.importer.geek_transactions_importer - INFO -  insert_geek_transactions: inserted_count: 712
-2025-04-06 07:36:16,261 - src.database.importer.geek_transactions_importer - INFO - fetch_letest_transaction: latest_block_number: 5501548, latest_log_index: 1

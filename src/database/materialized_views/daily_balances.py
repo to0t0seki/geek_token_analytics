@@ -1,5 +1,7 @@
 from src.database.data_access.database_client import DatabaseClient
+from src.logger import setup_logger
 
+logger = setup_logger(__name__)
 
 def create_daily_balances(db_client: DatabaseClient) -> None:
     create_query = """
@@ -71,9 +73,17 @@ def create_daily_balances(db_client: DatabaseClient) -> None:
     ON daily_balances(address, date);
     """
     db_client.execute(create_index_query)
+    logger.info("daily_balancesを作成しました")
 
 def refresh_daily_balances(db_client: DatabaseClient) -> None:
+    logger.info("daily_balancesを更新します")
     refresh_query = """
     REFRESH MATERIALIZED VIEW CONCURRENTLY daily_balances;
     """
     db_client.execute(refresh_query) 
+    logger.info("daily_balancesを更新しました")
+
+if __name__ == "__main__":
+    db_client = DatabaseClient()
+    create_daily_balances(db_client)
+

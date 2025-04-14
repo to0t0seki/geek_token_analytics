@@ -19,14 +19,15 @@ def setup_logger(name: str, log_dir: str = "logs") -> logging.Logger:
         # 日付ベースのログファイル名
         log_file = os.path.join(
             log_dir, 
-            f"{datetime.now().strftime('%Y%m%d')}_{name}.log"
+            f"{datetime.now().strftime('%Y%m%d')}_info.log"
         )
         
         # ファイルハンドラーの設定
         file_handler = RotatingFileHandler(
             log_file,
             maxBytes=1024 * 1024,  # 1MB
-            backupCount=5
+            backupCount=5,
+            encoding='utf-8'
         )
         file_handler.setLevel(logging.INFO)
         
@@ -42,16 +43,34 @@ def setup_logger(name: str, log_dir: str = "logs") -> logging.Logger:
          # ---------- エラーログ (ERROR以上) 用のファイルハンドラー ----------
         error_log_file = os.path.join(
             log_dir, 
-            f"{datetime.now().strftime('%Y%m%d')}_{name}_error.log"
+            f"{datetime.now().strftime('%Y%m%d')}_error.log"
         )
         error_file_handler = RotatingFileHandler(
             error_log_file,
             maxBytes=1024 * 1024,  # 1MB
-            backupCount=5
+            backupCount=5,
+            encoding='utf-8'
         )
         error_file_handler.setLevel(logging.ERROR)
         error_file_handler.setFormatter(formatter)
         logger.addHandler(error_file_handler)
+
+        # ---------- デバッグログ (DEBUG以上) 用のファイルハンドラー ----------
+        debug_log_file = os.path.join(
+            log_dir, 
+            f"{datetime.now().strftime('%Y%m%d')}_debug.log"
+        )
+        debug_file_handler = RotatingFileHandler(
+            debug_log_file,
+            maxBytes=1024 * 1024,  # 1MB
+            backupCount=5,
+            encoding='utf-8'
+        )
+        debug_file_handler.setLevel(logging.DEBUG)
+        debug_file_handler.setFormatter(formatter)
+        logger.addHandler(debug_file_handler)
+
+        # ---------- コンソールハンドラー ----------
 
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.INFO)
