@@ -8,7 +8,7 @@ def get_all(db_client: DatabaseClient):
     SELECT 
       date as date,
       sum(balance / 1e18) as balance
-    FROM daily_balances
+    FROM daily_balances_table
     where date > '2024-09-26'
     and address != '0x0000000000000000000000000000000000000000'
     group by date

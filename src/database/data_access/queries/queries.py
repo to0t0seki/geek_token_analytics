@@ -66,36 +66,39 @@ def get_address_info(db_client: DatabaseClient, address: str):
     WITH balances AS (
         SELECT date, balance as balance
         FROM daily_balances
-        WHERE address = %(address)s and date >= '2024-09-26'
+        WHERE address = :address and date >= '2024-09-26'
     ),
     airdrop as (
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1e18) as airdrop
-        FROM vw_airdrops
+        FROM geek_transactions
         WHERE 
-            to_address = %(address)s and 
-            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
+            to_address = :address and 
+            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26' and
+            method = 'exportAdp'
         GROUP BY DATE(timestamp + INTERVAL '5 hours')
     ),
     withdraw as (   
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1e18) as withdraw
-        FROM vw_withdrawals
+        FROM geek_transactions
         WHERE 
-            to_address = %(address)s and
-            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
+            to_address = :address and
+            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26' and
+            method = 'exportToken'
         GROUP BY DATE(timestamp + INTERVAL '5 hours')
     ),
     deposit as (
         SELECT 
             DATE(timestamp + INTERVAL '5 hours') as date,
             SUM(value / 1e18) as deposit
-        FROM vw_deposits
+        FROM geek_transactions
         WHERE 
-            from_address = %(address)s and 
-            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26'
+            from_address = :address and 
+            DATE(timestamp + INTERVAL '5 hours') >= '2024-09-26' and
+            method = 'xgeekToGeek'
         GROUP BY DATE(timestamp + INTERVAL '5 hours')
     )
     SELECT 

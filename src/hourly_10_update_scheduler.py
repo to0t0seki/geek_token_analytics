@@ -5,6 +5,9 @@ from src.database.importer.equipment_transactions_importer import update_equipme
 from src.database.importer.doll_transactions_importer import update_doll_transactions
 from src.database.importer.ohlcv_importer import update_ohlcv_1h
 
+import sys
+sys.path.append("/home/ubuntu/geek_token_analytics")
+
 from tools.remove_reorg_records import cleanup_reorg_records
 from tools.exchange_address_checker import check_exchange_address
 from src.database.materialized_views.daily_balances import refresh_daily_balances

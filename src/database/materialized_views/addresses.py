@@ -49,7 +49,6 @@ def create_addresses(db_client: DatabaseClient) -> None:
     ON addresses(address);
     """
     db_client.execute(create_index_query)
-    logger.info("addressesを作成しました。")
 
 
 def refresh_addresses(db_client: DatabaseClient) -> None:

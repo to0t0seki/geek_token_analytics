@@ -188,6 +188,7 @@ def _setup_content(data_category:str):
 
     gb.configure_column('保有枚数',valueFormatter="Math.floor(value).toLocaleString()")
     gb.configure_column('ドル換算',valueFormatter="Math.floor(value).toLocaleString()")
+    gb.configure_column("終値", valueFormatter="value ? value.toFixed(7) : ''")
     gb.configure_grid_options(rowSelection='multiple',enableRangeSelection=True)
 
     grid_response = AgGrid(
@@ -326,6 +327,7 @@ def _setup_content(data_category:str):
         gb = GridOptionsBuilder.from_dataframe(merged_df)
         gb.configure_columns(["残高(geek)", "エアドロ(geek)", "出金(geek)", "入金(geek)","残高(dollar)","エアドロ(dollar)","出金(dollar)","入金(dollar)"],valueFormatter="Math.floor(value).toLocaleString()")
         gb.configure_grid_options(rowSelection='multiple',enableRangeSelection=True)
+        gb.configure_column("close", valueFormatter="value ? value.toFixed(7) : ''")
 
         grid_response = AgGrid(
             merged_df,

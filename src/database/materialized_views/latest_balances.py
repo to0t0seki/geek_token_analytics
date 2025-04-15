@@ -14,7 +14,7 @@ def create_latest_balances(db_client: DatabaseClient) -> None:
         a.sub_type
     FROM daily_balances db
     LEFT JOIN addresses a ON db.address = a.address
-    WHERE date = CURRENT_DATE
+    WHERE date = (SELECT MAX(date) FROM daily_balances)
     """
     db_client.execute(create_query)
     
@@ -24,7 +24,6 @@ def create_latest_balances(db_client: DatabaseClient) -> None:
     ON latest_balances(address);
     """
     db_client.execute(create_index_query)
-    logger.info("latest_balancesを作成しました。")
  
 
 def refresh_latest_balances(db_client: DatabaseClient) -> None:

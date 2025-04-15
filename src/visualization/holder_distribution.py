@@ -51,7 +51,7 @@ category_totals = pd.DataFrame([
     },
     {
         '名前': 'その他',
-        '枚数': latest_balances[(latest_balances['main_type']=='other')&(latest_balances['sub_type']!='burn')]['balance'].sum().round(0)
+        '枚数': latest_balances[(latest_balances['main_type']=='others')&(latest_balances['sub_type']!='burn')]['balance'].sum().round(0)
     }
     
 ])

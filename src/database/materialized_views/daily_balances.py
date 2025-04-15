@@ -9,19 +9,23 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS daily_balances AS
 WITH transactions AS (
     SELECT
         DATE(timestamp + INTERVAL '5 hours') AS date,
-        from_address AS address,
-        -value AS balance_change
-    FROM geek_transactions
-    WHERE from_address IS NOT NULL
+        address,
+        balance_change
+    FROM (
+        SELECT 
+            timestamp,
+            from_address AS address,
+            -value AS balance_change
+        FROM geek_transactions
 
-    UNION ALL
+        UNION ALL
 
-    SELECT
-        DATE(timestamp + INTERVAL '5 hours') AS date,
-        to_address AS address,
-        value AS balance_change
-    FROM geek_transactions
-    WHERE to_address IS NOT NULL
+        SELECT 
+            timestamp,
+            to_address AS address,
+            value AS balance_change
+        FROM geek_transactions
+    ) t
 ),
 
 daily_changes AS (
@@ -65,7 +69,7 @@ FROM filled_balances
     ON daily_balances(address, date);
     """
     db_client.execute(create_index_query)
-    logger.info("daily_balancesを作成しました")
+
 
 def refresh_daily_balances(db_client: DatabaseClient) -> None:
     logger.info("daily_balancesを更新します")
